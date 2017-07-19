@@ -74,7 +74,7 @@ public class SearchRequest {
         }
     }
 
-    Map<Param, ArrayList<String>> getRequestParams() {
+    public Map<Param, ArrayList<String>> getRequestParams() {
         Map<Param, ArrayList<String>> allRequstParams = new HashMap<>();
         allRequstParams.putAll(this.requestParams);
         return allRequstParams;

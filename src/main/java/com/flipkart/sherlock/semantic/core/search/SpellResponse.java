@@ -14,16 +14,15 @@ import java.util.List;
 @ToString
 public class SpellResponse {
 
+    @AllArgsConstructor
+    @Getter
+    public static class SpellSuggestion{
+        private String original;
+        private List<String> suggestions;
+    }
+
     private String solrQuery;
 
-    private List<String> results;
-
-    public void addDoc(String suggestion) {
-        results.add(suggestion);
-    }
-
-    public void addDocs(List<String> docs) {
-        results.addAll(docs);
-    }
+    private List<SpellSuggestion> spellSuggestions;
 
 }

@@ -5,11 +5,8 @@ import com.flipkart.sherlock.semantic.autosuggest.helpers.QuerySanitizer.QueryPr
 import com.flipkart.sherlock.semantic.autosuggest.models.AutoSuggestDoc;
 import com.flipkart.sherlock.semantic.autosuggest.models.*;
 import com.flipkart.sherlock.semantic.autosuggest.utils.JsonSeDe;
-import com.flipkart.sherlock.semantic.common.solr.Core;
-import com.flipkart.sherlock.semantic.core.search.SearchRequest;
-import com.flipkart.sherlock.semantic.core.search.SearchResponse;
-import com.flipkart.sherlock.semantic.core.search.SolrSearchServer;
-import com.flipkart.sherlock.semantic.core.search.SpellResponse;
+import com.flipkart.sherlock.semantic.core.search.*;
+import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -26,6 +23,7 @@ import static com.flipkart.sherlock.semantic.autosuggest.models.AutoSuggestDoc.*
  * Created by dhruv.pancholi on 01/06/17.
  */
 @Singleton
+//TODO rename to autosuggest search request handler
 public class SolrRequestHandler {
 
     @Inject
@@ -39,7 +37,10 @@ public class SolrRequestHandler {
     public AutoSuggestSolrResponse getAutoSuggestSolrResponse(QueryPrefix queryPrefix, Params params) {
 
         SearchRequest searchRequest = createSearchRequest(queryPrefix, params);
-        SearchResponse searchResponse = solrSearchServer.query(searchRequest, new Core(params.getSolrHost(), params.getSolrPort(), params.getSolrCore()));
+        SearchResponse searchResponse = solrSearchServer.query(searchRequest, ImmutableMap.of(
+            ISearchEngine.SearchParam.HOST, params.getSolrHost(),
+            ISearchEngine.SearchParam.PORT, String.valueOf(params.getSolrPort()),
+            ISearchEngine.SearchParam.CORE, params.getSolrCore()));
 
         if (searchResponse == null) return DEFAULT_AUTO_SUGGEST_SOLR_RESPONSE;
 
@@ -48,14 +49,23 @@ public class SolrRequestHandler {
 
     public AutoSuggestSpellResponse getAutoSuggestSolrSpellCorrectionResponse(QueryPrefix queryPrefix, Params params) {
         SearchRequest spellRequest = getSpellRequest(queryPrefix, params);
-        SpellResponse spellResponse = solrSearchServer.querySpell(spellRequest, new Core(params.getSolrHost(), params.getSolrPort(), params.getSolrCore()));
+        SpellResponse spellResponse = solrSearchServer.spellQuery(spellRequest,
+            ImmutableMap.of(
+                ISearchEngine.SearchParam.HOST, params.getSolrHost(),
+                ISearchEngine.SearchParam.PORT, String.valueOf(params.getSolrPort()),
+                ISearchEngine.SearchParam.CORE, params.getSolrCore()));
         return transformSpellResponse(spellResponse);
     }
 
     private AutoSuggestSpellResponse transformSpellResponse(SpellResponse spellResponse) {
-        if (spellResponse == null) return null;
-        if (spellResponse.getResults() == null || spellResponse.getResults().size() == 0) return null;
-        return new AutoSuggestSpellResponse(spellResponse.getSolrQuery(), spellResponse.getResults().get(0));
+        if (spellResponse != null && spellResponse.getSpellSuggestions() != null && spellResponse.getSpellSuggestions().size() > 0){
+            SpellResponse.SpellSuggestion suggestion = spellResponse.getSpellSuggestions().get(0);
+            if (suggestion.getSuggestions() != null && suggestion.getSuggestions().size() > 0){
+                return new AutoSuggestSpellResponse(spellResponse.getSolrQuery(), suggestion.getSuggestions().get(0));
+            }
+        }
+
+        return null;
     }
 
     private SearchRequest createSearchRequest(QueryPrefix queryPrefix, Params params) {
@@ -71,8 +81,8 @@ public class SolrRequestHandler {
         fqs.add(params.getPrefixEdgyField() + ":\"" + queryPrefix.getPrefix() + "\"");
 
         if (params.getMarketPlaceIds().size() == 1
-                && (params.getMarketPlaceIds().get(0).equals(FLIP_KART)
-                || params.getMarketPlaceIds().get(0).equals(FLIP_MART))) {
+            && (params.getMarketPlaceIds().get(0).equals(FLIP_KART)
+            || params.getMarketPlaceIds().get(0).equals(FLIP_MART))) {
             fqs.add("market_smstring:\"" + params.getMarketPlaceIds().get(0) + "\"");
         }
 
@@ -146,11 +156,11 @@ public class SolrRequestHandler {
 
 
             autoSuggestDocs.add(new AutoSuggestDoc(
-                    (String) solrDoc.get(LOGGED_QC_QUERY),
-                    (String) solrDoc.get(CORRECTED_QUERY),
-                    ctrObj,
-                    decayedProductObjs,
-                    productStores));
+                (String) solrDoc.get(LOGGED_QC_QUERY),
+                (String) solrDoc.get(CORRECTED_QUERY),
+                ctrObj,
+                decayedProductObjs,
+                productStores));
         }
 
         return new AutoSuggestSolrResponse(searchResponse.getSolrQuery(), autoSuggestDocs);
