@@ -6,6 +6,7 @@ import com.flipkart.sherlock.semantic.autosuggest.providers.JsonSeDeProvider;
 import com.flipkart.sherlock.semantic.autosuggest.views.AutoSuggestView;
 import com.flipkart.sherlock.semantic.common.dao.mysql.entity.MysqlConfig;
 import com.flipkart.sherlock.semantic.common.dao.mysql.entity.MysqlConnectionPoolConfig;
+import com.flipkart.sherlock.semantic.common.util.SherlockMetricsServletContextListener;
 import com.flipkart.sherlock.semantic.core.augment.init.MiscInitProvider;
 import com.flipkart.sherlock.semantic.core.augment.init.MysqlDaoProvider;
 import com.google.inject.Guice;
@@ -58,14 +59,16 @@ public class AutoSuggestApp {
         ContextHandlerCollection contexts = new ContextHandlerCollection();
 
         AutoSuggestView autoSuggestView = injector.getInstance(AutoSuggestView.class);
-
         ResourceConfig resourceConfig = new ResourceConfig().register(autoSuggestView);
 
         ServletContextHandler contextDefault = new ServletContextHandler();
         contextDefault.setContextPath("/");
+        contextDefault.addEventListener(new SherlockMetricsServletContextListener());
         contextDefault.addServlet(new ServletHolder(new ServletContainer(resourceConfig)), "/*");
+        contextDefault.addServlet(com.codahale.metrics.servlets.MetricsServlet.class, "/metrics");
         contextDefault.setVirtualHosts(new String[]{"@AutoSuggestApplication"});
         contexts.addHandler(contextDefault);
+
         server.setHandler(contexts);
 
         try {
