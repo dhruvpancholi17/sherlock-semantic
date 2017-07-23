@@ -1,0 +1,79 @@
+#!/bin/bash
+
+LOG_DIR=/var/log/flipkart/fk-sherlock-flash
+TMP_DIR=/var/tmp/fk-sherlock-flash
+RUN_DIR=/var/run/fk-sherlock-flash
+WORK_DIR=/var/cache/fk-sherlock-flash
+LIB_DIR=/var/lib/fk-sherlock-flash
+
+FLASH_JETTY_PORT=9001
+FLASH_JMX_PORT=9011
+FLASH_MAX_THREAD=1024
+FLASH_MAX_QUEUE=1024
+
+ROTATION_URL="http://localhost:$FLASH_JETTY_PORT/flash/rotation"
+ROTATION_STATUS_URL="http://localhost:$FLASH_JETTY_PORT/flash/rotation-status"
+FLASH_TOKEN_KEY="throwbacksunburned"
+
+get_total_memory () {
+  echo $(free -m | grep 'Mem:' | awk '{print $4}')
+}
+
+get_max_memory () {
+  total=$(get_total_memory)
+  echo $(expr $(expr $total \* 1) / 4)
+}
+
+get_new_memory () {
+  total=$(get_max_memory)
+  echo $(expr $(expr $total \* 1) / 4)
+}
+
+#### JAVA_OPTS ####
+JAVA_OPTS=""
+
+## FLASH App specific options
+JAVA_OPTS="$JAVA_OPTS \
+-Djetty.port=$FLASH_JETTY_PORT \
+-Djetty.home=$WORK_DIR \
+-Djava.io.tmpdir=$TMP_DIR \
+-Djetty.maxThread=$FLASH_MAX_THREAD \
+-Djetty.maxQueue=$FLASH_MAX_QUEUE \
+-DFLASH_LOG_LEVEL=ERROR \
+-DFLASH_ACCESS_LOG_FILE=$LOG_DIR/access.log \
+-DFLASH_ROOT_LOG_FILE=$LOG_DIR/root.log \
+-DFLASH_ERROR_LOG_FILE=$LOG_DIR/error.log \
+-DFLASH_TOKEN_KEY=$FLASH_TOKEN_KEY"
+
+## Memory settings
+JAVA_OPTS="$JAVA_OPTS \
+-server \
+-Xms16G -Xmx16G \
+-XX:NewSize=4G -XX:MaxNewSize=4G \
+-XX:PermSize=128M -XX:MaxPermSize=128M \
+-Djava.awt.headless=true"
+
+## GC settings
+JAVA_OPTS="$JAVA_OPTS \
+-XX:+UseG1GC -XX:MaxGCPauseMillis=200 \
+-XX:InitiatingHeapOccupancyPercent=45 \
+-XX:G1HeapRegionSize=16m"
+
+## GC logging
+JAVA_OPTS="$JAVA_OPTS \
+-XX:+PrintCommandLineFlags \
+-Xloggc:$LOG_DIR/gc.log -verbose:gc \
+-XX:+PrintGCDetails -XX:+PrintHeapAtGC \
+-XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps \
+-XX:+PrintTenuringDistribution"
+
+## JMX Options
+JAVA_OPTS="$JAVA_OPTS \
+-Dcom.sun.management.jmxremote \
+-Dcom.sun.management.jmxremote.port=$FLASH_JMX_PORT \
+-Dcom.sun.management.jmxremote.authenticate=false \
+-Dcom.sun.management.jmxremote.ssl=false"
+
+
+JAVA_OPTS="$JAVA_OPTS \
+-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000"

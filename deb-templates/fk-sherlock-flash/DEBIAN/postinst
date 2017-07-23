@@ -1,0 +1,66 @@
+#!/bin/bash -e
+
+USER=fk-search-semantic
+GROUP=fk-search-semantic
+FK_UID=3003
+FK_GID=3000
+
+PAC="fk-sherlock-flash"
+CMD="$1"
+COMMAND="/etc/init.d/$PAC"
+
+[ -f /etc/default/$PAC ] && . /etc/default/$PAC
+
+myhostname=`hostname -i`
+
+for file in `ls /etc/cosmos-jmx/*.json`;
+do
+  sed -i "s|HOST|$myhostname|g" $file
+  chmod 755 $file
+done
+
+if [ "$CMD" == "configure" ]; then
+
+    # Create user and group
+    egrep "^$GROUP:" /etc/group >/dev/null 2>&1 || addgroup --gid $FK_GID $GROUP
+    id $USER >/dev/null 2>&1 || adduser --gecos "Fk Sherlock Flash" --gid $FK_GID --no-create-home --shell /bin/false --disabled-login --uid $FK_UID $USER
+
+	# Provide proper permissions
+	chown -Rf root:root /usr/share/$PAC /etc/default/$PAC /usr/bin/$PAC-admin || true
+	chown -Rf $USER:$GROUP /etc/default/$PAC || true
+
+	ln -sf /usr/share/$PAC/bin/$PAC-admin /usr/bin/$PAC-admin
+	chmod a+x /usr/bin/$PAC-admin || true
+	chmod a+w /etc/default/$PAC || true
+
+
+	# Create various directories and set ownership as needed
+	for f in $LOG_DIR $TMP_DIR $RUN_DIR $WORK_DIR $LIB_DIR; do
+		[ ! -d "$f" ] && mkdir -p "$f" || true
+		chown -Rf $USER:$GROUP "$f" || true
+	done
+
+	ADMIN_LOG_FILE=$LOG_DIR/admin-cmd.log
+	[ ! -f $ADMIN_LOG_FILE ] && touch $ADMIN_LOG_FILE || true
+	chgrp Tech $ADMIN_LOG_FILE || true
+	chmod g+w $ADMIN_LOG_FILE || true
+
+    # Remove complete access of lib directory to group and others
+	chmod 700 $LIB_DIR || true
+
+    # Take ownership of directories
+	chown -Rf $USER:$GROUP /usr/share/$PAC || true
+
+	# Give world read permission on the logs
+	chmod -Rf go+r $LOG_DIR || true
+
+	#Starting the service
+	$COMMAND start
+
+	#For cosmos metrics
+	sudo service cosmos-collectd restart
+	echo "Restarted cosmos collectd"
+	sudo service cosmos-jmx stop
+	sudo service cosmos-jmx status
+	sudo service cosmos-jmx start
+fi

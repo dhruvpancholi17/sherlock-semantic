@@ -1,0 +1,17 @@
+{
+  "servers" : [
+    {
+      "port" : "9011",
+      "host" : "HOST",
+      "process": "Flash-app",
+      "customTags" : "role=CLUSTER",
+      "queries" : [
+        {
+          "obj" : "metrics:name=*",
+          "saperator" : "."
+        }
+      ],
+      "numQueryThreads" : 2
+    }
+  ]
+}

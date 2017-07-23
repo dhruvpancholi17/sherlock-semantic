@@ -4,6 +4,7 @@ package com.flipkart.sherlock.semantic.app;
 import com.flipkart.sherlock.semantic.autosuggest.dao.ConfigsDao;
 import com.flipkart.sherlock.semantic.autosuggest.providers.JsonSeDeProvider;
 import com.flipkart.sherlock.semantic.autosuggest.views.AutoSuggestView;
+import com.flipkart.sherlock.semantic.autosuggest.views.HealthCheckView;
 import com.flipkart.sherlock.semantic.common.dao.mysql.entity.MysqlConfig;
 import com.flipkart.sherlock.semantic.common.dao.mysql.entity.MysqlConnectionPoolConfig;
 import com.flipkart.sherlock.semantic.common.util.SherlockMetricsServletContextListener;
@@ -39,14 +40,15 @@ public class AutoSuggestApp {
                 .setAcquireIncrement(2)
                 .setMaxIdleTimeSec((int) TimeUnit.MINUTES.toSeconds(30)).build();
 
+        // By default, jetty task queue is unbounded. Reject requests once queue is full.
+        QueuedThreadPool threadPool = new QueuedThreadPool(1024, 8, (int) TimeUnit.MINUTES.toMillis(1), new ArrayBlockingQueue<Runnable>(1024));
+        threadPool.setName("JettyContainer");
+
         Injector injector = Guice.createInjector(
                 new MysqlDaoProvider(mysqlConfig, connectionPoolConfig),
                 new JsonSeDeProvider(),
                 new MiscInitProvider((int) TimeUnit.MINUTES.toSeconds(30), 10));
 
-        // By default, jetty task queue is unbounded. Reject requests once queue is full.
-        QueuedThreadPool threadPool = new QueuedThreadPool(1024, 8, (int) TimeUnit.MINUTES.toMillis(1), new ArrayBlockingQueue<Runnable>(1024));
-        threadPool.setName("JettyContainer");
 
         // Create embedded jetty container
         Server server = new Server(threadPool);
@@ -59,7 +61,10 @@ public class AutoSuggestApp {
         ContextHandlerCollection contexts = new ContextHandlerCollection();
 
         AutoSuggestView autoSuggestView = injector.getInstance(AutoSuggestView.class);
-        ResourceConfig resourceConfig = new ResourceConfig().register(autoSuggestView);
+        HealthCheckView healthCheckView = injector.getInstance(HealthCheckView.class);
+        ResourceConfig resourceConfig = new ResourceConfig()
+                .register(autoSuggestView)
+                .register(healthCheckView);
 
         ServletContextHandler contextDefault = new ServletContextHandler();
         contextDefault.setContextPath("/");

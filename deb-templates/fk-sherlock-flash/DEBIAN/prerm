@@ -1,0 +1,25 @@
+#!/bin/bash -e
+
+PAC=fk-sherlock-flash
+CMD="$1"
+COMMAND="/etc/init.d/$PAC"
+
+[ -f /etc/default/$PAC ] && . /etc/default/$PAC
+
+[ ! -x $COMMAND ] && exit 0
+
+if [ "$CMD" == "upgrade" -o "$CMD" == "remove" -o "$CMD" == "install" ]; then
+	status=$(fk-sherlock-flash-admin status) || true
+
+	# If this server was in rotation, take it OOR
+	if [ "$status" == 'In-Rotation' ]; then
+		echo "Taking flash server OOR ..."
+		(touch /tmp/$PAC-upgrade && fk-sherlock-flash-admin oor) || true
+	else
+		echo "Flash server already OOR."
+	fi
+
+	# Stop the service
+	echo "Stopping $PAC service"
+	$COMMAND stop || true
+fi

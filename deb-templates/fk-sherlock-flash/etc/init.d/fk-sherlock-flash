@@ -1,0 +1,108 @@
+#!/bin/bash
+
+# Author: Dhruv Pancholi <dhruv.pancholi@flipkart.com>
+
+# PATH should only include /usr/* if it runs after the mountnfs.sh script
+PATH=/sbin:/usr/sbin:/bin:/usr/bin
+DESC="Sherlock Flash Service"
+PAC="fk-sherlock-flash"
+DAEMON=/usr/share/$PAC/bin/${PAC}-admin
+DAEMON_ARGS="start"
+PID_FILE=/var/run/$PAC.pid
+SCRIPT_NAME=/etc/init.d/$PAC
+
+# Exit if the package is not installed
+[ -x "$DAEMON" ] || exit 0
+
+# Read configuration variable file if it is present
+[ -r /etc/default/$PAC ] && . /etc/default/$PAC
+
+USER=${USER:-root}
+
+. /lib/lsb/init-functions
+
+do_start() {
+	# Return 0 if daemon has been started, 1 if daemon was already running or 2 if daemon could not be started
+	start-stop-daemon --chuid $USER --start --quiet --pidfile $PID_FILE --startas $DAEMON --test > /dev/null || return 1
+	start-stop-daemon --chuid $USER --start --background --make-pidfile --pidfile $PID_FILE --startas $DAEMON $DAEMON_ARGS || return 2
+}
+
+do_stop() {
+
+	# The pid specified in $PIDFILE and then send SIGTERM to that process, wait 30 seconds, then SIGKILL and wait
+	# 5 seconds (if the process stops within that 35 seconds, that's good, otherwise s-s-d will return 2
+	# Return 0 if daemon has been stopped, 1 if daemon was already stopped or 2 if daemon could not be stopped
+
+	start-stop-daemon --stop --quiet --retry=TERM/30/KILL/5 --pidfile $PID_FILE
+	RETURN_VAL="$?"
+	[ "$RETURN_VAL" = 2 ] && return 2
+
+	# Wait for children to finish too if this is a daemon that forks and if the daemon is only ever run from this
+	# init script. If the above conditions are not satisfied then add some other code that waits for the process
+	# to drop all resources that could be needed by services started subsequently. A last resort is to sleep for some time.
+	start-stop-daemon --stop --quiet --oknodo --retry=0/30/KILL/5 --pidfile $PID_FILE
+	[ "$?" = 2 ] && return 2
+
+	# Many daemons don't delete their pidfiles when they exit.
+	rm -f $PID_FILE
+	return "$RETURN_VAL"
+}
+
+do_reload() {
+	# If the daemon can reload its configuration without restarting (for example, when it is sent a SIGHUP),
+	# then implement that here.
+	start-stop-daemon --stop --signal 1 --quiet --pidfile $PID_FILE --name $PAC
+	return 0
+}
+
+case "$1" in
+  start)
+	log_daemon_msg "Starting $DESC" "$PAC"
+	do_start
+	case "$?" in
+		0|1)
+		    log_end_msg 0
+		    echo "PID: `cat $PID_FILE`"
+		    ;;
+		2) log_end_msg 1 ;;
+	esac
+	;;
+  stop)
+	log_daemon_msg "Stopping $DESC" "$PAC"
+	do_stop
+	case "$?" in
+		0|1) log_end_msg 0 ;;
+		2) log_end_msg 1 ;;
+	esac
+	;;
+  status)
+       status_of_proc "$DAEMON" "$PAC" && exit 0 || exit $?
+       ;;
+  restart|force-reload)
+	#
+	# If the "reload" option is implemented then remove the
+	# 'force-reload' alias
+	#
+	log_daemon_msg "Stopping $DESC" "$PAC"
+	do_stop
+	case "$?" in
+	  0|1)
+	    log_end_msg 0
+		log_daemon_msg "Starting $DESC" "$PAC"
+		do_start
+		case "$?" in
+			0) log_end_msg 0 ;;
+			1) log_end_msg 1 ;; # Old process is still running
+			*) log_end_msg 1 ;; # Failed to start
+		esac
+		;;
+	  *)
+		log_end_msg 1
+		;;
+	esac
+	;;
+  *)
+	echo "Usage: $SCRIPT_NAME {start|stop|status|restart|force-reload}" >&2
+	exit 3
+	;;
+esac
