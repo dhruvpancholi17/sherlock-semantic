@@ -33,14 +33,14 @@ public class MysqlDaoProvider extends AbstractModule {
     @Provides
     @Singleton
     DBI DBIProvider() throws Exception {
-        String dburl = "jdbc:mysql://" + mysqlConfig.getDbHost() + ":" + mysqlConfig.getDbPort()
+        String dburl = "jdbc:mysql://" + mysqlConfig.getHost() + ":" + mysqlConfig.getPort()
                 + "/" + mysqlConfig.getDbName() + "?rewriteBatchedStatements=true";
 
         //c3p0 Connection pool configuration
         ComboPooledDataSource pooledDataSource = new ComboPooledDataSource();
         pooledDataSource.setDriverClass("com.mysql.jdbc.Driver");
         pooledDataSource.setJdbcUrl(dburl);
-        pooledDataSource.setUser(mysqlConfig.getUserName());
+        pooledDataSource.setUser(mysqlConfig.getUser());
         pooledDataSource.setPassword(mysqlConfig.getPassword());
         pooledDataSource.setMinPoolSize(mysqlConnectionPoolConfig.getMinPoolSize());
         pooledDataSource.setMaxPoolSize(mysqlConnectionPoolConfig.getMaxPoolSize());

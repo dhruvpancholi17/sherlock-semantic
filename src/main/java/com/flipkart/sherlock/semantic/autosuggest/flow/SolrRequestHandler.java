@@ -38,9 +38,9 @@ public class SolrRequestHandler {
 
         SearchRequest searchRequest = createSearchRequest(queryPrefix, params);
         SearchResponse searchResponse = solrSearchServer.query(searchRequest, ImmutableMap.of(
-            ISearchEngine.SearchParam.HOST, params.getSolrHost(),
-            ISearchEngine.SearchParam.PORT, String.valueOf(params.getSolrPort()),
-            ISearchEngine.SearchParam.CORE, params.getSolrCore()));
+                ISearchEngine.SearchParam.HOST, params.getSolrHost(),
+                ISearchEngine.SearchParam.PORT, String.valueOf(params.getSolrPort()),
+                ISearchEngine.SearchParam.CORE, params.getSolrCore()));
 
         if (searchResponse == null) return DEFAULT_AUTO_SUGGEST_SOLR_RESPONSE;
 
@@ -50,17 +50,17 @@ public class SolrRequestHandler {
     public AutoSuggestSpellResponse getAutoSuggestSolrSpellCorrectionResponse(QueryPrefix queryPrefix, Params params) {
         SearchRequest spellRequest = getSpellRequest(queryPrefix, params);
         SpellResponse spellResponse = solrSearchServer.spellQuery(spellRequest,
-            ImmutableMap.of(
-                ISearchEngine.SearchParam.HOST, params.getSolrHost(),
-                ISearchEngine.SearchParam.PORT, String.valueOf(params.getSolrPort()),
-                ISearchEngine.SearchParam.CORE, params.getSolrCore()));
+                ImmutableMap.of(
+                        ISearchEngine.SearchParam.HOST, params.getSolrHost(),
+                        ISearchEngine.SearchParam.PORT, String.valueOf(params.getSolrPort()),
+                        ISearchEngine.SearchParam.CORE, params.getSolrCore()));
         return transformSpellResponse(spellResponse);
     }
 
     private AutoSuggestSpellResponse transformSpellResponse(SpellResponse spellResponse) {
-        if (spellResponse != null && spellResponse.getSpellSuggestions() != null && spellResponse.getSpellSuggestions().size() > 0){
+        if (spellResponse != null && spellResponse.getSpellSuggestions() != null && spellResponse.getSpellSuggestions().size() > 0) {
             SpellResponse.SpellSuggestion suggestion = spellResponse.getSpellSuggestions().get(0);
-            if (suggestion.getSuggestions() != null && suggestion.getSuggestions().size() > 0){
+            if (suggestion.getSuggestions() != null && suggestion.getSuggestions().size() > 0) {
                 return new AutoSuggestSpellResponse(spellResponse.getSolrQuery(), suggestion.getSuggestions().get(0));
             }
         }
@@ -78,20 +78,21 @@ public class SolrRequestHandler {
 
         List<String> fqs = params.getFqs();
         fqs.add(params.getCtrField() + ":[" + params.getCtrThreshold() + " TO *]");
-        fqs.add(params.getPrefixEdgyField() + ":\"" + queryPrefix.getPrefix() + "\"");
+        fqs.add(params.getPrefixField() + ":\"" + queryPrefix.getPrefix() + "\"");
+        fqs.add("-" + PRODUCT_STORE + ":\"[]\"");
 
         if (params.getMarketPlaceIds().size() == 1
-            && (params.getMarketPlaceIds().get(0).equals(FLIP_KART)
-            || params.getMarketPlaceIds().get(0).equals(FLIP_MART))) {
+                && (params.getMarketPlaceIds().get(0).equals(FLIP_KART)
+                || params.getMarketPlaceIds().get(0).equals(FLIP_MART))) {
             fqs.add("market_smstring:\"" + params.getMarketPlaceIds().get(0) + "\"");
         }
 
         searchRequest.addParam(SearchRequest.Param.FQ, fqs);
         searchRequest.addParam(SearchRequest.Param.BF, params.getBoostFunction());
         searchRequest.addParam(SearchRequest.Param.QF, params.getQueryField());
-        searchRequest.addParam(SearchRequest.Param.PF, params.getPhraseField());
+        searchRequest.addParam(SearchRequest.Param.PF, "text");
         searchRequest.addParam(SearchRequest.Param.ALTQ, "*:*");
-        searchRequest.addParam(SearchRequest.Param.BQ, params.getPhraseEdgyField() + ":\"" + (queryPrefix.getOriginalQuery().equals("") ? "*:*" : queryPrefix.getOriginalQuery()) + "\"^" + params.getPhraseBoost());
+        searchRequest.addParam(SearchRequest.Param.BQ, params.getPhraseField() + ":\"" + (queryPrefix.getOriginalQuery().equals("") ? "*:*" : queryPrefix.getOriginalQuery()) + "\"^" + params.getPhraseBoost());
         searchRequest.addParam(SearchRequest.Param.SORT, params.getSortFunctions());
         searchRequest.addParam(SearchRequest.Param.ROWS, String.valueOf(params.getRows()));
 
@@ -156,11 +157,11 @@ public class SolrRequestHandler {
 
 
             autoSuggestDocs.add(new AutoSuggestDoc(
-                (String) solrDoc.get(LOGGED_QC_QUERY),
-                (String) solrDoc.get(CORRECTED_QUERY),
-                ctrObj,
-                decayedProductObjs,
-                productStores));
+                    (String) solrDoc.get(LOGGED_QC_QUERY),
+                    (String) solrDoc.get(CORRECTED_QUERY),
+                    ctrObj,
+                    decayedProductObjs,
+                    productStores));
         }
 
         return new AutoSuggestSolrResponse(searchResponse.getSolrQuery(), autoSuggestDocs);

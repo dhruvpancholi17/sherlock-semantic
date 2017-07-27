@@ -3,8 +3,11 @@ package com.flipkart.sherlock.semantic.autosuggest.utils;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
+
+import static com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES;
 
 /**
  * Created by dhruv.pancholi on 30/05/17.
@@ -18,7 +21,7 @@ public class JsonSeDe {
         try {
             return objectMapper.writeValueAsString(object);
         } catch (Exception e) {
-            throw new RuntimeException("Unable to serialize the object: " + object.toString(), e);
+            throw new RuntimeException("Unable to serialize the object: " + object, e);
         }
     }
 
@@ -47,6 +50,7 @@ public class JsonSeDe {
                 .withSetterVisibility(JsonAutoDetect.Visibility.NONE)
                 .withCreatorVisibility(JsonAutoDetect.Visibility.NONE));
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        objectMapper.configure(FAIL_ON_UNKNOWN_PROPERTIES, false);
         return new JsonSeDe(objectMapper);
     }
 }

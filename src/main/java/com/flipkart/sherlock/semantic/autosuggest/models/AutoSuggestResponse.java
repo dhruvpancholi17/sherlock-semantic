@@ -11,6 +11,7 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 public class AutoSuggestResponse {
+    private String payloadId;
     private List<QuerySuggestion> querySuggestions;
     private List<ProductSuggestion> productSuggestions;
     private Params params;

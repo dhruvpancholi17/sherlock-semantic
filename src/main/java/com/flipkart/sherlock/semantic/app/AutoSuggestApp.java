@@ -1,14 +1,14 @@
 package com.flipkart.sherlock.semantic.app;
 
 
-import com.flipkart.sherlock.semantic.autosuggest.dao.ConfigsDao;
-import com.flipkart.sherlock.semantic.autosuggest.providers.JsonSeDeProvider;
+import com.flipkart.sherlock.semantic.autosuggest.providers.WrapperProvider;
 import com.flipkart.sherlock.semantic.autosuggest.views.AutoSuggestView;
 import com.flipkart.sherlock.semantic.autosuggest.views.HealthCheckView;
 import com.flipkart.sherlock.semantic.common.dao.mysql.entity.MysqlConfig;
 import com.flipkart.sherlock.semantic.common.dao.mysql.entity.MysqlConnectionPoolConfig;
 import com.flipkart.sherlock.semantic.common.init.MiscInitProvider;
 import com.flipkart.sherlock.semantic.common.init.MysqlDaoProvider;
+import com.flipkart.sherlock.semantic.common.util.FkConfigServiceWrapper;
 import com.flipkart.sherlock.semantic.common.util.SherlockMetricsServletContextListener;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -25,6 +25,8 @@ import org.glassfish.jersey.servlet.ServletContainer;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import static com.flipkart.sherlock.semantic.app.AppConstants.AUTOSUGGEST_BUCKET;
+
 /**
  * Created by anurag.laddha on 02/04/17.
  */
@@ -33,12 +35,15 @@ public class AutoSuggestApp {
 
     public static void main(String[] args) throws Exception {
 
-        MysqlConfig mysqlConfig = ConfigsDao.getMysqlConfig();
+        FkConfigServiceWrapper fkConfigServiceWrapper = new FkConfigServiceWrapper(AUTOSUGGEST_BUCKET, true);
+        MysqlConfig mysqlConfig = MysqlConfig.getConfig(fkConfigServiceWrapper);
         log.info("Staring the host with the following MySQL config: {}", mysqlConfig.toString());
-        MysqlConnectionPoolConfig connectionPoolConfig = new MysqlConnectionPoolConfig.MysqlConnectionPoolConfigBuilder(1, 10)
-                .setInitialPoolSize(1)
-                .setAcquireIncrement(2)
-                .setMaxIdleTimeSec((int) TimeUnit.MINUTES.toSeconds(30)).build();
+        MysqlConnectionPoolConfig connectionPoolConfig = new MysqlConnectionPoolConfig
+                .MysqlConnectionPoolConfigBuilder(mysqlConfig.getMinPoolSize(), mysqlConfig.getMaxPoolSize())
+                .setInitialPoolSize(mysqlConfig.getInitialPoolSize())
+                .setAcquireIncrement(mysqlConfig.getAcquireIncrement())
+                .setMaxIdleTimeSec(mysqlConfig.getMaxIdleTimeSec())
+                .build();
 
         // By default, jetty task queue is unbounded. Reject requests once queue is full.
         QueuedThreadPool threadPool = new QueuedThreadPool(1024, 8, (int) TimeUnit.MINUTES.toMillis(1), new ArrayBlockingQueue<Runnable>(1024));
@@ -46,7 +51,7 @@ public class AutoSuggestApp {
 
         Injector injector = Guice.createInjector(
                 new MysqlDaoProvider(mysqlConfig, connectionPoolConfig),
-                new JsonSeDeProvider(),
+                new WrapperProvider(fkConfigServiceWrapper),
                 new MiscInitProvider((int) TimeUnit.MINUTES.toSeconds(30), 10));
 
 

@@ -13,7 +13,10 @@ import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.name.Names;
 
+import java.util.InvalidPropertiesFormatException;
 import java.util.concurrent.TimeUnit;
+
+import static com.flipkart.sherlock.semantic.app.AppConstants.AUTOSUGGEST_BUCKET;
 
 /**
  * Use this context to get object instances for testing
@@ -23,11 +26,12 @@ import java.util.concurrent.TimeUnit;
 public class TestContext {
     private static Injector injector;
 
-    private static void init() {
+    private static void init() throws InvalidPropertiesFormatException {
         if (injector == null) {
             synchronized (TestContext.class) {
                 if (injector == null) {
-                    MysqlConfig mysqlConfig = new MysqlConfig("localhost", 3306, "root", "", "sherlock");
+                    FkConfigServiceWrapper fkConfigServiceWrapper = new FkConfigServiceWrapper(AUTOSUGGEST_BUCKET, true);
+                    MysqlConfig mysqlConfig = MysqlConfig.getConfig(fkConfigServiceWrapper);
                     MysqlConnectionPoolConfig connectionPoolConfig = new MysqlConnectionPoolConfig.MysqlConnectionPoolConfigBuilder(1,10)
                         .setInitialPoolSize(1)
                         .setAcquireIncrement(2)
@@ -42,12 +46,20 @@ public class TestContext {
 
 
     public static <T> T getInstance(Class<T> klass){
-        init();
+        try {
+            init();
+        } catch (InvalidPropertiesFormatException e) {
+            e.printStackTrace();
+        }
         return injector.getInstance(klass);
     }
 
     public static <T> T getInstance(Class<T> klass, String namedAnnotation){
-        init();
+        try {
+            init();
+        } catch (InvalidPropertiesFormatException e) {
+            e.printStackTrace();
+        }
         return injector.getInstance(Key.get(klass, Names.named(namedAnnotation)));
     }
 }

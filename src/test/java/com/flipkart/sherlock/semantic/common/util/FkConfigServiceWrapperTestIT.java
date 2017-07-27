@@ -1,5 +1,7 @@
 package com.flipkart.sherlock.semantic.common.util;
 
+import com.flipkart.sherlock.semantic.autosuggest.models.SolrConfig;
+import com.flipkart.sherlock.semantic.autosuggest.utils.JsonSeDe;
 import junit.framework.Assert;
 import org.junit.Test;
 
@@ -19,5 +21,14 @@ public class FkConfigServiceWrapperTestIT {
         FkConfigServiceWrapper fkConfigServiceWrapper = new FkConfigServiceWrapper("fk-ad-at-userprofile-mapper", true);
         Assert.assertNotNull(fkConfigServiceWrapper.getString("mysql.master.user"));
         Assert.assertNull(fkConfigServiceWrapper.getString("abc"));
+    }
+
+    @Test
+    public void testAutoSugegstConfig(){
+        FkConfigServiceWrapper fkConfigServiceWrapper = new FkConfigServiceWrapper("sherlock-autosuggest", true);
+        Assert.assertNotNull(fkConfigServiceWrapper.getString("solr.default"));
+        JsonSeDe jsonSeDe = JsonSeDe.getInstance();
+        SolrConfig solrConfig = jsonSeDe.readValue(fkConfigServiceWrapper.getString("solr.default"), SolrConfig.class);
+        assertNotNull(solrConfig);
     }
 }

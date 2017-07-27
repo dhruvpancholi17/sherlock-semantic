@@ -20,6 +20,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Created by dhruv.pancholi on 30/05/17.
@@ -79,6 +80,7 @@ public class AutoSuggestView {
         ProductResponse productResponse = productRequestHandler.getProductSuggestions(params.getQuery(), new ProductRequest(params, queryResponse.getAutoSuggestSolrResponse()));
 
         AutoSuggestResponse autoSuggestResponse = new AutoSuggestResponse(
+                UUID.randomUUID().toString(),
                 queryResponse.getQuerySuggestions(),
                 productResponse.getProductSuggestions(),
                 params.isDebug() ? params : null,

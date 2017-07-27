@@ -18,6 +18,7 @@ public class Params {
 
     private boolean debug = false;
 
+    private String originalQuery = "";
     private String query = "";
 
     // Path variables
@@ -40,10 +41,9 @@ public class Params {
     private String solrCore = "autosuggest";
 
     private String queryField = "text";
-    private String prefixEdgyField = "prefix_edgytext";
-    private String phraseEdgyField = "text_edgytext_phrase";
+    private String prefixField = "prefix_edgytext";
     private int phraseBoost = 1;
-    private String phraseField = "text";
+    private String phraseField = "text_edgytext_phrase";
     private String boostFunction = "min(div(log(field(impressions_sint)),log(10)),10.0)^1";
     private List<String> sortFunctions = Arrays.asList("score desc", "ranking-score_sfloat desc", "p-hits_sfloat desc", "ctr_sfloat desc");
     private int rows = 10;

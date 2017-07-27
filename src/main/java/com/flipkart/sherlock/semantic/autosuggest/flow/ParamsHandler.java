@@ -1,11 +1,14 @@
 package com.flipkart.sherlock.semantic.autosuggest.flow;
 
-import com.flipkart.sherlock.semantic.autosuggest.dao.ConfigsDao;
+import com.flipkart.sherlock.semantic.app.AppConstants;
 import com.flipkart.sherlock.semantic.autosuggest.helpers.AutoSuggestQueryAnalyzer;
 import com.flipkart.sherlock.semantic.autosuggest.helpers.MarketAnalyzer;
-import com.flipkart.sherlock.semantic.autosuggest.models.Config;
 import com.flipkart.sherlock.semantic.autosuggest.models.Params;
+import com.flipkart.sherlock.semantic.autosuggest.models.SolrConfig;
+import com.flipkart.sherlock.semantic.autosuggest.utils.JsonSeDe;
+import com.flipkart.sherlock.semantic.common.util.FkConfigServiceWrapper;
 import com.google.inject.Inject;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.ws.rs.core.UriInfo;
 import java.util.ArrayList;
@@ -15,16 +18,20 @@ import java.util.List;
 /**
  * Created by dhruv.pancholi on 02/06/17.
  */
+@Slf4j
 public class ParamsHandler {
-
-    @Inject
-    private ConfigsDao configsDao;
 
     @Inject
     private AutoSuggestQueryAnalyzer autoSuggestQueryAnalyzer;
 
     @Inject
     private MarketAnalyzer marketAnalyzer;
+
+    @Inject
+    private FkConfigServiceWrapper fkConfigServiceWrapper;
+
+    @Inject
+    private JsonSeDe jsonSeDe;
 
     public Params getParams(String store, UriInfo uriInfo) {
         Params params = new Params();
@@ -38,7 +45,8 @@ public class ParamsHandler {
 
         String query = uriInfo.getQueryParameters().getFirst("q");
         query = (query == null) ? "" : query;
-        params.setQuery(query);
+        params.setOriginalQuery(query);
+        params.setQuery(AutoSuggestQueryAnalyzer.getCleanQuery(query));
 
         String types = uriInfo.getQueryParameters().getFirst("types");
         if (types != null) params.setCompletionTypes(Arrays.asList(types.split(",")));
@@ -54,55 +62,62 @@ public class ParamsHandler {
         String bucket = uriInfo.getQueryParameters().getFirst("bucket");
         bucket = (bucket == null) ? "default" : bucket;
 
-        Config config = configsDao.getCached().get(bucket);
+        String solrConfigString = fkConfigServiceWrapper.getString(AppConstants.SOLR_CONFIG_PREFIX + bucket);
 
-        String solrHost = uriInfo.getQueryParameters().getFirst("solrHost");
-        params.setSolrHost(solrHost == null ? config.getSolrHost() : solrHost);
+        if (solrConfigString == null || solrConfigString.isEmpty()) {
+            log.error("Property {} not found from the config service", AppConstants.SOLR_CONFIG_PREFIX + bucket);
+        }
 
-        String solrPort = uriInfo.getQueryParameters().getFirst("solrPort");
-        params.setSolrPort(solrPort == null ? config.getSolrPort() : Integer.parseInt(solrPort));
+        SolrConfig solrConfig = jsonSeDe.readValue(solrConfigString, SolrConfig.class);
 
-        String solrCore = uriInfo.getQueryParameters().getFirst("solrCore");
-        params.setSolrCore(solrCore == null ? config.getSolrCore() : solrCore);
+
+//        String solrHost = uriInfo.getQueryParameters().getFirst("solrHost");
+//        params.setSolrHost(solrHost == null ? solrConfig.getSolrHost() : solrHost);
+        params.setSolrHost(solrConfig.getSolrHost());
+
+//        String solrPort = uriInfo.getQueryParameters().getFirst("solrPort");
+//        params.setSolrPort(solrPort == null ? solrConfig.getSolrPort() : Integer.parseInt(solrPort));
+        params.setSolrPort(solrConfig.getSolrPort());
+
+//        String solrCore = uriInfo.getQueryParameters().getFirst("solrCore");
+//        params.setSolrCore(solrCore == null ? solrConfig.getSolrCore() : solrCore);
+        params.setSolrCore(solrConfig.getSolrCore());
 
         String queryField = uriInfo.getQueryParameters().getFirst("queryField");
-        params.setQueryField(queryField == null ? config.getQueryField() : queryField);
+        params.setQueryField(queryField == null ? solrConfig.getQueryField() : queryField);
 
-        String prefixEdgyField = uriInfo.getQueryParameters().getFirst("prefixEdgyField");
-        params.setPrefixEdgyField(prefixEdgyField == null ? config.getPrefixEdgyField() : prefixEdgyField);
-
-        String phraseEdgyField = uriInfo.getQueryParameters().getFirst("phraseEdgyField");
-        params.setPhraseEdgyField(phraseEdgyField == null ? config.getPhraseEdgyField() : phraseEdgyField);
-
-        String phraseBoost = uriInfo.getQueryParameters().getFirst("phraseBoost");
-        params.setPhraseBoost(phraseBoost == null ? config.getPhraseBoost() : Integer.parseInt(phraseBoost));
+        String prefixEdgyField = uriInfo.getQueryParameters().getFirst("prefixField");
+        params.setPrefixField(prefixEdgyField == null ? solrConfig.getPrefixField() : prefixEdgyField);
 
         String phraseField = uriInfo.getQueryParameters().getFirst("phraseField");
-        params.setPhraseField(phraseField == null ? config.getPhraseEdgyField() : phraseField);
+        params.setPhraseField(phraseField == null ? solrConfig.getPhraseField() : phraseField);
+
+        String phraseBoost = uriInfo.getQueryParameters().getFirst("phraseBoost");
+        params.setPhraseBoost(phraseBoost == null ? solrConfig.getPhraseBoost() : Integer.parseInt(phraseBoost));
 
         String boostFunction = uriInfo.getQueryParameters().getFirst("boostFunction");
-        params.setBoostFunction(boostFunction == null ? config.getBoostFunction() : boostFunction);
+        params.setBoostFunction(boostFunction == null ? solrConfig.getBoostFunction() : boostFunction);
 
         String sortFunctionString = uriInfo.getQueryParameters().getFirst("sortFunction");
-        params.setSortFunctions(sortFunctionString == null ? Arrays.asList(config.getSortFunctionString().split(",")) : Arrays.asList(sortFunctionString.split(",")));
+        params.setSortFunctions(sortFunctionString == null ? Arrays.asList(solrConfig.getSortFunctionString().split(",")) : Arrays.asList(sortFunctionString.split(",")));
 
         String rows = uriInfo.getQueryParameters().getFirst("rows");
-        params.setRows(rows == null ? config.getRows() : Integer.parseInt(rows));
+        params.setRows(rows == null ? solrConfig.getRows() : Integer.parseInt(rows));
 
         String ctrThreshold = uriInfo.getQueryParameters().getFirst("ctrThreshold");
-        params.setCtrThreshold(ctrThreshold == null ? config.getCtrThreshold() : Double.parseDouble(ctrThreshold));
+        params.setCtrThreshold(ctrThreshold == null ? solrConfig.getCtrThreshold() : Double.parseDouble(ctrThreshold));
 
         String ctrField = uriInfo.getQueryParameters().getFirst("ctrField");
-        params.setCtrField(ctrField == null ? config.getCtrField() : ctrField);
+        params.setCtrField(ctrField == null ? solrConfig.getCtrField() : ctrField);
 
         String fqs = uriInfo.getQueryParameters().getFirst("fqs");
-        params.setFqs(fqs == null ? (config.getFqsString() == null || config.getFqsString().isEmpty() ? new ArrayList<>() : Arrays.asList(config.getFqsString().split(","))) : Arrays.asList(fqs.split(",")));
+        params.setFqs(fqs == null ? (solrConfig.getFqsString() == null || solrConfig.getFqsString().isEmpty() ? new ArrayList<>() : Arrays.asList(solrConfig.getFqsString().split(","))) : Arrays.asList(fqs.split(",")));
 
         String maxNumberOfStorePerQuery = uriInfo.getQueryParameters().getFirst("maxNumberOfStorePerQuery");
-        params.setMaxNumberOfStorePerQuery(maxNumberOfStorePerQuery == null ? config.getMaxNumberOfStorePerQuery() : Integer.parseInt(maxNumberOfStorePerQuery));
+        params.setMaxNumberOfStorePerQuery(maxNumberOfStorePerQuery == null ? solrConfig.getMaxNumberOfStorePerQuery() : Integer.parseInt(maxNumberOfStorePerQuery));
 
         String solrSpellCorrection = uriInfo.getQueryParameters().getFirst("solrSpellCorrection");
-        params.setSolrSpellCorrection(solrSpellCorrection == null ? config.isSolrSpellCorrection() : Boolean.parseBoolean(solrSpellCorrection));
+        params.setSolrSpellCorrection(solrSpellCorrection == null ? solrConfig.isSolrSpellCorrection() : Boolean.parseBoolean(solrSpellCorrection));
 
         return params;
     }
