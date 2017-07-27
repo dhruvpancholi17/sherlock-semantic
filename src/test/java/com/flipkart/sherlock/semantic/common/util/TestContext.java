@@ -6,8 +6,8 @@ package com.flipkart.sherlock.semantic.common.util;
 
 import com.flipkart.sherlock.semantic.common.dao.mysql.entity.MysqlConfig;
 import com.flipkart.sherlock.semantic.common.dao.mysql.entity.MysqlConnectionPoolConfig;
-import com.flipkart.sherlock.semantic.core.augment.init.MiscInitProvider;
-import com.flipkart.sherlock.semantic.core.augment.init.MysqlDaoProvider;
+import com.flipkart.sherlock.semantic.common.init.MiscInitProvider;
+import com.flipkart.sherlock.semantic.common.init.MysqlDaoProvider;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Key;

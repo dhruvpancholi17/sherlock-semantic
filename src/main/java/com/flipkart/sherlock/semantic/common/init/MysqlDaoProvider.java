@@ -1,4 +1,4 @@
-package com.flipkart.sherlock.semantic.core.augment.init;
+package com.flipkart.sherlock.semantic.common.init;
 
 import com.flipkart.sherlock.semantic.common.dao.mysql.CompleteTableDao;
 import com.flipkart.sherlock.semantic.common.dao.mysql.ConfigsDao;

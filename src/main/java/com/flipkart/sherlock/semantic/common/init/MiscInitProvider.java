@@ -1,4 +1,4 @@
-package com.flipkart.sherlock.semantic.core.augment.init;
+package com.flipkart.sherlock.semantic.common.init;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
