@@ -1,4 +1,6 @@
+0.0.11:
+      1. Change of port, and addition of cluster setup script
 0.0.10:
-      1. Working with build scripts, rotation management, changelog and health-check in place
+      1. Working build scripts, rotation management, changelog and health-check in place
 0.0.1:
       1. First Build

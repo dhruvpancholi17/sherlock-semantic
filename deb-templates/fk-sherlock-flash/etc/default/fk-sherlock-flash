@@ -6,7 +6,7 @@ RUN_DIR=/var/run/fk-sherlock-flash
 WORK_DIR=/var/cache/fk-sherlock-flash
 LIB_DIR=/var/lib/fk-sherlock-flash
 
-FLASH_JETTY_PORT=9001
+FLASH_JETTY_PORT=9007
 FLASH_JMX_PORT=9011
 FLASH_MAX_THREAD=1024
 FLASH_MAX_QUEUE=1024

@@ -47,6 +47,10 @@ echo "Building deb file ${PACKAGE}_${BUILD_VER_NUMBER}.deb..."
 DEBIAN_PACKAGE="$LOCAL_DIR/${PACKAGE}_${BUILD_VER_NUMBER}.deb"
 dpkg-deb -b $DEB_DIR $DEBIAN_PACKAGE
 
-reposervice --host repo-svc-app-0001.nm.flipkart.com --port 8080 pubrepo --repo fk-sherlock-flash --appkey clientkey --debs $DEBIAN_PACKAGE
-
+#"http://repo-svc-app-0001.nm.flipkart.com:8080/repo/fk-sherlock-flash/11"
+UPLOAD_PATH=$(reposervice --host repo-svc-app-0001.nm.flipkart.com --port 8080 pubrepo --repo fk-sherlock-flash --appkey clientkey --debs $DEBIAN_PACKAGE)
+echo $UPLOAD_PATH
 dpkg -c $DEBIAN_PACKAGE
+
+#UPLOAD_PATH=$(echo $UPLOAD_PATH)
+#curl -X PUT -H "Content-Type: application/json" -d '[{"repoName":"oracle-java","repoReferenceType":"EXACT","repoVersion":8},{"repoName":"fk-ops-tomcat8-base","repoReferenceType":"EXACT","repoVersion":1},{"repoName":"fk-ops-sgp-sherlock","repoReferenceType":"EXACT","repoVersion":114},{"repoName":"fk-sherlock-haproxy","repoReferenceType":"EXACT","repoVersion":25},{"repoName":"fk-sherlock-flash","repoReferenceType":"EXACT","repoVersion":10},{"repoName":"logsvc","repoReferenceType":"EXACT","repoVersion":301},{"repoName":"fk-config-service-confd","repoReferenceType":"EXACT","repoVersion":54},{"repoName":"fk-ops-sgp-sherlock","repoReferenceType":"EXACT","repoVersion":33},{"repoName":"cosmos-v3","repoReferenceType":"EXACT","repoVersion":22}]' 'http://repo-svc-app-0001.nm.flipkart.com:8080/env/sherlock-autosuggest-env?appkey="12"'

@@ -39,11 +39,11 @@ public class StoreMarketPlaceDao {
 
             Map<String, Object> metaMap = jsonSeDe.readValue(metadata, metadataTypereference);
 
-            if (metaMap == null || !metaMap.containsKey("marketplaceId")) continue;
-            String marketplaceId = String.valueOf(metaMap.get("marketplaceId"));
-            marketplaceId = marketplaceId.toLowerCase();
-            marketplaceId = ("grocery".equals(marketplaceId)) ? MarketAnalyzer.FLIP_MART : marketplaceId;
+            if (metaMap == null || !metaMap.containsKey("marketplaceId") && metaMap.get("marketplaceId") == null) {
+                continue;
+            }
 
+            String marketplaceId = String.valueOf(metaMap.get("marketplaceId"));
             storeMarketPlaceMap.put(storeId, marketplaceId);
         }
     }

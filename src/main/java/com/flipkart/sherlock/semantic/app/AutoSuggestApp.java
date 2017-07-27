@@ -54,7 +54,7 @@ public class AutoSuggestApp {
         Server server = new Server(threadPool);
 
         ServerConnector connector = new ServerConnector(server);
-        connector.setPort(9001);
+        connector.setPort(9007);
         connector.setName("AutoSuggestApplication");
         server.addConnector(connector);
 
