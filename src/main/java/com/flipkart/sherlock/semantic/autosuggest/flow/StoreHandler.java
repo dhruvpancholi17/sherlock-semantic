@@ -76,7 +76,7 @@ public class StoreHandler {
     }
 
     public int getNumberOfDocsWithStores(List<AutoSuggestDoc> autoSuggestDocs) {
-        if (autoSuggestDocs.size() < 2) return autoSuggestDocs.size();
+        if (autoSuggestDocs.size() < 2) return 0;
         AutoSuggestDoc firstDoc = autoSuggestDocs.get(0);
         AutoSuggestDoc secondDoc = autoSuggestDocs.get(1);
         return (secondDoc.getCtrObj().getPHits() >= 0.25 * firstDoc.getCtrObj().getPHits()) ? 2 : 1;

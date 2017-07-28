@@ -1,3 +1,6 @@
+0.0.12:
+    1. New config format
+    2. 99.9 diff with completions
 0.0.11:
       1. Change of port, and addition of cluster setup script
 0.0.10:
