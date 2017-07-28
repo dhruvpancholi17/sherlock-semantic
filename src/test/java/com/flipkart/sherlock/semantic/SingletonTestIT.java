@@ -1,6 +1,7 @@
 package com.flipkart.sherlock.semantic;
 
 import com.flipkart.sherlock.semantic.common.config.SearchConfigProvider;
+import com.flipkart.sherlock.semantic.common.util.FkConfigServiceWrapper;
 import com.flipkart.sherlock.semantic.core.augment.AugmentationConfigProvider;
 import com.flipkart.sherlock.semantic.core.augment.CachedNegativesDataSource;
 import com.flipkart.sherlock.semantic.core.augment.LocalCachedTermAlternativesDataSource;
@@ -10,6 +11,10 @@ import org.junit.Test;
 
 /**
  * Created by anurag.laddha on 22/04/17.
+ */
+
+/**
+ * Integration test to ensure singletons are getting created for required types
  */
 public class SingletonTestIT {
 
@@ -39,5 +44,12 @@ public class SingletonTestIT {
         LocalCachedTermAlternativesDataSource localCachedTermAlternativesDataSource1 = TestContext.getInstance(LocalCachedTermAlternativesDataSource.class);
         LocalCachedTermAlternativesDataSource localCachedTermAlternativesDataSource2 = TestContext.getInstance(LocalCachedTermAlternativesDataSource.class);
         Assert.assertTrue(localCachedTermAlternativesDataSource1 == localCachedTermAlternativesDataSource2);
+    }
+
+    @Test
+    public void testFkConfigServiceWrapperSingleTon(){
+        FkConfigServiceWrapper fkConfigServiceWrapper = TestContext.getInstance(FkConfigServiceWrapper.class);
+        FkConfigServiceWrapper fkConfigServiceWrapper2 = TestContext.getInstance(FkConfigServiceWrapper.class);
+        Assert.assertTrue(fkConfigServiceWrapper == fkConfigServiceWrapper2);
     }
 }

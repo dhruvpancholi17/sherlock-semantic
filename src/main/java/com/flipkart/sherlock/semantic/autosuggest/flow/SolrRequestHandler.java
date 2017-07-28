@@ -2,6 +2,10 @@ package com.flipkart.sherlock.semantic.autosuggest.flow;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.flipkart.sherlock.semantic.autosuggest.helpers.QuerySanitizer.QueryPrefix;
+import com.flipkart.sherlock.semantic.common.hystrix.HystrixCommandConfig;
+import com.flipkart.sherlock.semantic.common.hystrix.HystrixCommandHelper;
+import com.flipkart.sherlock.semantic.common.hystrix.HystrixCommandWrapper;
+import com.flipkart.sherlock.semantic.common.hystrix.IHystrixConfigFetcher;
 import com.flipkart.sherlock.semantic.autosuggest.models.AutoSuggestDoc;
 import com.flipkart.sherlock.semantic.autosuggest.models.*;
 import com.flipkart.sherlock.semantic.autosuggest.utils.JsonSeDe;
@@ -9,11 +13,9 @@ import com.flipkart.sherlock.semantic.core.search.*;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.flipkart.sherlock.semantic.autosuggest.helpers.MarketAnalyzer.FLIP_KART;
 import static com.flipkart.sherlock.semantic.autosuggest.helpers.MarketAnalyzer.FLIP_MART;
@@ -22,40 +24,91 @@ import static com.flipkart.sherlock.semantic.autosuggest.models.AutoSuggestDoc.*
 /**
  * Created by dhruv.pancholi on 01/06/17.
  */
+
+@Slf4j
 @Singleton
 //TODO rename to autosuggest search request handler
 public class SolrRequestHandler {
 
-    @Inject
-    private JsonSeDe jsonSeDe;
-
-    @Inject
-    private SolrSearchServer solrSearchServer;
-
     private static final AutoSuggestSolrResponse DEFAULT_AUTO_SUGGEST_SOLR_RESPONSE = new AutoSuggestSolrResponse(null, new ArrayList<>());
 
+    //These constants are used to form config names
+    private static final String HYSTRIX_GROUP_SOLR = "searchEngine";
+    private static final String HYSTRIX_COMMAND_SEARCH = "search";
+    private static final String HYSTRIX_COMMAND_SPELL = "spell";
+
+    private JsonSeDe jsonSeDe;
+    private SolrSearchServer solrSearchServer;
+    private IHystrixConfigFetcher hystrixConfigFetcher;
+
+    @Inject
+    public SolrRequestHandler(JsonSeDe jsonSeDe, SolrSearchServer solrSearchServer,
+                              IHystrixConfigFetcher hystrixConfigFetcher){
+        this.jsonSeDe = jsonSeDe;
+        this.solrSearchServer = solrSearchServer;
+        this.hystrixConfigFetcher = hystrixConfigFetcher;
+    }
+
     public AutoSuggestSolrResponse getAutoSuggestSolrResponse(QueryPrefix queryPrefix, Params params) {
-
+        SearchResponse searchResponse = null;
         SearchRequest searchRequest = createSearchRequest(queryPrefix, params);
-        SearchResponse searchResponse = solrSearchServer.query(searchRequest, ImmutableMap.of(
-            ISearchEngine.SearchParam.HOST, params.getSolrHost(),
-            ISearchEngine.SearchParam.PORT, String.valueOf(params.getSolrPort()),
-            ISearchEngine.SearchParam.CORE, params.getSolrCore()));
+        HystrixCommandConfig commandConfig = this.hystrixConfigFetcher.getConfig(HYSTRIX_GROUP_SOLR, HYSTRIX_COMMAND_SEARCH);
 
-        if (searchResponse == null) return DEFAULT_AUTO_SUGGEST_SOLR_RESPONSE;
+        if (commandConfig != null) {
+            HystrixCommandWrapper<SearchResponse> searchCommand = new HystrixCommandWrapper<>(commandConfig,
+                () -> executeSearchRequest(solrSearchServer, searchRequest, params));
 
-        return transformSearchResponse(searchResponse);
+            searchResponse = HystrixCommandHelper.executeSync(searchCommand, commandConfig.getGroupKey(),
+                commandConfig.getCommandKey());
+        }
+        else{
+            log.error("Could not find config key for group: {}, command: {}", HYSTRIX_GROUP_SOLR, HYSTRIX_COMMAND_SEARCH);
+        }
+
+        return searchResponse != null ? transformSearchResponse(searchResponse) : DEFAULT_AUTO_SUGGEST_SOLR_RESPONSE;
     }
 
     public AutoSuggestSpellResponse getAutoSuggestSolrSpellCorrectionResponse(QueryPrefix queryPrefix, Params params) {
+        SpellResponse spellResponse = null;
         SearchRequest spellRequest = getSpellRequest(queryPrefix, params);
-        SpellResponse spellResponse = solrSearchServer.spellQuery(spellRequest,
-            ImmutableMap.of(
+        HystrixCommandConfig commandConfig = this.hystrixConfigFetcher.getConfig(HYSTRIX_GROUP_SOLR, HYSTRIX_COMMAND_SPELL);
+
+        if (commandConfig != null) {
+            HystrixCommandWrapper<SpellResponse> spellCommand = new HystrixCommandWrapper<>(commandConfig,
+                () -> executeSpellRequest(solrSearchServer, spellRequest, params));
+            spellResponse = HystrixCommandHelper.executeSync(spellCommand, commandConfig.getGroupKey(),
+                commandConfig.getCommandKey());
+        }
+        else{
+            log.error("Could not find config key for group: {}, command: {}", HYSTRIX_GROUP_SOLR, HYSTRIX_COMMAND_SPELL);
+        }
+
+        return spellResponse != null ? transformSpellResponse(spellResponse) : null;
+    }
+
+
+    private SearchResponse executeSearchRequest(SolrSearchServer solrSearchServer, SearchRequest searchRequest, Params params){
+        if (solrSearchServer != null && searchRequest != null && params != null) {
+            return solrSearchServer.query(searchRequest, ImmutableMap.of(
                 ISearchEngine.SearchParam.HOST, params.getSolrHost(),
                 ISearchEngine.SearchParam.PORT, String.valueOf(params.getSolrPort()),
                 ISearchEngine.SearchParam.CORE, params.getSolrCore()));
-        return transformSpellResponse(spellResponse);
+        }
+        return null;
     }
+
+
+    private SpellResponse executeSpellRequest(SolrSearchServer solrSearchServer, SearchRequest spellRequest, Params params){
+        if (solrSearchServer != null && spellRequest != null && params != null) {
+            return solrSearchServer.spellQuery(spellRequest,
+                ImmutableMap.of(
+                    ISearchEngine.SearchParam.HOST, params.getSolrHost(),
+                    ISearchEngine.SearchParam.PORT, String.valueOf(params.getSolrPort()),
+                    ISearchEngine.SearchParam.CORE, params.getSolrCore()));
+        }
+        return null;
+    }
+
 
     private AutoSuggestSpellResponse transformSpellResponse(SpellResponse spellResponse) {
         if (spellResponse != null && spellResponse.getSpellSuggestions() != null && spellResponse.getSpellSuggestions().size() > 0){

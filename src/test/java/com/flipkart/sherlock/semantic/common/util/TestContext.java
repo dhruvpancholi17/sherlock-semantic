@@ -4,8 +4,11 @@ package com.flipkart.sherlock.semantic.common.util;
  * Created by anurag.laddha on 16/04/17.
  */
 
+import com.flipkart.sherlock.semantic.autosuggest.providers.JsonSeDeProvider;
 import com.flipkart.sherlock.semantic.common.dao.mysql.entity.MysqlConfig;
 import com.flipkart.sherlock.semantic.common.dao.mysql.entity.MysqlConnectionPoolConfig;
+import com.flipkart.sherlock.semantic.common.init.ConfigServiceInitProvider;
+import com.flipkart.sherlock.semantic.common.init.HystrixConfigProvider;
 import com.flipkart.sherlock.semantic.common.init.MiscInitProvider;
 import com.flipkart.sherlock.semantic.common.init.MysqlDaoProvider;
 import com.google.inject.Guice;
@@ -27,6 +30,9 @@ public class TestContext {
         if (injector == null) {
             synchronized (TestContext.class) {
                 if (injector == null) {
+
+                    FkConfigServiceWrapper configServiceWrapper = new FkConfigServiceWrapper("sherlock-autosuggest", true);
+
                     MysqlConfig mysqlConfig = new MysqlConfig("localhost", 3306, "root", "", "sherlock");
                     MysqlConnectionPoolConfig connectionPoolConfig = new MysqlConnectionPoolConfig.MysqlConnectionPoolConfigBuilder(1,10)
                         .setInitialPoolSize(1)
@@ -34,7 +40,10 @@ public class TestContext {
                         .setMaxIdleTimeSec((int) TimeUnit.MINUTES.toSeconds(30)).build();
 
                     injector = Guice.createInjector(new MysqlDaoProvider(mysqlConfig, connectionPoolConfig),
-                        new MiscInitProvider(10, 5));
+                        new JsonSeDeProvider(),
+                        new MiscInitProvider(10, 5),
+                        new ConfigServiceInitProvider(configServiceWrapper),
+                        new HystrixConfigProvider((int)TimeUnit.MINUTES.toMillis(2)));
                 }
             }
         }

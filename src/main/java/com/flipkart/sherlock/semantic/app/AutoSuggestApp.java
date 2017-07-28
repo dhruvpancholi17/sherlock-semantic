@@ -7,8 +7,11 @@ import com.flipkart.sherlock.semantic.autosuggest.views.AutoSuggestView;
 import com.flipkart.sherlock.semantic.autosuggest.views.HealthCheckView;
 import com.flipkart.sherlock.semantic.common.dao.mysql.entity.MysqlConfig;
 import com.flipkart.sherlock.semantic.common.dao.mysql.entity.MysqlConnectionPoolConfig;
+import com.flipkart.sherlock.semantic.common.init.ConfigServiceInitProvider;
+import com.flipkart.sherlock.semantic.common.init.HystrixConfigProvider;
 import com.flipkart.sherlock.semantic.common.init.MiscInitProvider;
 import com.flipkart.sherlock.semantic.common.init.MysqlDaoProvider;
+import com.flipkart.sherlock.semantic.common.util.FkConfigServiceWrapper;
 import com.flipkart.sherlock.semantic.common.util.SherlockMetricsServletContextListener;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -32,23 +35,25 @@ import java.util.concurrent.TimeUnit;
 public class AutoSuggestApp {
 
     public static void main(String[] args) throws Exception {
+        FkConfigServiceWrapper configServiceWrapper = new FkConfigServiceWrapper("sherlock-autosuggest", true);
 
         MysqlConfig mysqlConfig = ConfigsDao.getMysqlConfig();
         log.info("Staring the host with the following MySQL config: {}", mysqlConfig.toString());
         MysqlConnectionPoolConfig connectionPoolConfig = new MysqlConnectionPoolConfig.MysqlConnectionPoolConfigBuilder(1, 10)
-                .setInitialPoolSize(1)
-                .setAcquireIncrement(2)
-                .setMaxIdleTimeSec((int) TimeUnit.MINUTES.toSeconds(30)).build();
+            .setInitialPoolSize(1)
+            .setAcquireIncrement(2)
+            .setMaxIdleTimeSec((int) TimeUnit.MINUTES.toSeconds(30)).build();
 
         // By default, jetty task queue is unbounded. Reject requests once queue is full.
-        QueuedThreadPool threadPool = new QueuedThreadPool(1024, 8, (int) TimeUnit.MINUTES.toMillis(1), new ArrayBlockingQueue<Runnable>(1024));
+        QueuedThreadPool threadPool = getWebserverThreadPool(configServiceWrapper);
         threadPool.setName("JettyContainer");
 
         Injector injector = Guice.createInjector(
-                new MysqlDaoProvider(mysqlConfig, connectionPoolConfig),
-                new JsonSeDeProvider(),
-                new MiscInitProvider((int) TimeUnit.MINUTES.toSeconds(30), 10));
-
+            new MysqlDaoProvider(mysqlConfig, connectionPoolConfig),
+            new JsonSeDeProvider(),
+            new MiscInitProvider((int) TimeUnit.MINUTES.toSeconds(30), 10),
+            new ConfigServiceInitProvider(configServiceWrapper),
+            new HystrixConfigProvider((int)TimeUnit.MINUTES.toSeconds(2)));
 
         // Create embedded jetty container
         Server server = new Server(threadPool);
@@ -63,8 +68,8 @@ public class AutoSuggestApp {
         AutoSuggestView autoSuggestView = injector.getInstance(AutoSuggestView.class);
         HealthCheckView healthCheckView = injector.getInstance(HealthCheckView.class);
         ResourceConfig resourceConfig = new ResourceConfig()
-                .register(autoSuggestView)
-                .register(healthCheckView);
+            .register(autoSuggestView)
+            .register(healthCheckView);
 
         ServletContextHandler contextDefault = new ServletContextHandler();
         contextDefault.setContextPath("/");
@@ -82,5 +87,20 @@ public class AutoSuggestApp {
         } finally {
             server.stop();
         }
+    }
+
+    /**
+     * Get web server threadpool configs from config service
+     */
+    private static QueuedThreadPool getWebserverThreadPool(FkConfigServiceWrapper configServiceWrapper){
+        int minThreads = configServiceWrapper.getInt("webserver.minThreads");
+        int maxThreads = configServiceWrapper.getInt("webserver.maxThreads");
+        int idleTimeoutMs = configServiceWrapper.getInt("webserver.idleTimeoutMs");
+        int maxQueuedRequests = configServiceWrapper.getInt("webserver.maxQueuedRequests");
+
+        log.info("Web server thread pool config minThreads: {},  maxThreads: {}, idleTimeoutMs: {}, maxQueuedRequests: {}",
+            minThreads, maxThreads, idleTimeoutMs, maxQueuedRequests);
+
+        return new QueuedThreadPool(maxThreads, minThreads, idleTimeoutMs, new ArrayBlockingQueue<>(maxQueuedRequests));
     }
 }
