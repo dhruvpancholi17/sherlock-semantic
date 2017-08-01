@@ -6,6 +6,7 @@ import com.flipkart.sherlock.semantic.autosuggest.views.AutoSuggestView;
 import com.flipkart.sherlock.semantic.autosuggest.views.HealthCheckView;
 import com.flipkart.sherlock.semantic.common.dao.mysql.entity.MysqlConfig;
 import com.flipkart.sherlock.semantic.common.dao.mysql.entity.MysqlConnectionPoolConfig;
+import com.flipkart.sherlock.semantic.common.init.HystrixConfigProvider;
 import com.flipkart.sherlock.semantic.common.init.MiscInitProvider;
 import com.flipkart.sherlock.semantic.common.init.MysqlDaoProvider;
 import com.flipkart.sherlock.semantic.common.util.FkConfigServiceWrapper;
@@ -34,6 +35,7 @@ import static com.flipkart.sherlock.semantic.app.AppConstants.AUTOSUGGEST_BUCKET
 public class AutoSuggestApp {
 
     public static void main(String[] args) throws Exception {
+        FkConfigServiceWrapper configServiceWrapper = new FkConfigServiceWrapper("sherlock-autosuggest", true);
 
         FkConfigServiceWrapper fkConfigServiceWrapper = new FkConfigServiceWrapper(AUTOSUGGEST_BUCKET, true);
         MysqlConfig mysqlConfig = MysqlConfig.getConfig(fkConfigServiceWrapper);
@@ -46,14 +48,14 @@ public class AutoSuggestApp {
                 .build();
 
         // By default, jetty task queue is unbounded. Reject requests once queue is full.
-        QueuedThreadPool threadPool = new QueuedThreadPool(1024, 8, (int) TimeUnit.MINUTES.toMillis(1), new ArrayBlockingQueue<Runnable>(1024));
+        QueuedThreadPool threadPool = getWebserverThreadPool(configServiceWrapper);
         threadPool.setName("JettyContainer");
 
         Injector injector = Guice.createInjector(
                 new MysqlDaoProvider(mysqlConfig, connectionPoolConfig),
                 new WrapperProvider(fkConfigServiceWrapper),
-                new MiscInitProvider((int) TimeUnit.MINUTES.toSeconds(30), 10));
-
+                new MiscInitProvider((int) TimeUnit.MINUTES.toSeconds(30), 10),
+                new HystrixConfigProvider((int) TimeUnit.MINUTES.toSeconds(2)));
 
         // Create embedded jetty container
         Server server = new Server(threadPool);
@@ -87,5 +89,20 @@ public class AutoSuggestApp {
         } finally {
             server.stop();
         }
+    }
+
+    /**
+     * Get web server threadpool configs from config service
+     */
+    private static QueuedThreadPool getWebserverThreadPool(FkConfigServiceWrapper configServiceWrapper) {
+        int minThreads = configServiceWrapper.getInt("webserver.minThreads");
+        int maxThreads = configServiceWrapper.getInt("webserver.maxThreads");
+        int idleTimeoutMs = configServiceWrapper.getInt("webserver.idleTimeoutMs");
+        int maxQueuedRequests = configServiceWrapper.getInt("webserver.maxQueuedRequests");
+
+        log.info("Web server thread pool config minThreads: {},  maxThreads: {}, idleTimeoutMs: {}, maxQueuedRequests: {}",
+                minThreads, maxThreads, idleTimeoutMs, maxQueuedRequests);
+
+        return new QueuedThreadPool(maxThreads, minThreads, idleTimeoutMs, new ArrayBlockingQueue<>(maxQueuedRequests));
     }
 }
