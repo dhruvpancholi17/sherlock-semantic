@@ -21,6 +21,7 @@
         <jackson.version>2.8.0</jackson.version>
         <lucene.version>4.6.1</lucene.version>
         <metrics.version>3.1.2</metrics.version>
+        <hystrix.version>1.5.10</hystrix.version>
     </properties>
 
     <dependencies>
@@ -259,11 +260,20 @@
 
         <!-- end of  metrics dependencies -->
 
+        <!-- hystrix dependencies -->
         <dependency>
             <groupId>com.netflix.hystrix</groupId>
             <artifactId>hystrix-core</artifactId>
-            <version>1.5.10</version>
+            <version>${hystrix.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.netflix.hystrix</groupId>
+            <artifactId>hystrix-codahale-metrics-publisher</artifactId>
+            <version>${hystrix.version}</version>
+        </dependency>
+
+        <!-- end of hystrix dependencies -->
 
     </dependencies>
     <build>
@@ -393,38 +403,51 @@
 
     <repositories>
         <repository>
-            <id>central</id>
-            <name>libs-releases</name>
-            <url>http://artifactory.nm.flipkart.com:8081/artifactory/libs-releases</url>
+            <id>fk-art-snapshot</id>
+            <name>Flipkart-Artifactory</name>
+            <url>http://10.85.59.116/artifactory/v1.0/artifacts/libs-snapshots-local</url>
         </repository>
         <repository>
-            <snapshots/>
-            <id>snapshots</id>
-            <name>libs-snapshots</name>
-            <url>http://artifactory.nm.flipkart.com:8081/artifactory/libs-snapshots</url>
+            <id>fk-art-release</id>
+            <name>Flipkart-Artifactory</name>
+            <url>http://10.85.59.116/artifactory/v1.0/artifacts/libs-release-local</url>
         </repository>
-        <repository>
-            <id>ops-build-0008</id>
-            <name>ops-build-0008-releases</name>
-            <url>http://artifactory.nm.flipkart.com:8081/artifactory/clojars-repo</url>
-        </repository>
-
     </repositories>
 
-    <pluginRepositories>
-        <pluginRepository>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-            <id>central</id>
-            <name>plugins-releases</name>
-            <url>http://artifactory.nm.flipkart.com:8081/artifactory/plugins-releases</url>
-        </pluginRepository>
-        <pluginRepository>
-            <snapshots/>
-            <id>snapshots</id>
-            <name>plugins-snapshots</name>
-            <url>http://artifactory.nm.flipkart.com:8081/artifactory/plugins-snapshots</url>
-        </pluginRepository>
-    </pluginRepositories>
+    <!--<repositories>-->
+        <!--<repository>-->
+            <!--<id>central</id>-->
+            <!--<name>libs-releases</name>-->
+            <!--<url>http://artifactory.nm.flipkart.com:8081/artifactory/libs-releases</url>-->
+        <!--</repository>-->
+        <!--<repository>-->
+            <!--<snapshots/>-->
+            <!--<id>snapshots</id>-->
+            <!--<name>libs-snapshots</name>-->
+            <!--<url>http://artifactory.nm.flipkart.com:8081/artifactory/libs-snapshots</url>-->
+        <!--</repository>-->
+        <!--<repository>-->
+            <!--<id>ops-build-0008</id>-->
+            <!--<name>ops-build-0008-releases</name>-->
+            <!--<url>http://artifactory.nm.flipkart.com:8081/artifactory/clojars-repo</url>-->
+        <!--</repository>-->
+
+    <!--</repositories>-->
+
+    <!--<pluginRepositories>-->
+        <!--<pluginRepository>-->
+            <!--<snapshots>-->
+                <!--<enabled>false</enabled>-->
+            <!--</snapshots>-->
+            <!--<id>central</id>-->
+            <!--<name>plugins-releases</name>-->
+            <!--<url>http://artifactory.nm.flipkart.com:8081/artifactory/plugins-releases</url>-->
+        <!--</pluginRepository>-->
+        <!--<pluginRepository>-->
+            <!--<snapshots/>-->
+            <!--<id>snapshots</id>-->
+            <!--<name>plugins-snapshots</name>-->
+            <!--<url>http://artifactory.nm.flipkart.com:8081/artifactory/plugins-snapshots</url>-->
+        <!--</pluginRepository>-->
+    <!--</pluginRepositories>-->
 </project>
