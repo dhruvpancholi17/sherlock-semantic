@@ -9,6 +9,8 @@ import com.flipkart.sherlock.semantic.common.dao.mysql.entity.MysqlConnectionPoo
 import com.flipkart.sherlock.semantic.common.init.HystrixConfigProvider;
 import com.flipkart.sherlock.semantic.common.init.MiscInitProvider;
 import com.flipkart.sherlock.semantic.common.init.MysqlDaoProvider;
+import com.flipkart.sherlock.semantic.common.metrics.MetricsManager;
+import com.flipkart.sherlock.semantic.common.metrics.MetricsManager.TracedItem;
 import com.flipkart.sherlock.semantic.common.util.FkConfigServiceWrapper;
 import com.flipkart.sherlock.semantic.common.util.SherlockMetricsServletContextListener;
 import com.google.inject.Guice;
@@ -23,10 +25,15 @@ import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import static com.flipkart.sherlock.semantic.app.AppConstants.AUTOSUGGEST_BUCKET;
+import static com.flipkart.sherlock.semantic.autosuggest.views.AutoSuggestView.COSMOS_AUTO_SUGGEST_COMPONENT;
+import static com.flipkart.sherlock.semantic.common.metrics.MetricsManager.ActionType.*;
+import static com.flipkart.sherlock.semantic.common.metrics.MetricsManager.Service.Autosuggest;
 
 /**
  * Created by anurag.laddha on 02/04/17.
@@ -35,6 +42,9 @@ import static com.flipkart.sherlock.semantic.app.AppConstants.AUTOSUGGEST_BUCKET
 public class AutoSuggestApp {
 
     public static void main(String[] args) throws Exception {
+
+        MetricsManager.init(getTracedItems());
+
         FkConfigServiceWrapper configServiceWrapper = new FkConfigServiceWrapper("sherlock-autosuggest", true);
 
         FkConfigServiceWrapper fkConfigServiceWrapper = new FkConfigServiceWrapper(AUTOSUGGEST_BUCKET, true);
@@ -89,6 +99,20 @@ public class AutoSuggestApp {
         } finally {
             server.stop();
         }
+    }
+
+
+    /**
+     * Get all the metrics to be tracked with the help of cosmos
+     */
+    private static Set<TracedItem> getTracedItems() {
+        Set<TracedItem> tracedItems = new HashSet<>();
+        tracedItems.add(new TracedItem(ERROR, Autosuggest, COSMOS_AUTO_SUGGEST_COMPONENT));
+        tracedItems.add(new TracedItem(RPS, Autosuggest, COSMOS_AUTO_SUGGEST_COMPONENT));
+        tracedItems.add(new TracedItem(NULL, Autosuggest, COSMOS_AUTO_SUGGEST_COMPONENT));
+        tracedItems.add(new TracedItem(SUCCESS, Autosuggest, COSMOS_AUTO_SUGGEST_COMPONENT));
+        tracedItems.add(new TracedItem(LATENCY, Autosuggest, COSMOS_AUTO_SUGGEST_COMPONENT));
+        return tracedItems;
     }
 
     /**

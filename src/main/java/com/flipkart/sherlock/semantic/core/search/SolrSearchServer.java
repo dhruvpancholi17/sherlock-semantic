@@ -15,7 +15,9 @@ import org.apache.solr.common.SolrDocumentList;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 /**
@@ -32,15 +34,17 @@ public class SolrSearchServer implements ISearchEngine {
     private SolrServerProvider solrServerProvider;
 
     @Override
-    public SearchResponse query(SearchRequest request, Map<SearchParam, String> params){
-        if (request != null && params != null && params.containsKey(SearchParam.CORE)){
+    public SearchResponse query(SearchRequest request, Map<SearchParam, String> params) {
+        if (request != null && params != null && params.containsKey(SearchParam.CORE)) {
             SolrQuery solrQuery = getSolrQueryFromSearchReq(request);
+            String solrQueryString = getSolrQueryString(solrQuery);
             SolrServer solrServer = getSolrServerFromParams(params);
-            try{
+            try {
                 QueryResponse queryResponse = solrServer.query(solrQuery);
+                log.info("{} Status={} NumDocs={} QTime={}", solrQueryString, queryResponse.getStatus(), queryResponse.getResults().size(), queryResponse.getQTime());
                 return getSearchResponseFromSolrResponse(jsonSeDe.writeValueAsString(solrQuery), queryResponse);
             } catch (Exception e) {
-                log.error("Error in fetching response from solr", e);
+                log.error("SOLR query failed:   {}  {}", solrQueryString, e);
             }
         }
         return null;
@@ -48,7 +52,7 @@ public class SolrSearchServer implements ISearchEngine {
 
 
     @Override
-    public SpellResponse spellQuery(SearchRequest request, Map<SearchParam, String> params){
+    public SpellResponse spellQuery(SearchRequest request, Map<SearchParam, String> params) {
         if (request != null && params != null && params.containsKey(SearchParam.CORE)) {
             SolrQuery solrQuery = getSolrQueryFromSearchReq(request);
             String solrQueryString = getSolrQueryString(solrQuery);
@@ -56,38 +60,38 @@ public class SolrSearchServer implements ISearchEngine {
 
             try {
                 QueryResponse queryResponse = solrServer.query(solrQuery);
+                log.info("{} Status={} NumDocs={} QTime={}", solrQueryString, queryResponse.getStatus(), queryResponse.getResults().size(), queryResponse.getQTime());
                 return getSpellResponseFromSolrResponse(solrQueryString, queryResponse);
             } catch (Exception e) {
-                log.error("Error in fetching response from solr", e);
+                log.error("SOLR spellQuery failed:  {}  {}", solrQueryString, e);
             }
         }
         return null;
     }
 
-    private SolrServer getSolrServerFromParams(Map<SearchParam, String> params){
+    private SolrServer getSolrServerFromParams(Map<SearchParam, String> params) {
         String solrCoreStr = params.get(SearchParam.CORE).trim();
         String experiment = params.containsKey(SearchParam.EXPERIMENT) ? params.get(SearchParam.EXPERIMENT).trim() : "";
 
         Core solrCoreInfo = null;
-        if (params.containsKey(SearchParam.HOST) && params.containsKey(SearchParam.PORT)){
+        if (params.containsKey(SearchParam.HOST) && params.containsKey(SearchParam.PORT)) {
             try {
                 solrCoreInfo = new Core(params.get(SearchParam.HOST), Integer.parseInt(params.get(SearchParam.PORT)), solrCoreStr);
-            }
-            catch (Exception ex){
+            } catch (Exception ex) {
                 log.error("Exception in fetching core details from params: {}", params);
             }
         }
         return solrCoreInfo != null ? solrServerProvider.getSolrServer(solrCoreInfo)
-            : solrServerProvider.getSolrServer(solrCoreStr, experiment);
+                : solrServerProvider.getSolrServer(solrCoreStr, experiment);
     }
 
     private SpellResponse getSpellResponseFromSolrResponse(String solrQueryString, QueryResponse queryResponse) {
 
-        if (queryResponse != null && queryResponse.getSpellCheckResponse() != null){
+        if (queryResponse != null && queryResponse.getSpellCheckResponse() != null) {
             List<Suggestion> solrSpellSuggestions = queryResponse.getSpellCheckResponse().getSuggestions();
             List<SpellResponse.SpellSuggestion> spellSuggestions = new ArrayList<>();
             solrSpellSuggestions.forEach(s -> spellSuggestions.add(new SpellResponse.SpellSuggestion(s.getToken(),
-                s.getAlternatives())));
+                    s.getAlternatives())));
 
             return new SpellResponse(solrQueryString, spellSuggestions);
         }

@@ -9,32 +9,43 @@
         </Console>
 
         <RollingFile name="ErrorFile" fileName="${log-path}/error.log"
-                     filePattern="${log-path}/error-%d{yyyy-MM-dd}-%i.log" >
+                     filePattern="${log-path}/error-%d{yyyy-MM-dd}-%i.log">
             <PatternLayout>
                 <pattern>[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n</pattern>
             </PatternLayout>
             <Policies>
-                <SizeBasedTriggeringPolicy size="1 GB" />
+                <SizeBasedTriggeringPolicy size="1 GB"/>
             </Policies>
             <DefaultRolloverStrategy max="3"/>
         </RollingFile>
         <RollingFile name="AppFile" fileName="${log-path}/app.log"
-                     filePattern="${log-path}/app-%d{yyyy-MM-dd}-%i.log" >
+                     filePattern="${log-path}/app-%d{yyyy-MM-dd}-%i.log">
             <PatternLayout>
                 <pattern>[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n</pattern>
             </PatternLayout>
             <Policies>
-                <SizeBasedTriggeringPolicy size="1 GB" />
+                <SizeBasedTriggeringPolicy size="1 GB"/>
             </Policies>
             <DefaultRolloverStrategy max="1"/>
         </RollingFile>
         <RollingFile name="SolrLog" fileName="${log-path}/solr.log"
-                     filePattern="${log-path}/app-%d{yyyy-MM-dd}-%i.log" >
+                     filePattern="${log-path}/app-%d{yyyy-MM-dd}-%i.log">
             <PatternLayout>
                 <pattern>[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n</pattern>
             </PatternLayout>
             <Policies>
-                <SizeBasedTriggeringPolicy size="1 GB" />
+                <SizeBasedTriggeringPolicy size="1 GB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="1"/>
+        </RollingFile>
+
+        <RollingFile name="AccessLog" fileName="${log-path}/access.log"
+                     filePattern="${log-path}/access-%d{yyyy-MM-dd}-%i.log">
+            <PatternLayout>
+                <pattern>[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n</pattern>
+            </PatternLayout>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="1 GB"/>
             </Policies>
             <DefaultRolloverStrategy max="1"/>
         </RollingFile>
@@ -55,12 +66,25 @@
             <appender-ref ref="SolrLog"/>
         </Logger>
 
+        <Logger name="com.flipkart.sherlock.semantic.autosuggest.views" level="info" additivity="false">
+            <appender-ref ref="AccessLog"/>
+        </Logger>
+
+        <Logger name="com.flipkart.sherlock.semantic.autosuggest.views" level="debug" additivity="false">
+            <appender-ref ref="AccessLog"/>
+        </Logger>
+
+
         <Root level="debug">
             <appender-ref ref="AppFile"/>
         </Root>
 
         <Root level="info">
             <appender-ref ref="AppFile"/>
+        </Root>
+
+        <Root level="error">
+            <appender-ref ref="ErrorFile"/>
         </Root>
 
     </Loggers>

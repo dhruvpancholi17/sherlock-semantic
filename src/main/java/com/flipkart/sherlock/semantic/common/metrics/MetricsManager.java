@@ -7,6 +7,7 @@ import com.flipkart.sherlock.semantic.common.util.JmxMetricRegistry;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
@@ -21,29 +22,32 @@ import java.util.function.Supplier;
 
 /**
  * Helps with tracking metrics
- *
+ * <p>
  * Usage
- *      1. Call init() with actions to be traced for components within service/namespace
- *      2. Call suitable log method
+ * 1. Call init() with actions to be traced for components within service/namespace
+ * 2. Call suitable log method
  */
+@Slf4j
 public class MetricsManager {
+
 
     /**
      * Type of action to be tracked
      * Depending on type of action, timer or meter is chosen
      */
     public enum ActionType {
-        LATENCY ("latency"),
-        SUCCESS ("success"),
-        ERROR ("error"),
-        NULL ("null"),
-        RPS ("rps");
+        LATENCY("latency"),
+        SUCCESS("success"),
+        ERROR("error"),
+        NULL("null"),
+        RPS("rps");
 
         private ActionType(String s) {
             metricType = s;
         }
 
         private final String metricType;
+
         public String getMetricType() {
             return metricType;
         }
@@ -54,14 +58,15 @@ public class MetricsManager {
      * To make this manager generic, use string type instead of enum for namespace
      */
     public enum Service {
-        SemanticCommon ("common"),
-        Autosuggest ("autosuggest");
+        SemanticCommon("common"),
+        Autosuggest("autosuggest");
 
         private Service(String s) {
             serviceName = s;
         }
 
         private final String serviceName;
+
         public String getServiceName() {
             return serviceName;
         }
@@ -83,14 +88,14 @@ public class MetricsManager {
     /**
      * Init needs to be called once before using the service
      */
-    public static void init(Set<TracedItem> tracedItems){
+    public static void init(Set<TracedItem> tracedItems) {
         if (!initialised && tracedItems != null) {
             for (TracedItem currItem : tracedItems) {
                 Service service = currItem.getService();
                 String componentName = currItem.getComponent();
 
                 String metricName = MetricRegistry.name(METRIC_PREFIX, service.name(), currItem.getActionType().getMetricType(),
-                    componentName);
+                        componentName);
 
                 switch (currItem.getActionType()) {
                     case ERROR:
@@ -134,8 +139,8 @@ public class MetricsManager {
     /**
      * Track RPS/throughput for given service and component
      */
-    public static void logRequests(Service service, String component){
-        if (StringUtils.isNotBlank(component)){
+    public static void logRequests(Service service, String component) {
+        if (StringUtils.isNotBlank(component)) {
             validateInitialised();
             validateMeterAvailable(serviceComponentToRPSMeter, service, component);
             serviceComponentToRPSMeter.get(service).get(component).mark();
@@ -145,8 +150,8 @@ public class MetricsManager {
     /**
      * Tracks success rate for given service and component
      */
-    public static void logSuccess(Service service, String component){
-        if (StringUtils.isNotBlank(component)){
+    public static void logSuccess(Service service, String component) {
+        if (StringUtils.isNotBlank(component)) {
             validateInitialised();
             validateMeterAvailable(serviceComponentToSuccessMeter, service, component);
             serviceComponentToSuccessMeter.get(service).get(component).mark();
@@ -156,20 +161,28 @@ public class MetricsManager {
     /**
      * Tracks error rate for given service and component
      */
-    public static void logError(Service service, String component){
-        if (StringUtils.isNotBlank(component)){
+    public static void logError(Service service, String component) {
+        if (StringUtils.isNotBlank(component)) {
             validateInitialised();
             validateMeterAvailable(serviceComponentToErrorMeter, service, component);
             serviceComponentToErrorMeter.get(service).get(component).mark();
         }
     }
 
+    /**
+     * Tracks error rate, and also prints errors
+     */
+    public static void logError(Service service, String component, Exception e) {
+        log.error("{}", e);
+        logError(service, component);
+    }
+
 
     /**
      * Tracks null response rate for given service and component
      */
-    public static void logNullResponse(Service service, String component){
-        if (StringUtils.isNotBlank(component)){
+    public static void logNullResponse(Service service, String component) {
+        if (StringUtils.isNotBlank(component)) {
             validateInitialised();
             validateMeterAvailable(serviceComponentToNullMeter, service, component);
             serviceComponentToNullMeter.get(service).get(component).mark();
@@ -180,13 +193,15 @@ public class MetricsManager {
      * Tracks time taken to execute given runnable
      */
     public static void logTime(Service service, String component, Runnable runnable) {
-        if (StringUtils.isNotBlank(component) && runnable != null){
+
+        if (StringUtils.isNotBlank(component) && runnable != null) {
             validateTimerAvailable(serviceComponentToLatencyTimer, service, component);
             final Timer.Context context = serviceComponentToLatencyTimer.get(service).get(component).time();
             try {
                 runnable.run();
-            }
-            finally {
+            } catch (Exception e) {
+                logError(service, component, e);
+            } finally {
                 context.stop();
             }
         }
@@ -197,13 +212,12 @@ public class MetricsManager {
      * Use this to return value
      */
     public static <R> R logTime(Service service, String component, Supplier<R> supplier) {
-        if (StringUtils.isNotBlank(component) && supplier != null){
+        if (StringUtils.isNotBlank(component) && supplier != null) {
             validateTimerAvailable(serviceComponentToLatencyTimer, service, component);
             final Timer.Context context = serviceComponentToLatencyTimer.get(service).get(component).time();
             try {
                 return supplier.get();
-            }
-            finally {
+            } finally {
                 context.stop();
             }
         }
@@ -211,29 +225,29 @@ public class MetricsManager {
     }
 
 
-    private static void validateInitialised(){
-        if (!initialised){
+    private static void validateInitialised() {
+        if (!initialised) {
             throw new RuntimeException("Metrics manager used without initialisation");
         }
     }
 
     private static void validateMeterAvailable(Map<Service, Map<String, Meter>> srvcComponentToMeterMap, Service service,
-                                               String component){
+                                               String component) {
         if (srvcComponentToMeterMap == null || !srvcComponentToMeterMap.containsKey(service) ||
-            !srvcComponentToMeterMap.get(service).containsKey(component)){
+                !srvcComponentToMeterMap.get(service).containsKey(component)) {
             throw new RuntimeException(String.format("Meter not available for service: %s, component: %s", service.name(), component));
         }
     }
 
     private static void validateTimerAvailable(Map<Service, Map<String, Timer>> srvcComponentToTimerMap, Service service,
-                                               String component){
+                                               String component) {
         if (srvcComponentToTimerMap == null || !srvcComponentToTimerMap.containsKey(service) ||
-            !srvcComponentToTimerMap.get(service).containsKey(component)){
+                !srvcComponentToTimerMap.get(service).containsKey(component)) {
             throw new RuntimeException(String.format("Timer not available for service: %s, component: %s", service.name(), component));
         }
     }
 
-    private static MetricRegistry getMetricRegistry(){
+    private static MetricRegistry getMetricRegistry() {
         return JmxMetricRegistry.INSTANCE.getInstance();
     }
 
