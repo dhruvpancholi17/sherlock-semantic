@@ -282,6 +282,11 @@
                 <directory>src/main/resources</directory>
             </resource>
         </resources>
+        <testResources>
+            <testResource>
+                <directory>src/test/resources</directory>
+            </testResource>
+        </testResources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -415,39 +420,39 @@
     </repositories>
 
     <!--<repositories>-->
-        <!--<repository>-->
-            <!--<id>central</id>-->
-            <!--<name>libs-releases</name>-->
-            <!--<url>http://artifactory.nm.flipkart.com:8081/artifactory/libs-releases</url>-->
-        <!--</repository>-->
-        <!--<repository>-->
-            <!--<snapshots/>-->
-            <!--<id>snapshots</id>-->
-            <!--<name>libs-snapshots</name>-->
-            <!--<url>http://artifactory.nm.flipkart.com:8081/artifactory/libs-snapshots</url>-->
-        <!--</repository>-->
-        <!--<repository>-->
-            <!--<id>ops-build-0008</id>-->
-            <!--<name>ops-build-0008-releases</name>-->
-            <!--<url>http://artifactory.nm.flipkart.com:8081/artifactory/clojars-repo</url>-->
-        <!--</repository>-->
+    <!--<repository>-->
+    <!--<id>central</id>-->
+    <!--<name>libs-releases</name>-->
+    <!--<url>http://artifactory.nm.flipkart.com:8081/artifactory/libs-releases</url>-->
+    <!--</repository>-->
+    <!--<repository>-->
+    <!--<snapshots/>-->
+    <!--<id>snapshots</id>-->
+    <!--<name>libs-snapshots</name>-->
+    <!--<url>http://artifactory.nm.flipkart.com:8081/artifactory/libs-snapshots</url>-->
+    <!--</repository>-->
+    <!--<repository>-->
+    <!--<id>ops-build-0008</id>-->
+    <!--<name>ops-build-0008-releases</name>-->
+    <!--<url>http://artifactory.nm.flipkart.com:8081/artifactory/clojars-repo</url>-->
+    <!--</repository>-->
 
     <!--</repositories>-->
 
     <!--<pluginRepositories>-->
-        <!--<pluginRepository>-->
-            <!--<snapshots>-->
-                <!--<enabled>false</enabled>-->
-            <!--</snapshots>-->
-            <!--<id>central</id>-->
-            <!--<name>plugins-releases</name>-->
-            <!--<url>http://artifactory.nm.flipkart.com:8081/artifactory/plugins-releases</url>-->
-        <!--</pluginRepository>-->
-        <!--<pluginRepository>-->
-            <!--<snapshots/>-->
-            <!--<id>snapshots</id>-->
-            <!--<name>plugins-snapshots</name>-->
-            <!--<url>http://artifactory.nm.flipkart.com:8081/artifactory/plugins-snapshots</url>-->
-        <!--</pluginRepository>-->
+    <!--<pluginRepository>-->
+    <!--<snapshots>-->
+    <!--<enabled>false</enabled>-->
+    <!--</snapshots>-->
+    <!--<id>central</id>-->
+    <!--<name>plugins-releases</name>-->
+    <!--<url>http://artifactory.nm.flipkart.com:8081/artifactory/plugins-releases</url>-->
+    <!--</pluginRepository>-->
+    <!--<pluginRepository>-->
+    <!--<snapshots/>-->
+    <!--<id>snapshots</id>-->
+    <!--<name>plugins-snapshots</name>-->
+    <!--<url>http://artifactory.nm.flipkart.com:8081/artifactory/plugins-snapshots</url>-->
+    <!--</pluginRepository>-->
     <!--</pluginRepositories>-->
 </project>

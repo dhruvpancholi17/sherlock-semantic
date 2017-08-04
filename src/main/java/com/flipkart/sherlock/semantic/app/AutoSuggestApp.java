@@ -18,6 +18,7 @@ import com.google.inject.Injector;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.Slf4jRequestLog;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -92,6 +93,8 @@ public class AutoSuggestApp {
         contexts.addHandler(contextDefault);
 
         server.setHandler(contexts);
+
+        server.setRequestLog(new Slf4jRequestLog());
 
         try {
             server.start();

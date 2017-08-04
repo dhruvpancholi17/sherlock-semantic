@@ -1,7 +1,10 @@
 package com.flipkart.sherlock.semantic.autosuggest.models;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+import javax.ws.rs.core.UriInfo;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -11,48 +14,50 @@ import static com.flipkart.sherlock.semantic.autosuggest.helpers.MarketAnalyzer.
 /**
  * Created by dhruv.pancholi on 01/06/17.
  */
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
 public class Params {
-    private static List<String> DEFAULT_COMPLETION_TYPES = Arrays.asList("query", "product");
-    private static List<String> DEFAULT_STORE_NODES = Arrays.asList("search.flipkart.com");
+
+    public static final List<String> DEFAULT_COMPLETION_TYPES = Arrays.asList("query", "product");
+    public static final List<String> DEFAULT_STORE_NODES = Arrays.asList("search.flipkart.com");
 
     private boolean debug = false;
+    private boolean queryDisabled = false;
+    private boolean productDisabled = false;
+    private boolean solrSpellCorrection = true;
+
+    private int solrPort = 25280;
+    private int phraseBoost = 1;
+    private int rows = 10;
+    private int maxNumberOfStorePerQuery = 3;
+
+    private int numTokens = 0;
+    private int impressionsThreshold = 100;
+    private double stateHitsThreshold = 0;
+
+    private double wilsonCtrThreshold = 0;
+    private double ctrThreshold = 0.05;
+
 
     private String originalQuery = "";
     private String query = "";
-
-    // Path variables
-    private List<String> completionTypes = DEFAULT_COMPLETION_TYPES;
     private String store = "search.flipkart.com";
-    private List<String> storeNodes = DEFAULT_STORE_NODES;
     private String leafNode = "search.flipkart.com";
-
-    // Grocery Params
-    private List<String> marketPlaceIds = DEFAULT_MARKET_PLACE_IDS;
-
-    // Flow enablers
-    private boolean queryDisabled = false;
-    private boolean productDisabled = false;
     private String bucket = "default";
-
-    // Solr variables
     private String solrHost = "localhost";
-    private int solrPort = 25280;
     private String solrCore = "autosuggest";
-
     private String queryField = "text";
     private String prefixField = "prefix_edgytext";
-    private int phraseBoost = 1;
     private String phraseField = "text_edgytext_phrase";
     private String boostFunction = "min(div(log(field(impressions_sint)),log(10)),10.0)^1";
-    private List<String> sortFunctions = Arrays.asList("score desc", "ranking-score_sfloat desc", "p-hits_sfloat desc", "ctr_sfloat desc");
-    private int rows = 10;
-    private double ctrThreshold = 0.05;
     private String ctrField = "ctr_float";
-    private List<String> fqs = new ArrayList<>();
-    private int maxNumberOfStorePerQuery = 3;
-    private boolean solrSpellCorrection = true;
 
-    // Add Params here
+    private List<String> completionTypes = DEFAULT_COMPLETION_TYPES;
+    private List<String> storeNodes = DEFAULT_STORE_NODES;
+    private List<String> marketPlaceIds = DEFAULT_MARKET_PLACE_IDS;
+    private List<String> sortFunctions = Arrays.asList("score desc", "ranking-score_sfloat desc", "p-hits_sfloat desc", "ctr_sfloat desc");
+    private List<String> fqs = new ArrayList<>();
+
 
 }

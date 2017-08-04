@@ -34,30 +34,6 @@ public class ParamsHandler {
     private JsonSeDe jsonSeDe;
 
     public Params getParams(String store, UriInfo uriInfo) {
-        Params params = new Params();
-
-        store = StoreHandler.removeAllStores(store);
-        params.setStore(store);
-        params.setStoreNodes(Arrays.asList(store.split("/")));
-        params.setLeafNode(params.getStoreNodes().get(params.getStoreNodes().size() - 1));
-
-        params.setDebug(uriInfo.getQueryParameters().getFirst("debug") != null);
-
-        String query = uriInfo.getQueryParameters().getFirst("q");
-        query = (query == null) ? "" : query;
-        params.setOriginalQuery(query);
-        params.setQuery(AutoSuggestQueryAnalyzer.getCleanQuery(query));
-
-        String types = uriInfo.getQueryParameters().getFirst("types");
-        if (types != null) params.setCompletionTypes(Arrays.asList(types.split(",")));
-
-        params.setMarketPlaceIds(marketAnalyzer.getMarketPlaceIds(store, uriInfo.getQueryParameters().getFirst("groceryContext"), uriInfo.getQueryParameters().getFirst("marketplaceId")));
-        params.setQueryDisabled(!params.getCompletionTypes().contains("query") || autoSuggestQueryAnalyzer.isDisabled(query));
-        params.setProductDisabled(!params.getCompletionTypes().contains("product") || MarketAnalyzer.removeProducts(query, params.getMarketPlaceIds()));
-
-
-        String abParamsString = uriInfo.getQueryParameters().getFirst("ab-params");
-        List<String> abParams = (abParamsString != null && !abParamsString.isEmpty()) ? Arrays.asList(abParamsString.split(",")) : null;
 
         String bucket = uriInfo.getQueryParameters().getFirst("bucket");
         bucket = (bucket == null) ? "default" : bucket;
@@ -70,55 +46,215 @@ public class ParamsHandler {
 
         SolrConfig solrConfig = jsonSeDe.readValue(solrConfigString, SolrConfig.class);
 
+        Params params = new Params();
 
-//        String solrHost = uriInfo.getQueryParameters().getFirst("solrHost");
-//        params.setSolrHost(solrHost == null ? solrConfig.getSolrHost() : solrHost);
+        store = StoreHandler.removeAllStores(store);
+        params.setStore(store);
+        params.setStoreNodes(Arrays.asList(store.split("/")));
+        params.setLeafNode(params.getStoreNodes().get(params.getStoreNodes().size() - 1));
+
+        updateDebug(params, solrConfig, uriInfo);
+
+        String query = uriInfo.getQueryParameters().getFirst("q");
+        query = (query == null) ? "" : query;
+        params.setOriginalQuery(query);
+        params.setQuery(AutoSuggestQueryAnalyzer.getCleanQuery(query));
+
+        updateTypes(params, uriInfo);
+        updateMarketPlaceIds(params, store, solrConfig, uriInfo, marketAnalyzer);
+
+        params.setQueryDisabled(!params.getCompletionTypes().contains("query")
+                || autoSuggestQueryAnalyzer.isDisabled(query));
+        params.setProductDisabled(!params.getCompletionTypes().contains("product"));
+
+
+        String abParamsString = uriInfo.getQueryParameters().getFirst("ab-params");
+        List<String> abParams = (abParamsString != null && !abParamsString.isEmpty()) ?
+                Arrays.asList(abParamsString.split(",")) : null;
+
+        updateRows(params, solrConfig, uriInfo);
+
         params.setSolrHost(solrConfig.getSolrHost());
-
-//        String solrPort = uriInfo.getQueryParameters().getFirst("solrPort");
-//        params.setSolrPort(solrPort == null ? solrConfig.getSolrPort() : Integer.parseInt(solrPort));
         params.setSolrPort(solrConfig.getSolrPort());
-
-//        String solrCore = uriInfo.getQueryParameters().getFirst("solrCore");
-//        params.setSolrCore(solrCore == null ? solrConfig.getSolrCore() : solrCore);
         params.setSolrCore(solrConfig.getSolrCore());
 
-        String queryField = uriInfo.getQueryParameters().getFirst("queryField");
-        params.setQueryField(queryField == null ? solrConfig.getQueryField() : queryField);
+        updateQueryField(params, solrConfig, uriInfo);
+        updatePrefixField(params, solrConfig, uriInfo);
+        updatePhraseBoost(params, solrConfig, uriInfo);
+        updateBoostFunction(params, solrConfig, uriInfo);
+        updateSortFunction(params, solrConfig, uriInfo);
 
-        String prefixEdgyField = uriInfo.getQueryParameters().getFirst("prefixField");
-        params.setPrefixField(prefixEdgyField == null ? solrConfig.getPrefixField() : prefixEdgyField);
+        updateFQs(params, solrConfig, uriInfo);
+        updateMaxNumberOfStorePerQuery(params, solrConfig, uriInfo);
+        updateSolrSpellCorrection(params, solrConfig, uriInfo);
 
-        String phraseField = uriInfo.getQueryParameters().getFirst("phraseField");
-        params.setPhraseField(phraseField == null ? solrConfig.getPhraseField() : phraseField);
-
-        String phraseBoost = uriInfo.getQueryParameters().getFirst("phraseBoost");
-        params.setPhraseBoost(phraseBoost == null ? solrConfig.getPhraseBoost() : Integer.parseInt(phraseBoost));
-
-        String boostFunction = uriInfo.getQueryParameters().getFirst("boostFunction");
-        params.setBoostFunction(boostFunction == null ? solrConfig.getBoostFunction() : boostFunction);
-
-        String sortFunctionString = uriInfo.getQueryParameters().getFirst("sortFunction");
-        params.setSortFunctions(sortFunctionString == null ? Arrays.asList(solrConfig.getSortFunctionString().split(",")) : Arrays.asList(sortFunctionString.split(",")));
-
-        String rows = uriInfo.getQueryParameters().getFirst("rows");
-        params.setRows(rows == null ? solrConfig.getRows() : Integer.parseInt(rows));
-
-        String ctrThreshold = uriInfo.getQueryParameters().getFirst("ctrThreshold");
-        params.setCtrThreshold(ctrThreshold == null ? solrConfig.getCtrThreshold() : Double.parseDouble(ctrThreshold));
-
-        String ctrField = uriInfo.getQueryParameters().getFirst("ctrField");
-        params.setCtrField(ctrField == null ? solrConfig.getCtrField() : ctrField);
-
-        String fqs = uriInfo.getQueryParameters().getFirst("fqs");
-        params.setFqs(fqs == null ? (solrConfig.getFqsString() == null || solrConfig.getFqsString().isEmpty() ? new ArrayList<>() : Arrays.asList(solrConfig.getFqsString().split(","))) : Arrays.asList(fqs.split(",")));
-
-        String maxNumberOfStorePerQuery = uriInfo.getQueryParameters().getFirst("maxNumberOfStorePerQuery");
-        params.setMaxNumberOfStorePerQuery(maxNumberOfStorePerQuery == null ? solrConfig.getMaxNumberOfStorePerQuery() : Integer.parseInt(maxNumberOfStorePerQuery));
-
-        String solrSpellCorrection = uriInfo.getQueryParameters().getFirst("solrSpellCorrection");
-        params.setSolrSpellCorrection(solrSpellCorrection == null ? solrConfig.isSolrSpellCorrection() : Boolean.parseBoolean(solrSpellCorrection));
+        updateCtrField(params, solrConfig, uriInfo);
+        updateCtrThreshold(params, solrConfig, uriInfo);
+        updateWilsonCtrThreshold(params, solrConfig, uriInfo);
+        updateImpressionsThreshold(params, solrConfig, uriInfo);
+        updateStateHitsThreshold(params, solrConfig, uriInfo);
+        updateNumTokens(params, solrConfig, uriInfo);
 
         return params;
+    }
+
+    private void updateFQs(Params params, SolrConfig solrConfig, UriInfo uriInfo) {
+        String s = uriInfo.getQueryParameters().getFirst("fqs");
+        if (s == null || s.isEmpty()) {
+            if (solrConfig.getFqsString() == null || solrConfig.getFqsString().isEmpty()) {
+                params.setFqs(new ArrayList<>());
+            } else {
+                params.setFqs(Arrays.asList(solrConfig.getFqsString().split(",")));
+            }
+        } else {
+            params.setFqs(Arrays.asList(s.split(",")));
+        }
+    }
+
+    private void updateCtrField(Params params, SolrConfig solrConfig, UriInfo uriInfo) {
+        String s = uriInfo.getQueryParameters().getFirst("ctrField");
+        if (s == null || s.isEmpty()) {
+            params.setCtrField(solrConfig.getCtrField());
+        } else {
+            params.setCtrField(s);
+        }
+    }
+
+    private void updateRows(Params params, SolrConfig solrConfig, UriInfo uriInfo) {
+        String s = uriInfo.getQueryParameters().getFirst("rows");
+        if (s == null || s.isEmpty()) {
+            params.setRows(solrConfig.getRows());
+        } else {
+            params.setRows(Integer.parseInt(s));
+        }
+    }
+
+    private void updateSortFunction(Params params, SolrConfig solrConfig, UriInfo uriInfo) {
+        String s = uriInfo.getQueryParameters().getFirst("sortFunction");
+        if (s == null || s.isEmpty()) {
+            params.setSortFunctions(Arrays.asList(solrConfig.getSortFunctionString().split(",")));
+        } else {
+            params.setSortFunctions(Arrays.asList(s.split(",")));
+        }
+    }
+
+    private void updateBoostFunction(Params params, SolrConfig solrConfig, UriInfo uriInfo) {
+        String s = uriInfo.getQueryParameters().getFirst("boostFunction");
+        if (s == null || s.isEmpty()) {
+            params.setBoostFunction(solrConfig.getBoostFunction());
+        } else {
+            params.setBoostFunction(s);
+        }
+    }
+
+    private void updatePhraseBoost(Params params, SolrConfig solrConfig, UriInfo uriInfo) {
+        String s = uriInfo.getQueryParameters().getFirst("phraseBoost");
+        if (s == null || s.isEmpty()) {
+            params.setPhraseBoost(solrConfig.getPhraseBoost());
+        } else {
+            params.setPhraseBoost(Integer.parseInt(s));
+        }
+    }
+
+    private void updatePrefixField(Params params, SolrConfig solrConfig, UriInfo uriInfo) {
+        String s = uriInfo.getQueryParameters().getFirst("prefixField");
+        if (s == null || s.isEmpty()) {
+            params.setPrefixField(solrConfig.getPrefixField());
+        } else {
+            params.setPrefixField(s);
+        }
+    }
+
+    private void updateQueryField(Params params, SolrConfig solrConfig, UriInfo uriInfo) {
+        String s = uriInfo.getQueryParameters().getFirst("queryField");
+        if (s == null || s.isEmpty()) {
+            params.setQueryField(solrConfig.getQueryField());
+        } else {
+            params.setQueryField(s);
+        }
+    }
+
+    private void updateMaxNumberOfStorePerQuery(Params params, SolrConfig solrConfig, UriInfo uriInfo) {
+        String s = uriInfo.getQueryParameters().getFirst("maxNumberOfStorePerQuery");
+        if (s == null || s.isEmpty()) {
+            params.setMaxNumberOfStorePerQuery(solrConfig.getMaxNumberOfStorePerQuery());
+        } else {
+            params.setMaxNumberOfStorePerQuery(Integer.parseInt(s));
+        }
+    }
+
+    private void updateSolrSpellCorrection(Params params, SolrConfig solrConfig, UriInfo uriInfo) {
+        String s = uriInfo.getQueryParameters().getFirst("solrSpellCorrection");
+        if (s == null || s.isEmpty()) {
+            params.setSolrSpellCorrection(solrConfig.isSolrSpellCorrection());
+        } else {
+            params.setSolrSpellCorrection(Boolean.parseBoolean(s));
+        }
+    }
+
+    private void updateTypes(Params params, UriInfo uriInfo) {
+        String s = uriInfo.getQueryParameters().getFirst("types");
+        if (s == null || s.isEmpty()) {
+            params.setCompletionTypes(Params.DEFAULT_COMPLETION_TYPES);
+        } else {
+            params.setCompletionTypes(Arrays.asList(s.split(",")));
+        }
+
+    }
+
+    private static void updateMarketPlaceIds(Params params, String store, SolrConfig solrConfig, UriInfo uriInfo, MarketAnalyzer marketAnalyzer) {
+        List<String> marketPlaceIds = marketAnalyzer.getMarketPlaceIds(store,
+                uriInfo.getQueryParameters().getFirst("groceryContext"),
+                uriInfo.getQueryParameters().getFirst("marketplaceId"));
+        params.setMarketPlaceIds(marketPlaceIds);
+    }
+
+    private void updateDebug(Params params, SolrConfig solrConfig, UriInfo uriInfo) {
+        params.setDebug(uriInfo.getQueryParameters().getFirst("debug") != null);
+    }
+
+    private void updateNumTokens(Params params, SolrConfig solrConfig, UriInfo uriInfo) {
+        String s = uriInfo.getQueryParameters().getFirst("numTokens");
+        if (s == null || s.isEmpty()) {
+            params.setNumTokens(solrConfig.getNumTokens());
+        } else {
+            params.setNumTokens(Integer.parseInt(s));
+        }
+    }
+
+    private void updateImpressionsThreshold(Params params, SolrConfig solrConfig, UriInfo uriInfo) {
+        String s = uriInfo.getQueryParameters().getFirst("impressionsThreshold");
+        if (s == null || s.isEmpty()) {
+            params.setImpressionsThreshold(solrConfig.getImpressionsThreshold());
+        } else {
+            params.setImpressionsThreshold(Integer.parseInt(s));
+        }
+    }
+
+    private void updateStateHitsThreshold(Params params, SolrConfig solrConfig, UriInfo uriInfo) {
+        String s = uriInfo.getQueryParameters().getFirst("stateHitsThreshold");
+        if (s == null || s.isEmpty()) {
+            params.setStateHitsThreshold(solrConfig.getStateHitsThreshold());
+        } else {
+            params.setStateHitsThreshold(Double.parseDouble(s));
+        }
+    }
+
+    private void updateWilsonCtrThreshold(Params params, SolrConfig solrConfig, UriInfo uriInfo) {
+        String s = uriInfo.getQueryParameters().getFirst("wilsonCtrThreshold");
+        if (s == null || s.isEmpty()) {
+            params.setWilsonCtrThreshold(solrConfig.getWilsonCtrThreshold());
+        } else {
+            params.setWilsonCtrThreshold(Double.parseDouble(s));
+        }
+    }
+
+    private void updateCtrThreshold(Params params, SolrConfig solrConfig, UriInfo uriInfo) {
+        String s = uriInfo.getQueryParameters().getFirst("ctrThreshold");
+        if (s == null || !s.isEmpty()) {
+            params.setCtrThreshold(solrConfig.getCtrThreshold());
+        } else {
+            params.setCtrThreshold(Double.parseDouble(s));
+        }
     }
 }

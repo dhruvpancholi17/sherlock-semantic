@@ -30,17 +30,30 @@ public class IOUtils {
         return ioUtils;
     }
 
+    public <T> T readObject(Class<T> tClass) {
+        return JsonSeDe.getInstance().readValue(readAll(), tClass);
+    }
 
-    public List<String> readlines() {
+    public String readAll() {
+        List<String> lines = readLines();
+        StringBuffer sb = new StringBuffer();
+        for (String line : lines) {
+            sb.append(line);
+        }
+        return sb.toString();
+    }
+
+
+    public List<String> readLines() {
         try {
-            return readlines_();
+            return readLines_();
         } catch (IOException e) {
             e.printStackTrace();
         }
         return null;
     }
 
-    private List<String> readlines_() throws IOException {
+    private List<String> readLines_() throws IOException {
         List<String> list = new ArrayList<String>();
         String line = null;
         BufferedReader br = new BufferedReader(fileReader);

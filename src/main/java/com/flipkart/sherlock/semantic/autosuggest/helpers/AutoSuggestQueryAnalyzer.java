@@ -14,7 +14,8 @@ public class AutoSuggestQueryAnalyzer {
     private AutoSuggestDisabledQueriesDao autoSuggestDisabledQueriesDao;
 
     public static String getCleanQuery(String query) {
-        if (query == null) return query;
+        if (query == null) return null;
+        query = query.toLowerCase();
         query = query.replaceAll("[+,]", " ");
         query = query.replaceAll("[^A-Za-z0-9&/*_ .'-]", "");
         query = query.trim();

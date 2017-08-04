@@ -131,8 +131,22 @@ public class SolrRequestHandler {
         searchRequest.addParam(SearchRequest.Param.FL, Arrays.asList(LOGGED_QC_QUERY, CORRECTED_QUERY, CTR_OBJ, PRODUCT_OBJECT, PRODUCT_STORE));
 
         List<String> fqs = params.getFqs();
-        fqs.add(params.getCtrField() + ":[" + params.getCtrThreshold() + " TO *]");
+
+        if (params.getCtrThreshold() > 0) {
+            fqs.add(params.getCtrField() + ":[" + params.getCtrThreshold() + " TO *]");
+        }
+        if (params.getWilsonCtrThreshold() > 0) {
+            fqs.add("wilson-ctr_float" + ":[" + params.getWilsonCtrThreshold() + " TO *]");
+        }
+        if (params.getNumTokens() > 0) {
+            fqs.add("num-tokens_int" + ":[" + params.getNumTokens() + " TO *]");
+        }
+        if (params.getImpressionsThreshold() > 0) {
+            fqs.add("impressions_int" + ":[" + params.getImpressionsThreshold() + " TO *]");
+        }
+
         fqs.add(params.getPrefixField() + ":\"" + queryPrefix.getPrefix() + "\"");
+
         fqs.add("-" + PRODUCT_STORE + ":\"[]\"");
 
         if (params.getMarketPlaceIds().size() == 1

@@ -1,3 +1,7 @@
+0.0.14:
+    1. AB changes for wilson and impressions
+0.0.13:
+    1. Metrics and logging in place
 0.0.12:
     1. New config format
     2. 99.9 diff with completions

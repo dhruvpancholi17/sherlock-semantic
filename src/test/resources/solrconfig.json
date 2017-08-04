@@ -1,0 +1,21 @@
+{
+  "rows": 10,
+  "numTokens": 5,
+  "solrPort": 25280,
+  "phraseBoost": 1,
+  "impressionsThreshold": 100,
+  "maxNumberOfStorePerQuery": 3,
+  "solrSpellCorrection": true,
+  "ctrThreshold": 0.05,
+  "wilsonCtrThreshold": 1.0,
+  "stateHitsThreshold": 1.0,
+  "solrHost": "10.47.2.32",
+  "ctrField": "ctr_float",
+  "fqsString": "",
+  "solrCore": "autosuggest",
+  "queryField": "text",
+  "prefixField": "prefix_edgytext",
+  "phraseField": "text_edgytext_phrase",
+  "boostFunction": "min(div(log(field(impressions_sint)),log(10)),10.0)^1",
+  "sortFunctionString": "score desc,ranking-score_sfloat desc,p-hits_sfloat desc,ctr_sfloat desc"
+}

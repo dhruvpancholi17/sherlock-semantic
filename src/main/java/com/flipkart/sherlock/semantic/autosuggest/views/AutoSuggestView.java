@@ -82,8 +82,6 @@ public class AutoSuggestView {
         MetricsManager.Service service = Autosuggest;
         String component = COSMOS_AUTO_SUGGEST_COMPONENT;
 
-        log.info("Request URL: {}", uriInfo.getRequestUri());
-
         MetricsManager.logRequests(service, component);
 
         try {
