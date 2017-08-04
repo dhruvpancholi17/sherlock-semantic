@@ -56,7 +56,7 @@ public class ConfigsDao extends AbstractReloadableCache<Map<String, SolrConfig>>
     }
 
     private static String getClusterName() {
-        return IOUtils.open("/etc/default/soa-cluster-name").readlines().get(0);
+        return IOUtils.open("/etc/default/soa-cluster-name").readLines().get(0);
     }
 
     public static void main(String[] args) throws IOException, ConfigServiceException {
