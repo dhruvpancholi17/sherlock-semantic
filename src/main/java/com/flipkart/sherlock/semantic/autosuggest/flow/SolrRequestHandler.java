@@ -130,7 +130,7 @@ public class SolrRequestHandler {
         searchRequest.addParam(SearchRequest.Param.Q, queryPrefix.getQuery());
         searchRequest.addParam(SearchRequest.Param.FL, Arrays.asList(LOGGED_QC_QUERY, CORRECTED_QUERY, CTR_OBJ, PRODUCT_OBJECT, PRODUCT_STORE));
 
-        List<String> fqs = params.getFqs();
+        List<String> fqs = new ArrayList<>();
 
         if (params.getCtrThreshold() > 0) {
             fqs.add(params.getCtrField() + ":[" + params.getCtrThreshold() + " TO *]");

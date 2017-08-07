@@ -11,7 +11,6 @@ import com.google.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.ws.rs.core.UriInfo;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -84,7 +83,6 @@ public class ParamsHandler {
         updateBoostFunction(params, solrConfig, uriInfo);
         updateSortFunction(params, solrConfig, uriInfo);
 
-        updateFQs(params, solrConfig, uriInfo);
         updateMaxNumberOfStorePerQuery(params, solrConfig, uriInfo);
         updateSolrSpellCorrection(params, solrConfig, uriInfo);
 
@@ -96,19 +94,6 @@ public class ParamsHandler {
         updateNumTokens(params, solrConfig, uriInfo);
 
         return params;
-    }
-
-    private void updateFQs(Params params, SolrConfig solrConfig, UriInfo uriInfo) {
-        String s = uriInfo.getQueryParameters().getFirst("fqs");
-        if (s == null || s.isEmpty()) {
-            if (solrConfig.getFqsString() == null || solrConfig.getFqsString().isEmpty()) {
-                params.setFqs(new ArrayList<>());
-            } else {
-                params.setFqs(Arrays.asList(solrConfig.getFqsString().split(",")));
-            }
-        } else {
-            params.setFqs(Arrays.asList(s.split(",")));
-        }
     }
 
     private void updateCtrField(Params params, SolrConfig solrConfig, UriInfo uriInfo) {
