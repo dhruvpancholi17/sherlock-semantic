@@ -1,3 +1,9 @@
+0.0.18:
+    1. Prefix fix and GROCERY fix
+0.0.17:
+    1. Num tokens bug fix
+0.0.16:
+    1. Addition of the prefix Field from params
 0.0.15:
     1. Bug fix in Params
 0.0.14:

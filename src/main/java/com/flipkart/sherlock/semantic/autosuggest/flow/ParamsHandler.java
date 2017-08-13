@@ -79,6 +79,7 @@ public class ParamsHandler {
 
         updateQueryField(params, solrConfig, uriInfo);
         updatePrefixField(params, solrConfig, uriInfo);
+        updatePhraseField(params, solrConfig, uriInfo);
         updatePhraseBoost(params, solrConfig, uriInfo);
         updateBoostFunction(params, solrConfig, uriInfo);
         updateSortFunction(params, solrConfig, uriInfo);
@@ -94,6 +95,15 @@ public class ParamsHandler {
         updateNumTokens(params, solrConfig, uriInfo);
 
         return params;
+    }
+
+    private void updatePhraseField(Params params, SolrConfig solrConfig, UriInfo uriInfo) {
+        String s = uriInfo.getQueryParameters().getFirst("phraseField");
+        if (s == null || s.isEmpty()) {
+            params.setPhraseField(solrConfig.getPhraseField());
+        } else {
+            params.setPhraseField(s);
+        }
     }
 
     private void updateCtrField(Params params, SolrConfig solrConfig, UriInfo uriInfo) {

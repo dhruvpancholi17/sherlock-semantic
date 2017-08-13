@@ -53,10 +53,14 @@ echo $UPLOAD_PATH
 dpkg -c $DEBIAN_PACKAGE
 
 #UPLOAD_PATH=$(echo $UPLOAD_PATH)
-#curl -X PUT -H "Content-Type: application/json" -d '[{"repoName":"oracle-java","repoReferenceType":"EXACT","repoVersion":8},{"repoName":"fk-ops-tomcat8-base","repoReferenceType":"EXACT","repoVersion":1},{"repoName":"fk-ops-sgp-sherlock","repoReferenceType":"EXACT","repoVersion":114},{"repoName":"fk-sherlock-haproxy","repoReferenceType":"EXACT","repoVersion":25},{"repoName":"fk-sherlock-flash","repoReferenceType":"EXACT","repoVersion":14},{"repoName":"logsvc","repoReferenceType":"EXACT","repoVersion":301},{"repoName":"fk-config-service-confd","repoReferenceType":"EXACT","repoVersion":54},{"repoName":"fk-ops-sgp-sherlock","repoReferenceType":"EXACT","repoVersion":33},{"repoName":"cosmos-v3","repoReferenceType":"EXACT","repoVersion":22}]' 'http://repo-svc-app-0001.nm.flipkart.com:8080/env/sherlock-autosuggest-env?appkey="12"'
+#curl -X PUT -H "Content-Type: application/json" -d '[{"repoName":"oracle-java","repoReferenceType":"EXACT","repoVersion":8},{"repoName":"fk-ops-tomcat8-base","repoReferenceType":"EXACT","repoVersion":1},{"repoName":"fk-ops-sgp-sherlock","repoReferenceType":"EXACT","repoVersion":114},{"repoName":"fk-sherlock-haproxy","repoReferenceType":"EXACT","repoVersion":25},{"repoName":"fk-sherlock-flash","repoReferenceType":"EXACT","repoVersion":16},{"repoName":"logsvc","repoReferenceType":"EXACT","repoVersion":301},{"repoName":"fk-config-service-confd","repoReferenceType":"EXACT","repoVersion":54},{"repoName":"fk-ops-sgp-sherlock","repoReferenceType":"EXACT","repoVersion":33},{"repoName":"cosmos-v3","repoReferenceType":"EXACT","repoVersion":22}]' 'http://repo-svc-app-0001.nm.flipkart.com:8080/env/sherlock-autosuggest-env?appkey="12"'
 
-#scp target/fk-sherlock-flash-1.0-SNAPSHOT.jar hadoop-gw:/var/lib/semantic/dhruv.pancholi/sherlock-semantic/deb-templates/fk-sherlock-flash/usr/share/fk-sherlock-flash/fk-sherlock-flash.jar
-#DEB_DIR="/var/lib/semantic/dhruv.pancholi/sherlock-semantic/deb-templates/fk-sherlock-flash"
-#DEBIAN_PACKAGE="/var/lib/semantic/dhruv.pancholi/sherlock-semantic/fk-sherlock-flash_0.0.14.deb"
-BUILD_VER_NUMBER="0.0.14"
+scp target/fk-sherlock-flash-1.0-SNAPSHOT.jar hadoop-gw:/var/lib/semantic/dhruv.pancholi/sherlock-semantic/deb-templates/fk-sherlock-flash/usr/share/fk-sherlock-flash/fk-sherlock-flash.jar
+LOCAL_DIR="/var/lib/semantic/dhruv.pancholi/sherlock-semantic"
 PACKAGE="fk-sherlock-flash"
+DEB_DIR="/var/lib/semantic/dhruv.pancholi/sherlock-semantic/deb-templates/fk-sherlock-flash"
+DEBIAN_PACKAGE="/var/lib/semantic/dhruv.pancholi/sherlock-semantic/fk-sherlock-flash_0.0.18.deb"
+BUILD_VER_NUMBER="0.0.18"
+PACKAGE="fk-sherlock-flash"
+
+curl -X PUT -H "Content-Type: application/json" -d '[{"repoName":"oracle-java","repoReferenceType":"EXACT","repoVersion":8},{"repoName":"fk-ops-tomcat8-base","repoReferenceType":"EXACT","repoVersion":1},{"repoName":"fk-ops-sgp-sherlock","repoReferenceType":"EXACT","repoVersion":114},{"repoName":"fk-sherlock-haproxy","repoReferenceType":"EXACT","repoVersion":25},{"repoName":"fk-sherlock-flash","repoReferenceType":"EXACT","repoVersion":18},{"repoName":"logsvc","repoReferenceType":"EXACT","repoVersion":301},{"repoName":"fk-config-service-confd","repoReferenceType":"EXACT","repoVersion":54},{"repoName":"fk-ops-sgp-sherlock","repoReferenceType":"EXACT","repoVersion":33},{"repoName":"cosmos-v3","repoReferenceType":"EXACT","repoVersion":22}]' 'http://repo-svc-app-0001.nm.flipkart.com:8080/env/sherlock-autosuggest-env?appkey="12"'

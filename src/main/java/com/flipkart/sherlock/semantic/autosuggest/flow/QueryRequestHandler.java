@@ -37,7 +37,7 @@ public class QueryRequestHandler {
         AutoSuggestSolrResponse autoSuggestSolrResponse = (queryRequest.getAutoSuggestSolrResponse() == null) ? solrRequestHandler.getAutoSuggestSolrResponse(queryPrefix, params) : queryRequest.getAutoSuggestSolrResponse();
 
         List<AutoSuggestDoc> autoSuggestDocs = autoSuggestSolrResponse.getAutoSuggestDocs();
-
+        
         if (autoSuggestDocs.size() == 0 && params.isSolrSpellCorrection()) {
             AutoSuggestSpellResponse autoSuggestSpellResponse = solrRequestHandler.getAutoSuggestSolrSpellCorrectionResponse(queryPrefix, params);
             if (autoSuggestSpellResponse != null) {

@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static com.flipkart.sherlock.semantic.autosuggest.helpers.MarketAnalyzer.DEFAULT_MARKET_PLACE_IDS;
+import static com.flipkart.sherlock.semantic.autosuggest.helpers.MarketAnalyzer.FLIP_MART;
 
 /**
  * Created by dhruv.pancholi on 27/04/17.
@@ -67,7 +68,7 @@ public class StoreHandler {
             if (!marketPlaceIds.contains(marketPlaceId)) continue;
             String canonicalTitle = storePathCanonicalTitleDao.getCanonicalTitle(store);
             if (canonicalTitle == null) continue;
-            stores.add(new Store(store, canonicalTitle, marketPlaceId));
+            stores.add(new Store(store, canonicalTitle, FLIP_MART.equals(marketPlaceId) ? "GROCERY" : marketPlaceId));
         }
 
         stores = (stores.size() > maxStores) ? stores.subList(0, maxStores) : stores;

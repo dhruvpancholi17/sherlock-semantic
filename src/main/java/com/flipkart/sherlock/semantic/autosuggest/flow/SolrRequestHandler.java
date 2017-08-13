@@ -139,7 +139,7 @@ public class SolrRequestHandler {
             fqs.add("wilson-ctr_float" + ":[" + params.getWilsonCtrThreshold() + " TO *]");
         }
         if (params.getNumTokens() > 0) {
-            fqs.add("num-tokens_int" + ":[" + params.getNumTokens() + " TO *]");
+            fqs.add("num-tokens_int" + ":[* TO " + params.getNumTokens() + "]");
         }
         if (params.getImpressionsThreshold() > 0) {
             fqs.add("impressions_int" + ":[" + params.getImpressionsThreshold() + " TO *]");
