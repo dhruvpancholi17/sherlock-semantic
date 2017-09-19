@@ -36,12 +36,12 @@ for QUERY in $(echo $QUERIES | sed "s/,/ /g") ; do
 
 done
 
-echo "Removing duplicate urls"
+echo "Removing duplicate urls for $QUERIES"
 sort $FILE | uniq >> tmp && mv tmp $FILE
-echo "Logs aggregation done"
+echo "Logs aggregation done for $QUERIES"
 
 LENGTH=$(wc -l < $FILE)
-echo "Removing $LENGTH cache keys"
-java -jar semantic-service-utils-1.0-SNAPSHOT.jar $FILE $REFRESH_OUTPUT_FILE
+echo "Removing $LENGTH cache keys for $QUERIES"
+java -cp semantic-tooling-1.0-SNAPSHOT.jar com.flipkart.sherlock.semantic.cacherefresh.CouchbaseClear $FILE $QUERIES
 
 exit 0

@@ -14,7 +14,7 @@ public class CouchbaseClear {
     public static void main(String[] args) throws Exception {
         if (args != null && args.length != 0) {
             String inputFile = args[0];
-//            String output = args[1];
+            String metaData = args.length >= 2 ? args[1] : "";
             System.out.println("Reading semantic URLs from file: " + inputFile);
             int linesCount = 0;
             int deletedKeysCount = 0;
@@ -32,7 +32,8 @@ public class CouchbaseClear {
                 couchbaseCache.shutDown();
             }
 
-            System.out.println(String.format("Total number of urls: %d, number of urls deleted: %d", linesCount, deletedKeysCount));
+            System.out.println(String.format("Total number of urls: %d, number of urls deleted: %d, context (query or store): %s",
+                linesCount, deletedKeysCount, metaData));
         }
     }
 
