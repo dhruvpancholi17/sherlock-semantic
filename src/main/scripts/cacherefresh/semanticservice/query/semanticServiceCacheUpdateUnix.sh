@@ -31,6 +31,4 @@ LENGTH=$(wc -l < $FILE)
 echo "Removing $LENGTH cache keys"
 java -jar semantic-service-utils-1.0-SNAPSHOT.jar $FILE
 
-rm $FILE
-
 exit 0
