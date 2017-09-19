@@ -6,6 +6,8 @@ QUERIES=$(echo $QUERIES | sed "s/ /+/g")
 FILENAME_PREFIX='cacheUpdateRequests_'$(date '+%d_%h_%Y_%H_%M_%S' | tr [:lower] [:upper])
 
 FILE=$FILENAME_PREFIX'_queries.txt'
+REFRESH_OUTPUT_FILE=$FILENAME_PREFIX'_cacheClearLog.txt'
+
 touch $FILE
 
 USERNAME=monish.gandhi
@@ -29,6 +31,6 @@ echo "Logs aggregation done"
 
 LENGTH=$(wc -l < $FILE)
 echo "Removing $LENGTH cache keys"
-java -jar semantic-service-utils-1.0-SNAPSHOT.jar $FILE
+java -jar semantic-service-utils-1.0-SNAPSHOT.jar $FILE $REFRESH_OUTPUT_FILE
 
 exit 0
