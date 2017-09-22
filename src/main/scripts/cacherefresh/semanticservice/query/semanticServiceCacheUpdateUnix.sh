@@ -21,7 +21,7 @@ echo "Aggregating logs for $PREVIOUS_DATE and $CURRENT_DATE in $FILE"
 for QUERY in $(echo $QUERIES | sed "s/,/ /g") ; do
     echo "Fetching urls for query: $QUERY"
     for HOSTNAME in ${HOSTS} ; do
-      ssh -i keymo -oStrictHostKeyChecking=no -l ${USERNAME} ${HOSTNAME} "grep '/semantic' /var/log/flipkart/w3/sherlock/access.$CURRENT_DATE.log /var/log/flipkart/w3/sherlock/access.$PREVIOUS_DATE.log | grep -e '\&q='$QUERY'\&' -e 'q='$QUERY'$' -e '?q='$QUERY'&' |  cut -d' ' -f7"   >> $FILE
+      ssh -i keymo -oStrictHostKeyChecking=no -l ${USERNAME} ${HOSTNAME} "grep '/semantic' /var/log/flipkart/w3/sherlock/access.$CURRENT_DATE.log /var/log/flipkart/w3/sherlock/access.$PREVIOUS_DATE.log | grep -ie '\&q='$QUERY'\&' -ie 'q='$QUERY'$' -ie '?q='$QUERY'&' |  cut -d' ' -f7"   >> $FILE
     done
 done
 

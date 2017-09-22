@@ -31,7 +31,7 @@ for QUERY in $(echo $QUERIES | sed "s/,/ /g") ; do
     echo "Escaped store path: $QUERY";
 
     for HOSTNAME in ${HOSTS} ; do
-      ssh -i keymo -oStrictHostKeyChecking=no -l ${USERNAME} ${HOSTNAME} "grep '/semantic' /var/log/flipkart/w3/sherlock/access.$CURRENT_DATE.log /var/log/flipkart/w3/sherlock/access.$PREVIOUS_DATE.log | grep '$QUERY'| cut -d' ' -f7" >> $FILE
+      ssh -i keymo -oStrictHostKeyChecking=no -l ${USERNAME} ${HOSTNAME} "grep -i '/semantic' /var/log/flipkart/w3/sherlock/access.$CURRENT_DATE.log /var/log/flipkart/w3/sherlock/access.$PREVIOUS_DATE.log | grep -i '$QUERY'| cut -d' ' -f7" >> $FILE
     done
 
 done
