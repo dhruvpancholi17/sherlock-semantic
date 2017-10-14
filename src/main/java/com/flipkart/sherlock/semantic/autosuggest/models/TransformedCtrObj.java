@@ -1,6 +1,7 @@
 package com.flipkart.sherlock.semantic.autosuggest.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 /**

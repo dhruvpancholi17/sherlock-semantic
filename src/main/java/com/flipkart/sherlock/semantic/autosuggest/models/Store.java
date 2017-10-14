@@ -1,6 +1,7 @@
 package com.flipkart.sherlock.semantic.autosuggest.models;
 
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 /**

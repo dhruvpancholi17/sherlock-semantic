@@ -1,12 +1,17 @@
 package com.flipkart.sherlock.semantic.autosuggest.models;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * Created by dhruv.pancholi on 04/07/17.
+ * <p>
+ * Please keep on changing the default values, which will be a part of the default configs when config
+ * fetch from the service fails
  */
 @Data
 public class SolrConfig {
+
     private int rows = 10;
     private int numTokens = 0;
     private int solrPort = 25280;

@@ -1,0 +1,4 @@
+{"contrib":23.18840579710145,"count":16,"leafPaths":["6bo/5hp/lwb/n3u"],"store":"6bo/5hp/lwb/n3u","dd-contrib":31.845191455344864,"product-id":"SECEP6PSD9H3RFFB","dd-count":3.5064036513231747}
+{"contrib":23,"count":16,"leafPaths":["6bo/5hp/lwb/n3u"],"store":"6bo/5hp/lwb/n3u","dd-contrib":31.845191455344864,"product-id":"SECEP6PSD9H3RFFB","dd-count":3.5064036513231747}
+{"contrib":23.18840579710145,"count":16,"leafPaths":["6bo/5hp/lwb/n3u"],"store":"6bo/5hp/lwb/n3u","dd-contrib":31,"product-id":"SECEP6PSD9H3RFFB","dd-count":3.5064036513231747}
+{"contrib":23.18840579710145,"count":16,"leafPaths":["6bo/5hp/lwb/n3u"],"store":"6bo/5hp/lwb/n3u","dd-contrib":31.845191455344864,"product-id":"SECEP6PSD9H3RFFB","dd-count":3}

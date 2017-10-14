@@ -28,9 +28,6 @@ public class DecayedProductObj {
     @JsonProperty("dd-count")
     private double ddCount;
 
-    @JsonProperty("dayCount")
-    private Integer dayCount;
-
     @JsonProperty("leafPaths")
     private List<String> leafPaths;
 

@@ -68,7 +68,7 @@ public class StoreHandler {
             if (!marketPlaceIds.contains(marketPlaceId)) continue;
             String canonicalTitle = storePathCanonicalTitleDao.getCanonicalTitle(store);
             if (canonicalTitle == null) continue;
-            stores.add(new Store(store, canonicalTitle, FLIP_MART.equals(marketPlaceId) ? "GROCERY" : marketPlaceId));
+            stores.add(new Store(store, canonicalTitle, FLIP_MART.equals(marketPlaceId) ? "GROCERY" : "FLIPKART"));
         }
 
         stores = (stores.size() > maxStores) ? stores.subList(0, maxStores) : stores;

@@ -19,9 +19,8 @@ import javax.ws.rs.core.UriInfo;
 public class HealthCheckView {
 
     private boolean oor = true;
-    private static final String FLASH_TOKEN_KEY = "FLASH_TOKEN_KEY";
-    private static final String OOR = "oor";
-    private static final String BIR = "bir";
+    static final String OOR = "oor";
+    static final String BIR = "bir";
 
 
     @GET
@@ -43,6 +42,8 @@ public class HealthCheckView {
                                  @Context UriInfo uriInfo) {
 
         String host = uriInfo.getBaseUri().getHost();
+
+        // Making sure that only the script running from the same box only can change the rotation status of the box
         if (!(host.equals("localhost") || host.equals("127.0.0.1"))) {
             return Response.status(Response.Status.EXPECTATION_FAILED).build();
         }
