@@ -33,7 +33,7 @@ public class StoreHandler {
 
     private static final List<Store> EMPTY_STORE_LIST = new ArrayList<>();
 
-    private static final List<String> allStores = Arrays.asList("search.flipkart.com", "all", "m.flipkart.com", "flipkart.com");
+    private static final List<String> ALL_STORES = Arrays.asList("search.flipkart.com", "all", "m.flipkart.com", "flipkart.com");
 
     /**
      * @param productStores   A string field retrieved from meta
@@ -88,7 +88,7 @@ public class StoreHandler {
         String[] nodes = store.split("/");
         StringBuffer sb = new StringBuffer();
         for (int i = 0; i < nodes.length; i++) {
-            if (allStores.contains(nodes[i])) continue;
+            if (ALL_STORES.contains(nodes[i])) continue;
             if (i == nodes.length - 1) sb.append(nodes[i]);
             else sb.append(nodes[i] + "/");
         }

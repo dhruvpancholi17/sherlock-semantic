@@ -16,6 +16,7 @@ import java.util.concurrent.TimeUnit;
 public abstract class AbstractReloadableCache<Type> {
 
     protected final CompleteTableDao completeTableDao;
+
     protected final JsonSeDe jsonSeDe;
 
     private LoadingCache<String, Type> cache;

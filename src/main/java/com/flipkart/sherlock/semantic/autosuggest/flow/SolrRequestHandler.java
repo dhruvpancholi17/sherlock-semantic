@@ -8,7 +8,7 @@ import com.flipkart.sherlock.semantic.autosuggest.utils.JsonSeDe;
 import com.flipkart.sherlock.semantic.common.hystrix.HystrixCommandConfig;
 import com.flipkart.sherlock.semantic.common.hystrix.HystrixCommandHelper;
 import com.flipkart.sherlock.semantic.common.hystrix.HystrixCommandWrapper;
-import com.flipkart.sherlock.semantic.common.hystrix.IHystrixConfigFetcher;
+import com.flipkart.sherlock.semantic.common.util.FkConfigServiceWrapper;
 import com.flipkart.sherlock.semantic.core.search.*;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
@@ -36,26 +36,25 @@ public class SolrRequestHandler {
     private static final AutoSuggestSolrResponse DEFAULT_AUTO_SUGGEST_SOLR_RESPONSE = new AutoSuggestSolrResponse(null, new ArrayList<>());
 
     //These constants are used to form config names
+    private static final String HYSTRIX_PREFIX = "hystrix";
     private static final String HYSTRIX_GROUP_SOLR = "searchEngine";
     private static final String HYSTRIX_COMMAND_SEARCH = "search";
     private static final String HYSTRIX_COMMAND_SPELL = "spell";
 
+    @Inject
     private JsonSeDe jsonSeDe;
-    private SolrSearchServer solrSearchServer;
-    private IHystrixConfigFetcher hystrixConfigFetcher;
 
     @Inject
-    public SolrRequestHandler(JsonSeDe jsonSeDe, SolrSearchServer solrSearchServer,
-                              IHystrixConfigFetcher hystrixConfigFetcher) {
-        this.jsonSeDe = jsonSeDe;
-        this.solrSearchServer = solrSearchServer;
-        this.hystrixConfigFetcher = hystrixConfigFetcher;
-    }
+    private SolrSearchServer solrSearchServer;
+
+    @Inject
+    private FkConfigServiceWrapper fkConfigServiceWrapper;
+
 
     public AutoSuggestSolrResponse getAutoSuggestSolrResponse(QueryPrefix queryPrefix, Params params) {
         SearchResponse searchResponse = null;
         SearchRequest searchRequest = createSearchRequest(queryPrefix, params);
-        HystrixCommandConfig commandConfig = this.hystrixConfigFetcher.getConfig(HYSTRIX_GROUP_SOLR, HYSTRIX_COMMAND_SEARCH);
+        HystrixCommandConfig commandConfig = getHystrixCommandConfig(HYSTRIX_GROUP_SOLR, HYSTRIX_COMMAND_SEARCH);
 
         if (commandConfig != null) {
             HystrixCommandWrapper<SearchResponse> searchCommand = new HystrixCommandWrapper<>(commandConfig,
@@ -73,7 +72,7 @@ public class SolrRequestHandler {
     public AutoSuggestSpellResponse getAutoSuggestSolrSpellCorrectionResponse(QueryPrefix queryPrefix, Params params) {
         SpellResponse spellResponse = null;
         SearchRequest spellRequest = getSpellRequest(queryPrefix, params);
-        HystrixCommandConfig commandConfig = this.hystrixConfigFetcher.getConfig(HYSTRIX_GROUP_SOLR, HYSTRIX_COMMAND_SPELL);
+        HystrixCommandConfig commandConfig = getHystrixCommandConfig(HYSTRIX_GROUP_SOLR, HYSTRIX_COMMAND_SPELL);
 
         if (commandConfig != null) {
             HystrixCommandWrapper<SpellResponse> spellCommand = new HystrixCommandWrapper<>(commandConfig,
@@ -85,6 +84,12 @@ public class SolrRequestHandler {
         }
 
         return spellResponse != null ? transformSpellResponse(spellResponse) : null;
+    }
+
+    private HystrixCommandConfig getHystrixCommandConfig(String group, String command) {
+        return jsonSeDe.readValue(
+                fkConfigServiceWrapper.getString(HYSTRIX_PREFIX + "." + group + "." + command),
+                HystrixCommandConfig.class);
     }
 
 

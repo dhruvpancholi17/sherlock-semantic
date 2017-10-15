@@ -4,14 +4,9 @@ import com.flipkart.sherlock.semantic.autosuggest.dao.AutoSuggestCacheRefresher;
 import com.flipkart.sherlock.semantic.autosuggest.flow.ParamsHandler;
 import com.flipkart.sherlock.semantic.autosuggest.flow.ProductRequestHandler;
 import com.flipkart.sherlock.semantic.autosuggest.flow.QueryRequestHandler;
-import com.flipkart.sherlock.semantic.autosuggest.helpers.MarketAnalyzer;
 import com.flipkart.sherlock.semantic.autosuggest.models.*;
 import com.flipkart.sherlock.semantic.autosuggest.utils.JsonSeDe;
-import com.flipkart.sherlock.semantic.common.config.SearchConfigProvider;
-import com.flipkart.sherlock.semantic.common.dao.mysql.ConfigsDao;
 import com.flipkart.sherlock.semantic.common.metrics.MetricsManager;
-import com.flipkart.sherlock.semantic.common.solr.SolrServerProvider;
-import com.flipkart.sherlock.semantic.core.search.SolrSearchServer;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
@@ -40,22 +35,7 @@ public class AutoSuggestView {
     private JsonSeDe jsonSeDe;
 
     @Inject
-    private MarketAnalyzer marketAnalyzer;
-
-    @Inject
-    private ConfigsDao configsDao;
-
-    @Inject
     private AutoSuggestCacheRefresher autoSuggestCacheRefresher;
-
-    @Inject
-    private SolrServerProvider solrServerProvider;
-
-    @Inject
-    private SearchConfigProvider searchConfigProvider;
-
-    @Inject
-    private SolrSearchServer solrSearchServer;
 
     @Inject
     private QueryRequestHandler queryRequestHandler;

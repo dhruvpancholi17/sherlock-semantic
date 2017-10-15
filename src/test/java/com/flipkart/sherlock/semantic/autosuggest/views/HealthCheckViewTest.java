@@ -33,6 +33,12 @@ public class HealthCheckViewTest {
 
     }
 
+    @Test
+    public void testValues() {
+        Assert.assertEquals("oor", OOR);
+        Assert.assertEquals("bir", BIR);
+    }
+
     /**
      * 1. When the box is restarted, it is not in rotation
      * 2. We put the box BIR, and then check the status
