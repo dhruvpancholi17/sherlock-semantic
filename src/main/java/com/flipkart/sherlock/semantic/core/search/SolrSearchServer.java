@@ -7,6 +7,7 @@ import com.flipkart.sherlock.semantic.core.search.SearchRequest.Param;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.response.QueryResponse;
@@ -70,19 +71,18 @@ public class SolrSearchServer implements ISearchEngine {
     }
 
     private SolrServer getSolrServerFromParams(Map<SearchParam, String> params) {
-        String solrCoreStr = params.get(SearchParam.CORE).trim();
-        String experiment = params.containsKey(SearchParam.EXPERIMENT) ? params.get(SearchParam.EXPERIMENT).trim() : "";
 
-        Core solrCoreInfo = null;
-        if (params.containsKey(SearchParam.HOST) && params.containsKey(SearchParam.PORT)) {
-            try {
-                solrCoreInfo = new Core(params.get(SearchParam.HOST), Integer.parseInt(params.get(SearchParam.PORT)), solrCoreStr);
-            } catch (Exception ex) {
-                log.error("Exception in fetching core details from params: {}", params);
-            }
+        String solrHost = params.get(SearchParam.HOST);
+        Integer solrPort = params.get(SearchParam.PORT) != null ? Integer.parseInt(params.get(SearchParam.PORT)) : null;
+        String solrCore = params.get(SearchParam.CORE);
+
+        if (StringUtils.isBlank(solrCore) || StringUtils.isBlank(solrHost) || solrPort == null) {
+            throw new IllegalArgumentException("Invalid solr core properties: " + solrHost + " " + String.valueOf(solrPort) + " " + solrCore);
         }
-        return solrCoreInfo != null ? solrServerProvider.getSolrServer(solrCoreInfo)
-                : solrServerProvider.getSolrServer(solrCoreStr, experiment);
+        Core core = new Core(solrHost, solrPort, solrCore);
+        SolrServer solrServer = solrServerProvider.getSolrServer(core);
+        if (solrServer == null) throw new RuntimeException("Unable to retrieve SolrServer with core: " + core);
+        return solrServer;
     }
 
     private SpellResponse getSpellResponseFromSolrResponse(String solrQueryString, QueryResponse queryResponse) {

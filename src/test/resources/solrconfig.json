@@ -1,5 +1,5 @@
 {
-  "rows": 10,
+  "rows": 28,
   "numTokens": 5,
   "solrPort": 25280,
   "phraseBoost": 1,

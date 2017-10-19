@@ -32,7 +32,7 @@ public class MysqlDaoProvider extends AbstractModule {
 
     @Provides
     @Singleton
-    DBI DBIProvider() throws Exception {
+    public DBI DBIProvider() throws Exception {
         String dburl = "jdbc:mysql://" + mysqlConfig.getHost() + ":" + mysqlConfig.getPort()
                 + "/" + mysqlConfig.getDbName() + "?rewriteBatchedStatements=true";
 
@@ -54,21 +54,23 @@ public class MysqlDaoProvider extends AbstractModule {
     @Inject
     @Singleton
     @Provides
-    ConfigsDao getConfigsDao(DBI dbi) {
+    public ConfigsDao getConfigsDao(DBI dbi) {
         return dbi.onDemand(ConfigsDao.class);
     }
+    // TODO: Remove this piece from here
 
     @Inject
     @Singleton
     @Provides
-    AugmentationDao getAugmentationDao(DBI dbi) {
+    public AugmentationDao getAugmentationDao(DBI dbi) {
         return dbi.onDemand(AugmentationDao.class);
     }
+    // TODO: Remove this piece from here
 
     @Inject
     @Singleton
     @Provides
-    CompleteTableDao getCompleteTableDao(DBI dbi) {
+    public CompleteTableDao getCompleteTableDao(DBI dbi) {
         return dbi.onDemand(CompleteTableDao.class);
     }
 }

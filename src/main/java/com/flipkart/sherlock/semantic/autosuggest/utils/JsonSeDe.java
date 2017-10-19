@@ -3,7 +3,6 @@ package com.flipkart.sherlock.semantic.autosuggest.utils;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 
@@ -14,6 +13,8 @@ import static com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKN
  */
 @AllArgsConstructor
 public class JsonSeDe {
+
+    private static JsonSeDe instance;
 
     private ObjectMapper objectMapper;
 
@@ -42,15 +43,22 @@ public class JsonSeDe {
     }
 
     public static JsonSeDe getInstance() {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.setVisibility(objectMapper.getSerializationConfig()
-                .getDefaultVisibilityChecker()
-                .withFieldVisibility(JsonAutoDetect.Visibility.ANY)
-                .withGetterVisibility(JsonAutoDetect.Visibility.NONE)
-                .withSetterVisibility(JsonAutoDetect.Visibility.NONE)
-                .withCreatorVisibility(JsonAutoDetect.Visibility.NONE));
-        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        objectMapper.configure(FAIL_ON_UNKNOWN_PROPERTIES, false);
-        return new JsonSeDe(objectMapper);
+        if (instance == null) {
+            synchronized (JsonSeDe.class) {
+                if (instance == null) {
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    objectMapper.setVisibility(objectMapper.getSerializationConfig()
+                            .getDefaultVisibilityChecker()
+                            .withFieldVisibility(JsonAutoDetect.Visibility.ANY)
+                            .withGetterVisibility(JsonAutoDetect.Visibility.NONE)
+                            .withSetterVisibility(JsonAutoDetect.Visibility.NONE)
+                            .withCreatorVisibility(JsonAutoDetect.Visibility.NONE));
+                    objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+                    objectMapper.configure(FAIL_ON_UNKNOWN_PROPERTIES, false);
+                    instance = new JsonSeDe(objectMapper);
+                }
+            }
+        }
+        return instance;
     }
 }

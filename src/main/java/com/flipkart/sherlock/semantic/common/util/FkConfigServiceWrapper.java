@@ -2,9 +2,10 @@ package com.flipkart.sherlock.semantic.common.util;
 
 import com.flipkart.kloud.config.ConfigClient;
 import com.flipkart.kloud.config.DynamicBucket;
+import com.flipkart.sherlock.semantic.autosuggest.utils.IOUtils;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.*;
+import java.io.IOException;
 import java.util.concurrent.Callable;
 
 /**
@@ -19,47 +20,51 @@ import java.util.concurrent.Callable;
 @Slf4j
 public class FkConfigServiceWrapper {
 
+    private static final String FK_ENV_FILE = "/etc/default/fk-env";
+
+    private DynamicBucket bucket;
+
+
+    /**
+     * Initialises config service wrapper
+     *
+     * @param bucketName:        name of bucket to fetch configurations from
+     * @param appendEnvironment: if true, reads environment from /etc/default/fk-env and appends to bucket name using '-' as delimiter
+     */
+    public FkConfigServiceWrapper(String bucketName, boolean appendEnvironment) {
+        try {
+            String completeBucketName = appendEnvironment ? bucketName + "-" + getHostEnvironment() : bucketName;
+            log.info("Loading configuration for bucket: {}", completeBucketName);
+            ConfigClient configuration = new ConfigClient();
+            this.bucket = configuration.getDynamicBucket(completeBucketName);
+        } catch (Exception ex) {
+            log.error("Error in fetching configs", ex);
+            throw new RuntimeException("Error in fetching exception", ex);
+        }
+    }
+
+    private FkConfigServiceWrapper() {
+
+    }
+
     static class ConfigHelper {
-        public static <V> V executeCallable (Callable<V> callable, String path, V default_) {
+        public static <V> V executeCallable(Callable<V> callable, String path, V default_) {
             V value = null;
-            try{
+            try {
                 value = callable.call();
-            }
-            catch(Exception ex){
+            } catch (Exception ex) {
                 log.error("Error in fetching property {}", path, ex);
             }
             return value != null ? value : default_;
         }
     }
 
-    private static final String FK_ENV_FILE = "/etc/default/fk-env";
-    private DynamicBucket bucket;
 
-    /**
-     * Initialises config service wrapper
-     * @param bucketName: name of bucket to fetch configurations from
-     * @param appendEnvironment: if true, reads environment from /etc/default/fk-env and appends to bucket name using '-' as delimiter
-     */
-    public FkConfigServiceWrapper(String bucketName, boolean appendEnvironment){
-
-        ConfigClient configuration = new ConfigClient();
-        try {
-            String completeBucketName = appendEnvironment ? bucketName + "-" + getHostEnvironment() : bucketName;
-            log.info("Loading configuration for bucket: {}",completeBucketName);
-            this.bucket = configuration.getDynamicBucket(completeBucketName);
-        }
-        catch(Exception ex){
-            log.error("Error in fetching configs", ex);
-            throw new RuntimeException("Error in fetching exception", ex);
-        }
-    }
-
-
-    public Integer getInt(String path){
+    public Integer getInt(String path) {
         return ConfigHelper.executeCallable(() -> this.bucket.getInt(path), path, null);
     }
 
-    public Integer getInt(String path, int default_){
+    public Integer getInt(String path, int default_) {
         return ConfigHelper.executeCallable(() -> this.bucket.getInt(path), path, default_);
     }
 
@@ -91,21 +96,7 @@ public class FkConfigServiceWrapper {
     }
 
     private String getHostEnvironment() throws IOException {
-        String env = getContents(FK_ENV_FILE);
-        return env != null ? env : "local";
-    }
-
-
-    private String getContents(String fileName) throws IOException {
-        String content = null;
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(fileName));
-            content = reader.readLine();
-            reader.close();
-        }
-        catch(Exception ex){
-            log.error("Error in reading file: {}", fileName, ex);
-        }
-        return content;
+        IOUtils ioUtils = IOUtils.open(FK_ENV_FILE);
+        return ioUtils != null ? ioUtils.readLines().get(0).trim() : "local";
     }
 }

@@ -6,8 +6,6 @@ import com.flipkart.sherlock.semantic.autosuggest.views.AutoSuggestView;
 import com.flipkart.sherlock.semantic.autosuggest.views.HealthCheckView;
 import com.flipkart.sherlock.semantic.common.dao.mysql.entity.MysqlConfig;
 import com.flipkart.sherlock.semantic.common.dao.mysql.entity.MysqlConnectionPoolConfig;
-import com.flipkart.sherlock.semantic.common.init.HystrixConfigProvider;
-import com.flipkart.sherlock.semantic.common.init.MiscInitProvider;
 import com.flipkart.sherlock.semantic.common.init.MysqlDaoProvider;
 import com.flipkart.sherlock.semantic.common.metrics.MetricsManager;
 import com.flipkart.sherlock.semantic.common.metrics.MetricsManager.TracedItem;
@@ -29,7 +27,6 @@ import org.glassfish.jersey.servlet.ServletContainer;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.TimeUnit;
 
 import static com.flipkart.sherlock.semantic.app.AppConstants.AUTOSUGGEST_BUCKET;
 import static com.flipkart.sherlock.semantic.autosuggest.views.AutoSuggestView.COSMOS_AUTO_SUGGEST_COMPONENT;
@@ -64,9 +61,7 @@ public class AutoSuggestApp {
 
         Injector injector = Guice.createInjector(
                 new MysqlDaoProvider(mysqlConfig, connectionPoolConfig),
-                new WrapperProvider(fkConfigServiceWrapper),
-                new MiscInitProvider((int) TimeUnit.MINUTES.toSeconds(30), 10),
-                new HystrixConfigProvider((int) TimeUnit.MINUTES.toSeconds(2)));
+                new WrapperProvider(fkConfigServiceWrapper));
 
         // Create embedded jetty container
         Server server = new Server(threadPool);
@@ -108,7 +103,7 @@ public class AutoSuggestApp {
     /**
      * Get all the metrics to be tracked with the help of cosmos
      */
-    private static Set<TracedItem> getTracedItems() {
+    public static Set<TracedItem> getTracedItems() {
         Set<TracedItem> tracedItems = new HashSet<>();
         tracedItems.add(new TracedItem(ERROR, Autosuggest, COSMOS_AUTO_SUGGEST_COMPONENT));
         tracedItems.add(new TracedItem(RPS, Autosuggest, COSMOS_AUTO_SUGGEST_COMPONENT));

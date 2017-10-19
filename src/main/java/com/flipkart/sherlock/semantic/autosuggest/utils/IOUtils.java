@@ -1,5 +1,7 @@
 package com.flipkart.sherlock.semantic.autosuggest.utils;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -7,6 +9,7 @@ import java.util.List;
 /**
  * Created by dhruv.pancholi on 24/09/16.
  */
+@Slf4j
 public class IOUtils {
 
     private BufferedReader bufferedReader;

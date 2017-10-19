@@ -1,5 +1,6 @@
 package com.flipkart.sherlock.semantic.core.search;
 
+import lombok.EqualsAndHashCode;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.common.params.CommonParams;
 import org.apache.solr.common.params.DisMaxParams;
@@ -13,7 +14,10 @@ import java.util.Map;
 /**
  * Created by anurag.laddha on 23/05/17.
  */
+@EqualsAndHashCode
 public class SearchRequest {
+
+    private Map<Param, ArrayList<String>> requestParams = new HashMap<>();
 
     public static enum Param {
 
@@ -51,8 +55,6 @@ public class SearchRequest {
             return paramName;
         }
     }
-
-    private Map<Param, ArrayList<String>> requestParams = new HashMap<>();
 
     public void addParam(Param param, String value) {
         if (StringUtils.isBlank(value)) {
