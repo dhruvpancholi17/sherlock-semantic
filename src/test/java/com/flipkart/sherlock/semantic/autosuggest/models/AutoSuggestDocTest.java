@@ -20,5 +20,8 @@ public class AutoSuggestDocTest extends BaseModelTest {
         AutoSuggestDoc autoSuggestDoc = new AutoSuggestDoc(null, null, null, null, null);
         Assert.assertEquals(AUTOSUGGEST_DOC_FIELDS, new HashSet<>(ObjectUtils.getFieldNames(autoSuggestDoc)));
         ObjectUtils.invokeGetters(AUTOSUGGEST_DOC_FIELDS, autoSuggestDoc);
+
+        Assert.assertFalse(ObjectUtils.containsSetters(autoSuggestDoc));
+        Assert.assertTrue(ObjectUtils.areAllFieldsPrivate(autoSuggestDoc));
     }
 }

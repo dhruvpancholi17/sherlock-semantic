@@ -45,6 +45,8 @@ public class DecayedProductObjTest extends BaseModelTest {
         for (DecayedProductObj decayedProductObj : decayedProductObjs) {
             ObjectUtils.invokeGetters(DECAYED_PRODUCT_OBJECT_FIELDS, decayedProductObj);
             Assert.assertEquals(DECAYED_PRODUCT_OBJECT_FIELDS, new HashSet<>(ObjectUtils.getFieldNames(decayedProductObj)));
+            Assert.assertFalse(ObjectUtils.containsSetters(decayedProductObj));
+            Assert.assertTrue(ObjectUtils.areAllFieldsPrivate(decayedProductObj));
         }
     }
 

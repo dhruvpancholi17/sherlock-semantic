@@ -20,5 +20,7 @@ public class ProductSuggestionTest extends BaseModelTest {
         ProductSuggestion productSuggestion = new ProductSuggestion(null);
         Assert.assertEquals(PRODUCT_SUGGESTION_FIELDS, new HashSet<>(ObjectUtils.getFieldNames(productSuggestion)));
         ObjectUtils.invokeGetters(PRODUCT_SUGGESTION_FIELDS, productSuggestion);
+        Assert.assertFalse(ObjectUtils.containsSetters(productSuggestion));
+        Assert.assertTrue(ObjectUtils.areAllFieldsPrivate(productSuggestion));
     }
 }

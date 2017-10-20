@@ -6,7 +6,8 @@ import com.flipkart.sherlock.semantic.autosuggest.helpers.MarketAnalyzer;
 import com.flipkart.sherlock.semantic.autosuggest.utils.IOUtils;
 import com.flipkart.sherlock.semantic.autosuggest.utils.JsonSeDe;
 import com.flipkart.sherlock.semantic.common.util.FkConfigServiceWrapper;
-import junit.framework.Assert;
+import com.flipkart.sherlock.semantic.test.utils.ObjectUtils;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.*;
@@ -56,6 +57,13 @@ public class SolrConfigTest {
     }
 
     @Test
+    public void testFields() {
+        SolrConfig solrConfig = new SolrConfig();
+        Assert.assertFalse(ObjectUtils.containsSetters(solrConfig));
+        Assert.assertTrue(ObjectUtils.areAllFieldsPrivate(solrConfig));
+    }
+
+    @Test
     public void testQuery() throws Exception {
         Assert.assertEquals(params.getQuery(), "dhruv pancholi");
         Assert.assertEquals(params.getOriginalQuery(), "Dhruv Pancholi");
@@ -73,11 +81,11 @@ public class SolrConfigTest {
 
     @Test
     public void testThresholds() {
-        Assert.assertEquals(params.getCtrThreshold(), 0.05);
-        Assert.assertEquals(params.getWilsonCtrThreshold(), 1.0);
+        Assert.assertEquals(params.getCtrThreshold(), 0.05, 0.0);
+        Assert.assertEquals(params.getWilsonCtrThreshold(), 1.0, 0.0);
         Assert.assertEquals(params.getNumTokens(), 5);
         Assert.assertEquals(params.getImpressionsThreshold(), 100);
-        Assert.assertEquals(params.getStateHitsThreshold(), 1.0);
+        Assert.assertEquals(params.getStateHitsThreshold(), 1.0, 0.0);
         Assert.assertEquals(params.getMaxNumberOfStorePerQuery(), 3);
     }
 

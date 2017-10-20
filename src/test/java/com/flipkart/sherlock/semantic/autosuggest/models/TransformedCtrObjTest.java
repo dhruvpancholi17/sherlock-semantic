@@ -1,6 +1,7 @@
 package com.flipkart.sherlock.semantic.autosuggest.models;
 
 import com.flipkart.sherlock.semantic.autosuggest.utils.IOUtils;
+import com.flipkart.sherlock.semantic.test.utils.ObjectUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -10,6 +11,13 @@ import java.util.List;
  * Created by dhruv.pancholi on 14/10/17.
  */
 public class TransformedCtrObjTest extends BaseModelTest {
+
+    @Test
+    public void testFields() {
+        TransformedCtrObj transformedCtrObj = new TransformedCtrObj();
+        Assert.assertFalse(ObjectUtils.containsSetters(transformedCtrObj));
+        Assert.assertTrue(ObjectUtils.areAllFieldsPrivate(transformedCtrObj));
+    }
 
     @Test
     public void testSerialization() {

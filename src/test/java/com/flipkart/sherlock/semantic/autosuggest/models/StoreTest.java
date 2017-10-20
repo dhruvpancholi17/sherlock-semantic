@@ -42,6 +42,8 @@ public class StoreTest extends BaseModelTest {
         for (Store store : stores) {
             Assert.assertEquals(STORE_FIELDS, new HashSet<>(ObjectUtils.getFieldNames(store)));
             ObjectUtils.invokeGetters(STORE_FIELDS, store);
+            Assert.assertFalse(ObjectUtils.containsSetters(store));
+            Assert.assertTrue(ObjectUtils.areAllFieldsPrivate(store));
         }
     }
 }

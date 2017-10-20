@@ -20,5 +20,7 @@ public class QueryRequestTest extends BaseModelTest {
         QueryRequest queryRequest = new QueryRequest(null, null);
         Assert.assertEquals(QUERY_REQUEST_FIELDS, new HashSet<>(ObjectUtils.getFieldNames(queryRequest)));
         ObjectUtils.invokeGetters(QUERY_REQUEST_FIELDS, queryRequest);
+        Assert.assertFalse(ObjectUtils.containsSetters(queryRequest));
+        Assert.assertTrue(ObjectUtils.areAllFieldsPrivate(queryRequest));
     }
 }

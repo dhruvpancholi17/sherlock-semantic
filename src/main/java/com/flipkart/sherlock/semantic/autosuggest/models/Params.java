@@ -3,9 +3,9 @@ package com.flipkart.sherlock.semantic.autosuggest.models;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static com.flipkart.sherlock.semantic.autosuggest.helpers.MarketAnalyzer.DEFAULT_MARKET_PLACE_IDS;
@@ -19,7 +19,7 @@ import static com.flipkart.sherlock.semantic.autosuggest.helpers.MarketAnalyzer.
 public class Params {
 
     public static final List<String> DEFAULT_COMPLETION_TYPES = Arrays.asList("query", "product");
-    public static final List<String> DEFAULT_STORE_NODES = Arrays.asList("search.flipkart.com");
+    public static final List<String> DEFAULT_STORE_NODES = Collections.singletonList("search.flipkart.com");
 
     private boolean debug = false;
     private boolean queryDisabled = false;

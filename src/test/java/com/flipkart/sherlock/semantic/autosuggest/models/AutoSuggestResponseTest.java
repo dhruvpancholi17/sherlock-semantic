@@ -20,5 +20,7 @@ public class AutoSuggestResponseTest extends BaseModelTest {
         AutoSuggestResponse autoSuggestResponse = new AutoSuggestResponse(null, null, null, null, null, null, null);
         Assert.assertEquals(AUTOSUGGEST_RESPONSE_FIELDS, new HashSet<>(ObjectUtils.getFieldNames(autoSuggestResponse)));
         ObjectUtils.invokeGetters(AUTOSUGGEST_RESPONSE_FIELDS, autoSuggestResponse);
+        Assert.assertFalse(ObjectUtils.containsSetters(autoSuggestResponse));
+        Assert.assertTrue(ObjectUtils.areAllFieldsPrivate(autoSuggestResponse));
     }
 }

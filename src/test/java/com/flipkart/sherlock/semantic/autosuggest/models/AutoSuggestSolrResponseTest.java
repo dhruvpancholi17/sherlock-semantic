@@ -20,5 +20,7 @@ public class AutoSuggestSolrResponseTest extends BaseModelTest {
         AutoSuggestSolrResponse autoSuggestSolrResponse = new AutoSuggestSolrResponse(null, null);
         Assert.assertEquals(AUTOSUGGEST_SOLR_RESPONSE_FIELDS, new HashSet<>(ObjectUtils.getFieldNames(autoSuggestSolrResponse)));
         ObjectUtils.invokeGetters(AUTOSUGGEST_SOLR_RESPONSE_FIELDS, autoSuggestSolrResponse);
+        Assert.assertFalse(ObjectUtils.containsSetters(autoSuggestSolrResponse));
+        Assert.assertTrue(ObjectUtils.areAllFieldsPrivate(autoSuggestSolrResponse));
     }
 }

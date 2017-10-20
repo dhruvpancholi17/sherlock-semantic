@@ -20,5 +20,7 @@ public class ProductRequestTest extends BaseModelTest {
         ProductRequest productRequest = new ProductRequest(null, null);
         Assert.assertEquals(PRODUCT_REQUEST_FIELDS, new HashSet<>(ObjectUtils.getFieldNames(productRequest)));
         ObjectUtils.invokeGetters(PRODUCT_REQUEST_FIELDS, productRequest);
+        Assert.assertFalse(ObjectUtils.containsSetters(productRequest));
+        Assert.assertTrue(ObjectUtils.areAllFieldsPrivate(productRequest));
     }
 }

@@ -20,6 +20,8 @@ public class QueryResponseTest extends BaseModelTest {
         QueryResponse queryResponse = new QueryResponse(null, null);
         Assert.assertEquals(QUERY_RESPONSE_FIELDS, new HashSet<String>(ObjectUtils.getFieldNames(queryResponse)));
         ObjectUtils.invokeGetters(QUERY_RESPONSE_FIELDS, queryResponse);
+        Assert.assertFalse(ObjectUtils.containsSetters(queryResponse));
+        Assert.assertTrue(ObjectUtils.areAllFieldsPrivate(queryResponse));
     }
 
 }

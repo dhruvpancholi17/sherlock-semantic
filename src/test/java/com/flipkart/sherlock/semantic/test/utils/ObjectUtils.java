@@ -5,6 +5,7 @@ import org.apache.commons.lang.StringUtils;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -49,5 +50,30 @@ public class ObjectUtils {
                 e.printStackTrace();
             }
         }
+    }
+
+    public static boolean containsSetters(Object inputObject) {
+        Field[] fields = inputObject.getClass().getFields();
+        for (Field field : fields) {
+            String fieldName = field.getName();
+            String methodName = "set" + StringUtils.capitalize(fieldName);
+            try {
+                Method method = inputObject.getClass().getMethod(methodName);
+                return true;
+            } catch (NoSuchMethodException ignored) {
+
+            }
+        }
+        return false;
+    }
+
+    public static boolean areAllFieldsPrivate(Object inputObject) {
+        Field[] fields = inputObject.getClass().getFields();
+        for (Field field : fields) {
+            if (Modifier.isStatic(field.getModifiers())) continue;
+            if (Modifier.isPublic(field.getModifiers())) return false;
+
+        }
+        return true;
     }
 }
