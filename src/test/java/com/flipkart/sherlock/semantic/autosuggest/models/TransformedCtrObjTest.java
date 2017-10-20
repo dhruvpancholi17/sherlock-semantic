@@ -14,7 +14,7 @@ public class TransformedCtrObjTest extends BaseModelTest {
 
     @Test
     public void testFields() {
-        TransformedCtrObj transformedCtrObj = new TransformedCtrObj();
+        TransformedCtrObj transformedCtrObj = new TransformedCtrObj(0, 0, 0, 0);
         Assert.assertFalse(ObjectUtils.containsSetters(transformedCtrObj));
         Assert.assertTrue(ObjectUtils.areAllFieldsPrivate(transformedCtrObj));
     }

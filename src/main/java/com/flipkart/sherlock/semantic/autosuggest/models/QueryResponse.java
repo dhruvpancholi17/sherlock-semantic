@@ -11,6 +11,6 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 public class QueryResponse {
-    private AutoSuggestSolrResponse autoSuggestSolrResponse;
-    private List<QuerySuggestion> querySuggestions;
+    private final AutoSuggestSolrResponse autoSuggestSolrResponse;
+    private final List<QuerySuggestion> querySuggestions;
 }

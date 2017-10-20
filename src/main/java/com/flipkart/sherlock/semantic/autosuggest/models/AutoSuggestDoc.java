@@ -24,17 +24,17 @@ public class AutoSuggestDoc {
     public static final String PRODUCT_STORE = "product-store-obj_sstring";
 
     @JsonProperty(LOGGED_QC_QUERY)
-    private String loggedQuery;
+    private final String loggedQuery;
 
     @JsonProperty(CORRECTED_QUERY)
-    private String correctedQuery;
+    private final String correctedQuery;
 
     @JsonProperty(CTR_OBJ)
-    private TransformedCtrObj ctrObj;
+    private final TransformedCtrObj ctrObj;
 
     @JsonProperty(PRODUCT_OBJECT)
-    private List<DecayedProductObj> decayedProductObjs;
+    private final List<DecayedProductObj> decayedProductObjs;
 
     @JsonProperty(PRODUCT_STORE)
-    private List<ProductStore> productStores;
+    private final List<ProductStore> productStores;
 }

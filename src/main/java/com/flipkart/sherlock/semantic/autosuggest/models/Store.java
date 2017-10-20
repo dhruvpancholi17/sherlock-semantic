@@ -11,7 +11,7 @@ import lombok.Getter;
 @AllArgsConstructor
 @EqualsAndHashCode
 public class Store {
-    private String store;
-    private String title;
-    private String marketPlaceId;
+    private final String store;
+    private final String title;
+    private final String marketPlaceId;
 }

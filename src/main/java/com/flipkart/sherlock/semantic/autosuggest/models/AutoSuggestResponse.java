@@ -11,11 +11,11 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 public class AutoSuggestResponse {
-    private String payloadId;
-    private List<QuerySuggestion> querySuggestions;
-    private List<ProductSuggestion> productSuggestions;
-    private Params params;
-    private String querySolrQuery;
-    private String productSolrQuery;
-    private List<AutoSuggestDoc> autoSuggestDocs;
+    private final String payloadId;
+    private final List<QuerySuggestion> querySuggestions;
+    private final List<ProductSuggestion> productSuggestions;
+    private final Params params;
+    private final String querySolrQuery;
+    private final String productSolrQuery;
+    private final List<AutoSuggestDoc> autoSuggestDocs;
 }

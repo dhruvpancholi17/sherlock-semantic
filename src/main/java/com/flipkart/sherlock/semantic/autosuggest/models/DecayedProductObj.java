@@ -14,23 +14,23 @@ import java.util.List;
 public class DecayedProductObj {
 
     @JsonProperty("dd-contrib")
-    private double ddContrib;
+    private final double ddContrib;
 
     @JsonProperty("contrib")
-    private double contrib;
+    private final double contrib;
 
     @JsonProperty("product-id")
-    private String productId;
+    private final String productId;
 
     @JsonProperty("count")
-    private int count;
+    private final int count;
 
     @JsonProperty("dd-count")
-    private double ddCount;
+    private final double ddCount;
 
     @JsonProperty("leafPaths")
-    private List<String> leafPaths;
+    private final List<String> leafPaths;
 
     @JsonProperty("store")
-    private String store;
+    private final String store;
 }

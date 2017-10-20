@@ -13,6 +13,6 @@ import java.util.List;
 @AllArgsConstructor
 @EqualsAndHashCode
 public class QuerySuggestion {
-    private String query;
-    private List<Store> stores;
+    private final String query;
+    private final List<Store> stores;
 }

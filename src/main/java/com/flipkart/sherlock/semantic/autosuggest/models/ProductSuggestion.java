@@ -11,5 +11,5 @@ import lombok.Getter;
 @AllArgsConstructor
 @EqualsAndHashCode
 public class ProductSuggestion {
-    private String id;
+    private final String id;
 }

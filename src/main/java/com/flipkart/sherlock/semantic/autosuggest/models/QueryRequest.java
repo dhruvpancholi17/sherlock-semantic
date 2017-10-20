@@ -9,6 +9,6 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class QueryRequest {
-    private Params params;
-    private AutoSuggestSolrResponse autoSuggestSolrResponse;
+    private final Params params;
+    private final AutoSuggestSolrResponse autoSuggestSolrResponse;
 }
