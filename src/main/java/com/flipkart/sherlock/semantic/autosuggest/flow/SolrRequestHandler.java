@@ -123,7 +123,6 @@ public class SolrRequestHandler {
                 return new AutoSuggestSpellResponse(spellResponse.getSolrQuery(), suggestion.getSuggestions().get(0));
             }
         }
-
         return null;
     }
 

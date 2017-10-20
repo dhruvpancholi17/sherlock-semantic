@@ -14,11 +14,13 @@ public class IOUtilsTest {
     @Test
     public void open() throws Exception {
         Assert.assertNotNull(IOUtils.open("/etc/hosts"));
+        Assert.assertNull(IOUtils.open("/dummy"));
     }
 
     @Test
     public void openFromResource() throws Exception {
         Assert.assertNotNull(IOUtils.openFromResource(SOLR_CONFIG_RESOURCE));
+        Assert.assertNull(IOUtils.openFromResource("dummy.json"));
     }
 
     @Test

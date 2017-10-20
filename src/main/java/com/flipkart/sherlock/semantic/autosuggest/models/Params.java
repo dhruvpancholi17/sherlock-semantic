@@ -1,11 +1,10 @@
 package com.flipkart.sherlock.semantic.autosuggest.models;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-import javax.ws.rs.core.UriInfo;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -15,8 +14,8 @@ import static com.flipkart.sherlock.semantic.autosuggest.helpers.MarketAnalyzer.
  * Created by dhruv.pancholi on 01/06/17.
  */
 @Getter
-@Setter
-@NoArgsConstructor
+@Builder
+@AllArgsConstructor
 public class Params {
 
     public static final List<String> DEFAULT_COMPLETION_TYPES = Arrays.asList("query", "product");
@@ -29,7 +28,7 @@ public class Params {
 
     private int solrPort = 25280;
     private int phraseBoost = 1;
-    private int rows = 10;
+    private int rows = 28;
     private int maxNumberOfStorePerQuery = 3;
 
     private int numTokens = 0;

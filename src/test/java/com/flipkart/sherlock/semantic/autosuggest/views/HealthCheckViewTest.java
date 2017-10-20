@@ -8,6 +8,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
+import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.net.URI;
@@ -31,6 +32,14 @@ public class HealthCheckViewTest {
     @After
     public void tearDown() throws Exception {
 
+    }
+
+    @Test
+    public void testAPIPaths() throws NoSuchMethodException {
+        Assert.assertEquals("/flash", HealthCheckView.class.getAnnotation(Path.class).value());
+        Assert.assertEquals("rotation-status", HealthCheckView.class.getMethod("getStatus", UriInfo.class).getAnnotation(Path.class).value());
+        Assert.assertEquals("rotation", HealthCheckView.class.getMethod("flipRotation", String.class, String.class, UriInfo.class).getAnnotation(Path.class).value());
+        Assert.assertEquals("elb-healthcheck", HealthCheckView.class.getMethod("getElbHealthCheckStatus", UriInfo.class).getAnnotation(Path.class).value());
     }
 
     @Test

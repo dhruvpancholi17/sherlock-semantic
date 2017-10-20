@@ -26,7 +26,7 @@ public class IOUtils {
         try {
             return new IOUtils(filePath);
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            log.error("{}", e);
         }
         return null;
     }
@@ -34,8 +34,8 @@ public class IOUtils {
     public static IOUtils openFromResource(String filePath) {
         try {
             return new IOUtils(getFromResource(filePath));
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            log.error("{}", e);
         }
         return null;
     }
@@ -45,7 +45,7 @@ public class IOUtils {
         try {
             return readLines_();
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("{}", e);
         }
         return null;
     }

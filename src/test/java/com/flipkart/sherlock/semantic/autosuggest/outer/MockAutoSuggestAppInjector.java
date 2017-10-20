@@ -12,6 +12,8 @@ import com.google.inject.Injector;
 import org.junit.Before;
 import org.junit.Test;
 
+import static com.flipkart.sherlock.semantic.app.AutoSuggestApp.getTracedItems;
+import static com.flipkart.sherlock.semantic.common.metrics.MetricsManager.init;
 import static org.junit.Assert.assertNotNull;
 
 /**
@@ -36,7 +38,7 @@ public class MockAutoSuggestAppInjector {
     }
 
     public Injector getAutoSuggestAppInjector() throws Exception {
-
+        init(getTracedItems());
         CompleteTableDao completeTableDao = new MockCompleteTableDao().getCompleteTableDao();
         FkConfigServiceWrapper fkConfigServiceWrapper = new MockFkConfigServiceWrapper().getFkConfigServiceWrapper();
         SolrSearchServer solrSearchServer = new MockSolrSearchServer().getSolrSearchServer();

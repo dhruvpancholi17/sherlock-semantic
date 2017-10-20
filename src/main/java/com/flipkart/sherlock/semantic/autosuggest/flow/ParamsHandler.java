@@ -4,6 +4,7 @@ import com.flipkart.sherlock.semantic.app.AppConstants;
 import com.flipkart.sherlock.semantic.autosuggest.helpers.AutoSuggestQueryAnalyzer;
 import com.flipkart.sherlock.semantic.autosuggest.helpers.MarketAnalyzer;
 import com.flipkart.sherlock.semantic.autosuggest.models.Params;
+import com.flipkart.sherlock.semantic.autosuggest.models.Params.ParamsBuilder;
 import com.flipkart.sherlock.semantic.autosuggest.models.SolrConfig;
 import com.flipkart.sherlock.semantic.autosuggest.utils.JsonSeDe;
 import com.flipkart.sherlock.semantic.common.util.FkConfigServiceWrapper;
@@ -34,7 +35,7 @@ public class ParamsHandler {
 
     public Params getParams(String store, UriInfo uriInfo) {
 
-        String bucket = uriInfo.getQueryParameters().getFirst("bucket");
+        String bucket = uriInfo.getQueryParameters().getFirst("as-bucket");
         bucket = (bucket == null) ? "default" : bucket;
 
         String solrConfigString = fkConfigServiceWrapper.getString(AppConstants.SOLR_CONFIG_PREFIX + bucket);
@@ -45,211 +46,208 @@ public class ParamsHandler {
 
         SolrConfig solrConfig = jsonSeDe.readValue(solrConfigString, SolrConfig.class);
 
-        Params params = new Params();
+        ParamsBuilder paramsBuilder = Params.builder();
 
         store = StoreHandler.removeAllStores(store);
-        params.setStore(store);
-        params.setStoreNodes(Arrays.asList(store.split("/")));
-        params.setLeafNode(params.getStoreNodes().get(params.getStoreNodes().size() - 1));
+        paramsBuilder.store(store);
+        List<String> storeNodes = Arrays.asList(store.split("/"));
+        paramsBuilder.storeNodes(storeNodes);
+        paramsBuilder.leafNode(storeNodes.get(storeNodes.size() - 1));
 
-        updateDebug(params, solrConfig, uriInfo);
+        updateDebug(paramsBuilder, solrConfig, uriInfo);
 
         String query = uriInfo.getQueryParameters().getFirst("q");
         query = (query == null) ? "" : query;
-        params.setOriginalQuery(query);
-        params.setQuery(AutoSuggestQueryAnalyzer.getCleanQuery(query));
+        paramsBuilder.originalQuery(query);
+        paramsBuilder.query(AutoSuggestQueryAnalyzer.getCleanQuery(query));
 
-        updateTypes(params, uriInfo);
-        updateMarketPlaceIds(params, store, solrConfig, uriInfo, marketAnalyzer);
+        List<String> completionTypes = getCompletionTypes(uriInfo);
+        paramsBuilder.completionTypes(completionTypes);
 
-        params.setQueryDisabled(!params.getCompletionTypes().contains("query")
+        paramsBuilder.queryDisabled(!completionTypes.contains("query")
                 || autoSuggestQueryAnalyzer.isDisabled(query));
-        params.setProductDisabled(!params.getCompletionTypes().contains("product"));
+        paramsBuilder.productDisabled(!completionTypes.contains("product"));
 
+        updateMarketPlaceIds(paramsBuilder, store, solrConfig, uriInfo, marketAnalyzer);
 
-        String abParamsString = uriInfo.getQueryParameters().getFirst("ab-params");
-        List<String> abParams = (abParamsString != null && !abParamsString.isEmpty()) ?
-                Arrays.asList(abParamsString.split(",")) : null;
+        updateRows(paramsBuilder, solrConfig, uriInfo);
 
-        updateRows(params, solrConfig, uriInfo);
+        paramsBuilder.solrHost(solrConfig.getSolrHost());
+        paramsBuilder.solrPort(solrConfig.getSolrPort());
+        paramsBuilder.solrCore(solrConfig.getSolrCore());
 
-        params.setSolrHost(solrConfig.getSolrHost());
-        params.setSolrPort(solrConfig.getSolrPort());
-        params.setSolrCore(solrConfig.getSolrCore());
+        updateQueryField(paramsBuilder, solrConfig, uriInfo);
+        updatePrefixField(paramsBuilder, solrConfig, uriInfo);
+        updatePhraseField(paramsBuilder, solrConfig, uriInfo);
+        updatePhraseBoost(paramsBuilder, solrConfig, uriInfo);
+        updateBoostFunction(paramsBuilder, solrConfig, uriInfo);
+        updateSortFunction(paramsBuilder, solrConfig, uriInfo);
 
-        updateQueryField(params, solrConfig, uriInfo);
-        updatePrefixField(params, solrConfig, uriInfo);
-        updatePhraseField(params, solrConfig, uriInfo);
-        updatePhraseBoost(params, solrConfig, uriInfo);
-        updateBoostFunction(params, solrConfig, uriInfo);
-        updateSortFunction(params, solrConfig, uriInfo);
+        updateMaxNumberOfStorePerQuery(paramsBuilder, solrConfig, uriInfo);
+        updateSolrSpellCorrection(paramsBuilder, solrConfig, uriInfo);
 
-        updateMaxNumberOfStorePerQuery(params, solrConfig, uriInfo);
-        updateSolrSpellCorrection(params, solrConfig, uriInfo);
+        updateCtrField(paramsBuilder, solrConfig, uriInfo);
+        updateCtrThreshold(paramsBuilder, solrConfig, uriInfo);
+        updateWilsonCtrThreshold(paramsBuilder, solrConfig, uriInfo);
+        updateImpressionsThreshold(paramsBuilder, solrConfig, uriInfo);
+        updateStateHitsThreshold(paramsBuilder, solrConfig, uriInfo);
+        updateNumTokens(paramsBuilder, solrConfig, uriInfo);
 
-        updateCtrField(params, solrConfig, uriInfo);
-        updateCtrThreshold(params, solrConfig, uriInfo);
-        updateWilsonCtrThreshold(params, solrConfig, uriInfo);
-        updateImpressionsThreshold(params, solrConfig, uriInfo);
-        updateStateHitsThreshold(params, solrConfig, uriInfo);
-        updateNumTokens(params, solrConfig, uriInfo);
-
-        return params;
+        return paramsBuilder.build();
     }
 
-    private void updatePhraseField(Params params, SolrConfig solrConfig, UriInfo uriInfo) {
+    private void updatePhraseField(ParamsBuilder paramsBuilder, SolrConfig solrConfig, UriInfo uriInfo) {
         String s = uriInfo.getQueryParameters().getFirst("phraseField");
         if (s == null || s.isEmpty()) {
-            params.setPhraseField(solrConfig.getPhraseField());
+            paramsBuilder.phraseField(solrConfig.getPhraseField());
         } else {
-            params.setPhraseField(s);
+            paramsBuilder.phraseField(s);
         }
     }
 
-    private void updateCtrField(Params params, SolrConfig solrConfig, UriInfo uriInfo) {
+    private void updateCtrField(ParamsBuilder paramsBuilder, SolrConfig solrConfig, UriInfo uriInfo) {
         String s = uriInfo.getQueryParameters().getFirst("ctrField");
         if (s == null || s.isEmpty()) {
-            params.setCtrField(solrConfig.getCtrField());
+            paramsBuilder.ctrField(solrConfig.getCtrField());
         } else {
-            params.setCtrField(s);
+            paramsBuilder.ctrField(s);
         }
     }
 
-    private void updateRows(Params params, SolrConfig solrConfig, UriInfo uriInfo) {
+    private void updateRows(ParamsBuilder paramsBuilder, SolrConfig solrConfig, UriInfo uriInfo) {
         String s = uriInfo.getQueryParameters().getFirst("rows");
         if (s == null || s.isEmpty()) {
-            params.setRows(solrConfig.getRows());
+            paramsBuilder.rows(solrConfig.getRows());
         } else {
-            params.setRows(Integer.parseInt(s));
+            paramsBuilder.rows(Integer.parseInt(s));
         }
     }
 
-    private void updateSortFunction(Params params, SolrConfig solrConfig, UriInfo uriInfo) {
+    private void updateSortFunction(ParamsBuilder paramsBuilder, SolrConfig solrConfig, UriInfo uriInfo) {
         String s = uriInfo.getQueryParameters().getFirst("sortFunction");
         if (s == null || s.isEmpty()) {
-            params.setSortFunctions(Arrays.asList(solrConfig.getSortFunctionString().split(",")));
+            paramsBuilder.sortFunctions(Arrays.asList(solrConfig.getSortFunctionString().split(",")));
         } else {
-            params.setSortFunctions(Arrays.asList(s.split(",")));
+            paramsBuilder.sortFunctions(Arrays.asList(s.split(",")));
         }
     }
 
-    private void updateBoostFunction(Params params, SolrConfig solrConfig, UriInfo uriInfo) {
+    private void updateBoostFunction(ParamsBuilder paramsBuilder, SolrConfig solrConfig, UriInfo uriInfo) {
         String s = uriInfo.getQueryParameters().getFirst("boostFunction");
         if (s == null || s.isEmpty()) {
-            params.setBoostFunction(solrConfig.getBoostFunction());
+            paramsBuilder.boostFunction(solrConfig.getBoostFunction());
         } else {
-            params.setBoostFunction(s);
+            paramsBuilder.boostFunction(s);
         }
     }
 
-    private void updatePhraseBoost(Params params, SolrConfig solrConfig, UriInfo uriInfo) {
+    private void updatePhraseBoost(ParamsBuilder paramsBuilder, SolrConfig solrConfig, UriInfo uriInfo) {
         String s = uriInfo.getQueryParameters().getFirst("phraseBoost");
         if (s == null || s.isEmpty()) {
-            params.setPhraseBoost(solrConfig.getPhraseBoost());
+            paramsBuilder.phraseBoost(solrConfig.getPhraseBoost());
         } else {
-            params.setPhraseBoost(Integer.parseInt(s));
+            paramsBuilder.phraseBoost(Integer.parseInt(s));
         }
     }
 
-    private void updatePrefixField(Params params, SolrConfig solrConfig, UriInfo uriInfo) {
+    private void updatePrefixField(ParamsBuilder paramsBuilder, SolrConfig solrConfig, UriInfo uriInfo) {
         String s = uriInfo.getQueryParameters().getFirst("prefixField");
         if (s == null || s.isEmpty()) {
-            params.setPrefixField(solrConfig.getPrefixField());
+            paramsBuilder.prefixField(solrConfig.getPrefixField());
         } else {
-            params.setPrefixField(s);
+            paramsBuilder.prefixField(s);
         }
     }
 
-    private void updateQueryField(Params params, SolrConfig solrConfig, UriInfo uriInfo) {
+    private void updateQueryField(ParamsBuilder paramsBuilder, SolrConfig solrConfig, UriInfo uriInfo) {
         String s = uriInfo.getQueryParameters().getFirst("queryField");
         if (s == null || s.isEmpty()) {
-            params.setQueryField(solrConfig.getQueryField());
+            paramsBuilder.queryField(solrConfig.getQueryField());
         } else {
-            params.setQueryField(s);
+            paramsBuilder.queryField(s);
         }
     }
 
-    private void updateMaxNumberOfStorePerQuery(Params params, SolrConfig solrConfig, UriInfo uriInfo) {
+    private void updateMaxNumberOfStorePerQuery(ParamsBuilder paramsBuilder, SolrConfig solrConfig, UriInfo uriInfo) {
         String s = uriInfo.getQueryParameters().getFirst("maxNumberOfStorePerQuery");
         if (s == null || s.isEmpty()) {
-            params.setMaxNumberOfStorePerQuery(solrConfig.getMaxNumberOfStorePerQuery());
+            paramsBuilder.maxNumberOfStorePerQuery(solrConfig.getMaxNumberOfStorePerQuery());
         } else {
-            params.setMaxNumberOfStorePerQuery(Integer.parseInt(s));
+            paramsBuilder.maxNumberOfStorePerQuery(Integer.parseInt(s));
         }
     }
 
-    private void updateSolrSpellCorrection(Params params, SolrConfig solrConfig, UriInfo uriInfo) {
+    private void updateSolrSpellCorrection(ParamsBuilder paramsBuilder, SolrConfig solrConfig, UriInfo uriInfo) {
         String s = uriInfo.getQueryParameters().getFirst("solrSpellCorrection");
         if (s == null || s.isEmpty()) {
-            params.setSolrSpellCorrection(solrConfig.isSolrSpellCorrection());
+            paramsBuilder.solrSpellCorrection(solrConfig.isSolrSpellCorrection());
         } else {
-            params.setSolrSpellCorrection(Boolean.parseBoolean(s));
+            paramsBuilder.solrSpellCorrection(Boolean.parseBoolean(s));
         }
     }
 
-    private void updateTypes(Params params, UriInfo uriInfo) {
+    private List<String> getCompletionTypes(UriInfo uriInfo) {
         String s = uriInfo.getQueryParameters().getFirst("types");
         if (s == null || s.isEmpty()) {
-            params.setCompletionTypes(Params.DEFAULT_COMPLETION_TYPES);
+            return Params.DEFAULT_COMPLETION_TYPES;
         } else {
-            params.setCompletionTypes(Arrays.asList(s.split(",")));
+            return Arrays.asList(s.split(","));
         }
-
     }
 
-    private static void updateMarketPlaceIds(Params params, String store, SolrConfig solrConfig, UriInfo uriInfo, MarketAnalyzer marketAnalyzer) {
+    private static void updateMarketPlaceIds(ParamsBuilder paramsBuilder, String store, SolrConfig solrConfig, UriInfo uriInfo, MarketAnalyzer marketAnalyzer) {
         List<String> marketPlaceIds = marketAnalyzer.getMarketPlaceIds(store,
                 uriInfo.getQueryParameters().getFirst("groceryContext"),
                 uriInfo.getQueryParameters().getFirst("marketplaceId"));
-        params.setMarketPlaceIds(marketPlaceIds);
+        paramsBuilder.marketPlaceIds(marketPlaceIds);
     }
 
-    private void updateDebug(Params params, SolrConfig solrConfig, UriInfo uriInfo) {
-        params.setDebug(uriInfo.getQueryParameters().getFirst("debug") != null);
+    private void updateDebug(ParamsBuilder paramsBuilder, SolrConfig solrConfig, UriInfo uriInfo) {
+        paramsBuilder.debug(uriInfo.getQueryParameters().getFirst("debug") != null);
     }
 
-    private void updateNumTokens(Params params, SolrConfig solrConfig, UriInfo uriInfo) {
+    private void updateNumTokens(ParamsBuilder paramsBuilder, SolrConfig solrConfig, UriInfo uriInfo) {
         String s = uriInfo.getQueryParameters().getFirst("numTokens");
         if (s == null || s.isEmpty()) {
-            params.setNumTokens(solrConfig.getNumTokens());
+            paramsBuilder.numTokens(solrConfig.getNumTokens());
         } else {
-            params.setNumTokens(Integer.parseInt(s));
+            paramsBuilder.numTokens(Integer.parseInt(s));
         }
     }
 
-    private void updateImpressionsThreshold(Params params, SolrConfig solrConfig, UriInfo uriInfo) {
+    private void updateImpressionsThreshold(ParamsBuilder paramsBuilder, SolrConfig solrConfig, UriInfo uriInfo) {
         String s = uriInfo.getQueryParameters().getFirst("impressionsThreshold");
         if (s == null || s.isEmpty()) {
-            params.setImpressionsThreshold(solrConfig.getImpressionsThreshold());
+            paramsBuilder.impressionsThreshold(solrConfig.getImpressionsThreshold());
         } else {
-            params.setImpressionsThreshold(Integer.parseInt(s));
+            paramsBuilder.impressionsThreshold(Integer.parseInt(s));
         }
     }
 
-    private void updateStateHitsThreshold(Params params, SolrConfig solrConfig, UriInfo uriInfo) {
-        String s = uriInfo.getQueryParameters().getFirst("stateHitsThreshold");
+    private void updateStateHitsThreshold(ParamsBuilder paramsBuilder, SolrConfig solrConfig, UriInfo uriInfo) {
+            String s = uriInfo.getQueryParameters().getFirst("stateHitsThreshold");
         if (s == null || s.isEmpty()) {
-            params.setStateHitsThreshold(solrConfig.getStateHitsThreshold());
+            paramsBuilder.stateHitsThreshold(solrConfig.getStateHitsThreshold());
         } else {
-            params.setStateHitsThreshold(Double.parseDouble(s));
+            paramsBuilder.stateHitsThreshold(Double.parseDouble(s));
         }
     }
 
-    private void updateWilsonCtrThreshold(Params params, SolrConfig solrConfig, UriInfo uriInfo) {
+    private void updateWilsonCtrThreshold(ParamsBuilder paramsBuilder, SolrConfig solrConfig, UriInfo uriInfo) {
         String s = uriInfo.getQueryParameters().getFirst("wilsonCtrThreshold");
         if (s == null || s.isEmpty()) {
-            params.setWilsonCtrThreshold(solrConfig.getWilsonCtrThreshold());
+            paramsBuilder.wilsonCtrThreshold(solrConfig.getWilsonCtrThreshold());
         } else {
-            params.setWilsonCtrThreshold(Double.parseDouble(s));
+            paramsBuilder.wilsonCtrThreshold(Double.parseDouble(s));
         }
     }
 
-    private void updateCtrThreshold(Params params, SolrConfig solrConfig, UriInfo uriInfo) {
+    private void updateCtrThreshold(ParamsBuilder paramsBuilder, SolrConfig solrConfig, UriInfo uriInfo) {
         String s = uriInfo.getQueryParameters().getFirst("ctrThreshold");
-        if (s == null || !s.isEmpty()) {
-            params.setCtrThreshold(solrConfig.getCtrThreshold());
+        if (s == null || s.isEmpty()) {
+            paramsBuilder.ctrThreshold(solrConfig.getCtrThreshold());
         } else {
-            params.setCtrThreshold(Double.parseDouble(s));
+            paramsBuilder.ctrThreshold(Double.parseDouble(s));
         }
     }
 }

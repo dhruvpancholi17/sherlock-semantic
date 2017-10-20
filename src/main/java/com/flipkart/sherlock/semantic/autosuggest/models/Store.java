@@ -9,6 +9,7 @@ import lombok.Getter;
  */
 @Getter
 @AllArgsConstructor
+@EqualsAndHashCode
 public class Store {
     private String store;
     private String title;
