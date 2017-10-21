@@ -26,8 +26,8 @@ done
 
 rm $FILE_NAME
 
-echo "Cache clearing script is running. Waiting to finish all requests. Debug logs in: $OUTPUT_LOG"
+echo "Cache clearing script is running. Waiting to finish all requests. Error logs in: $OUTPUT_LOG"
 wait
-echo "Clearing cache done"
+echo "Clearing cache done. Please check error logs in $OUTPUT_LOG"
 
 exit 0
