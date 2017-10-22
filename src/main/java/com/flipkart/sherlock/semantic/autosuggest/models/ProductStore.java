@@ -12,17 +12,17 @@ import lombok.Getter;
 public class ProductStore {
 
     @JsonProperty("count")
-    private int count;
+    private final int count;
 
     @JsonProperty("dd-count")
-    private double ddCount;
+    private final double ddCount;
 
     @JsonProperty("contrib")
-    private double contrib;
+    private final double contrib;
 
     @JsonProperty("dd-contrib")
-    private double ddContrib;
+    private final double ddContrib;
 
     @JsonProperty("store")
-    private String store;
+    private final String store;
 }

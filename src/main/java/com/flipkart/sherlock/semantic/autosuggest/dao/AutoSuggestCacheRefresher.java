@@ -11,31 +11,30 @@ import java.util.*;
 @Singleton
 public class AutoSuggestCacheRefresher {
 
-    private Map<String, AbstractReloadableCache> abstractReloadableCaches;
+    private Map<String, AbstractReloadableMapCache> abstractReloadableMapCaches;
 
     @Inject
     public AutoSuggestCacheRefresher(AutoSuggestDisabledQueriesDao autoSuggestDisabledQueriesDao,
                                      RedirectionStoreDao redirectionStoreDao,
                                      StorePathCanonicalTitleDao storePathCanonicalTitleDao) {
 
-        abstractReloadableCaches = new HashMap<>();
-        abstractReloadableCaches.put(autoSuggestDisabledQueriesDao.getClass().getSimpleName(), autoSuggestDisabledQueriesDao);
-        abstractReloadableCaches.put(redirectionStoreDao.getClass().getSimpleName(), redirectionStoreDao);
-        abstractReloadableCaches.put(storePathCanonicalTitleDao.getClass().getSimpleName(), storePathCanonicalTitleDao);
+        abstractReloadableMapCaches = new HashMap<>();
+        abstractReloadableMapCaches.put(autoSuggestDisabledQueriesDao.getClass().getSimpleName(), autoSuggestDisabledQueriesDao);
+        abstractReloadableMapCaches.put(redirectionStoreDao.getClass().getSimpleName(), redirectionStoreDao);
+        abstractReloadableMapCaches.put(storePathCanonicalTitleDao.getClass().getSimpleName(), storePathCanonicalTitleDao);
     }
 
     public Map<String, Integer> refreshCache(String daos) {
-        Set<String> daoList = abstractReloadableCaches.keySet();
+        Set<String> daoList = abstractReloadableMapCaches.keySet();
         if (daos != null && !daos.isEmpty()) daoList = new HashSet<>(Arrays.asList(daos.split(",")));
 
         Map<String, Integer> countMap = new HashMap<>();
 
         for (String dao : daoList) {
-            if (abstractReloadableCaches.containsKey(dao)) {
-                AbstractReloadableCache abstractReloadableCache = abstractReloadableCaches.get(dao);
-                abstractReloadableCache.reloadCache();
-                if (!(abstractReloadableCache instanceof AbstractReloadableMapCache)) continue;
-                countMap.put(dao, ((AbstractReloadableMapCache) abstractReloadableCache).size());
+            if (abstractReloadableMapCaches.containsKey(dao)) {
+                AbstractReloadableMapCache abstractReloadableMapCache = abstractReloadableMapCaches.get(dao);
+                abstractReloadableMapCache.reloadCache();
+                countMap.put(dao, abstractReloadableMapCache.size());
             }
         }
         return countMap;
@@ -49,12 +48,12 @@ public class AutoSuggestCacheRefresher {
         Set<String> keySet = new HashSet<>(Arrays.asList(keys.split(",")));
         keySet.remove("");
 
-        AbstractReloadableCache abstractReloadableCache = abstractReloadableCaches.get(dao);
-        if (abstractReloadableCache == null) throw new RuntimeException("Dao specified in request not found.");
+        AbstractReloadableMapCache abstractReloadableMapCache = abstractReloadableMapCaches.get(dao);
+        if (abstractReloadableMapCache == null) throw new RuntimeException("Dao specified in request not found.");
 
         Map<String, Object> returnMap = new HashMap<>();
 
-        Map<String, Object> daoGenericMap = (abstractReloadableCache instanceof AbstractReloadableMapCache) ? ((AbstractReloadableMapCache) abstractReloadableCache).getGenericMap() : new HashMap<>();
+        Map daoGenericMap = abstractReloadableMapCache.getGenericMap();
 
         if (keySet.isEmpty()) keySet = daoGenericMap.keySet();
         for (String key : keySet) returnMap.put(key, daoGenericMap.get(key));

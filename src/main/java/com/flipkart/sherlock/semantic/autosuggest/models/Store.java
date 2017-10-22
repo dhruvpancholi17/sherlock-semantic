@@ -1,6 +1,7 @@
 package com.flipkart.sherlock.semantic.autosuggest.models;
 
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 /**
@@ -8,8 +9,9 @@ import lombok.Getter;
  */
 @Getter
 @AllArgsConstructor
+@EqualsAndHashCode
 public class Store {
-    private String store;
-    private String title;
-    private String marketPlaceId;
+    private final String store;
+    private final String title;
+    private final String marketPlaceId;
 }

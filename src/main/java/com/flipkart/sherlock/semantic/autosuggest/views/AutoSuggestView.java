@@ -4,13 +4,9 @@ import com.flipkart.sherlock.semantic.autosuggest.dao.AutoSuggestCacheRefresher;
 import com.flipkart.sherlock.semantic.autosuggest.flow.ParamsHandler;
 import com.flipkart.sherlock.semantic.autosuggest.flow.ProductRequestHandler;
 import com.flipkart.sherlock.semantic.autosuggest.flow.QueryRequestHandler;
-import com.flipkart.sherlock.semantic.autosuggest.helpers.MarketAnalyzer;
 import com.flipkart.sherlock.semantic.autosuggest.models.*;
 import com.flipkart.sherlock.semantic.autosuggest.utils.JsonSeDe;
-import com.flipkart.sherlock.semantic.common.config.SearchConfigProvider;
-import com.flipkart.sherlock.semantic.common.dao.mysql.ConfigsDao;
-import com.flipkart.sherlock.semantic.common.solr.SolrServerProvider;
-import com.flipkart.sherlock.semantic.core.search.SolrSearchServer;
+import com.flipkart.sherlock.semantic.common.metrics.MetricsManager;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
@@ -18,8 +14,12 @@ import lombok.extern.slf4j.Slf4j;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.util.Map;
+import java.util.UUID;
+
+import static com.flipkart.sherlock.semantic.common.metrics.MetricsManager.Service.Autosuggest;
 
 /**
  * Created by dhruv.pancholi on 30/05/17.
@@ -29,26 +29,13 @@ import java.util.Map;
 @Singleton
 public class AutoSuggestView {
 
+    public static final String COSMOS_AUTO_SUGGEST_COMPONENT = "api_autosuggest";
+
     @Inject
     private JsonSeDe jsonSeDe;
 
     @Inject
-    private MarketAnalyzer marketAnalyzer;
-
-    @Inject
-    private ConfigsDao configsDao;
-
-    @Inject
     private AutoSuggestCacheRefresher autoSuggestCacheRefresher;
-
-    @Inject
-    private SolrServerProvider solrServerProvider;
-
-    @Inject
-    private SearchConfigProvider searchConfigProvider;
-
-    @Inject
-    private SolrSearchServer solrSearchServer;
 
     @Inject
     private QueryRequestHandler queryRequestHandler;
@@ -70,23 +57,50 @@ public class AutoSuggestView {
     @GET
     @Path("/sherlock/stores/{store : .+}/autosuggest")
     @Produces(MediaType.APPLICATION_JSON)
-    public String pathMethod(@PathParam("store") String store, @Context UriInfo uriInfo) {
+    public Response pathMethod(@PathParam("store") String store, @Context UriInfo uriInfo) {
 
-        Params params = paramsHandler.getParams(store, uriInfo);
+        MetricsManager.Service service = Autosuggest;
+        String component = COSMOS_AUTO_SUGGEST_COMPONENT;
 
-        QueryResponse queryResponse = queryRequestHandler.getQuerySuggestions(params.getQuery(), new QueryRequest(params, null));
+        MetricsManager.logRequests(service, component);
 
-        ProductResponse productResponse = productRequestHandler.getProductSuggestions(params.getQuery(), new ProductRequest(params, queryResponse.getAutoSuggestSolrResponse()));
+        try {
+            Response response = MetricsManager.logTime(service, component, () -> {
 
-        AutoSuggestResponse autoSuggestResponse = new AutoSuggestResponse(
-                queryResponse.getQuerySuggestions(),
-                productResponse.getProductSuggestions(),
-                params.isDebug() ? params : null,
-                params.isDebug() ? queryResponse.getAutoSuggestSolrResponse().getSolrQuery() : null,
-                params.isDebug() ? productResponse.getAutoSuggestSolrResponse().getSolrQuery() : null,
-                params.isDebug() ? productResponse.getAutoSuggestSolrResponse().getAutoSuggestDocs() : null);
+                Params params = paramsHandler.getParams(store, uriInfo);
 
-        return jsonSeDe.writeValueAsString(autoSuggestResponse);
+                QueryResponse queryResponse = queryRequestHandler
+                        .getQuerySuggestions(params.getQuery(), new QueryRequest(params, null));
+
+                ProductResponse productResponse = productRequestHandler
+                        .getProductSuggestions(params.getQuery(),
+                                new ProductRequest(params, queryResponse.getAutoSuggestSolrResponse()));
+
+                AutoSuggestResponse autoSuggestResponse = new AutoSuggestResponse(
+                        UUID.randomUUID().toString(),
+                        queryResponse.getQuerySuggestions(),
+                        productResponse.getProductSuggestions(),
+                        params.isDebug() ? params : null,
+                        params.isDebug() ? queryResponse.getAutoSuggestSolrResponse().getSolrQuery() : null,
+                        params.isDebug() ? productResponse.getAutoSuggestSolrResponse().getSolrQuery() : null,
+                        params.isDebug() ? productResponse.getAutoSuggestSolrResponse().getAutoSuggestDocs() : null);
+
+                if (autoSuggestResponse.getQuerySuggestions() == null || autoSuggestResponse.getQuerySuggestions().isEmpty()) {
+                    log.info("Empty response for query: {}", params.getQuery());
+                    MetricsManager.logNullResponse(Autosuggest, COSMOS_AUTO_SUGGEST_COMPONENT);
+                }
+
+                return Response.status(Response.Status.OK)
+                        .type(MediaType.APPLICATION_JSON_TYPE)
+                        .entity(jsonSeDe.writeValueAsString(autoSuggestResponse))
+                        .build();
+            });
+            MetricsManager.logSuccess(service, component);
+            return response;
+        } catch (Exception e) {
+            MetricsManager.logError(service, component, e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Internal Server Error").build();
+        }
     }
 
     @GET

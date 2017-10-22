@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.flipkart.sherlock</groupId>
-    <artifactId>semantic</artifactId>
+    <artifactId>fk-sherlock-flash</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <properties>
@@ -20,6 +20,8 @@
         <jacoco.version>0.7.5.201505241946</jacoco.version>
         <jackson.version>2.8.0</jackson.version>
         <lucene.version>4.6.1</lucene.version>
+        <metrics.version>3.1.2</metrics.version>
+        <hystrix.version>1.5.10</hystrix.version>
     </properties>
 
     <dependencies>
@@ -184,9 +186,9 @@
 
         <!-- solr requirement -->
         <!--<dependency>-->
-            <!--<groupId>commons-logging</groupId>-->
-            <!--<artifactId>commons-logging</artifactId>-->
-            <!--<version>1.1.1</version>-->
+        <!--<groupId>commons-logging</groupId>-->
+        <!--<artifactId>commons-logging</artifactId>-->
+        <!--<version>1.1.1</version>-->
         <!--</dependency>-->
         <!-- end of solr requirement -->
 
@@ -242,6 +244,37 @@
         </dependency>
         <!-- End of config service dependencies -->
 
+        <!-- metrics dependencies -->
+
+        <dependency>
+            <groupId>io.dropwizard.metrics</groupId>
+            <artifactId>metrics-core</artifactId>
+            <version>${metrics.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.dropwizard.metrics</groupId>
+            <artifactId>metrics-servlets</artifactId>
+            <version>${metrics.version}</version>
+        </dependency>
+
+        <!-- end of  metrics dependencies -->
+
+        <!-- hystrix dependencies -->
+        <dependency>
+            <groupId>com.netflix.hystrix</groupId>
+            <artifactId>hystrix-core</artifactId>
+            <version>${hystrix.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.netflix.hystrix</groupId>
+            <artifactId>hystrix-codahale-metrics-publisher</artifactId>
+            <version>${hystrix.version}</version>
+        </dependency>
+
+        <!-- end of hystrix dependencies -->
+
     </dependencies>
     <build>
         <resources>
@@ -249,6 +282,11 @@
                 <directory>src/main/resources</directory>
             </resource>
         </resources>
+        <testResources>
+            <testResource>
+                <directory>src/test/resources</directory>
+            </testResource>
+        </testResources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -264,7 +302,7 @@
                 <artifactId>maven-shade-plugin</artifactId>
                 <version>2.3</version>
                 <configuration>
-                    <createDependencyReducedPom>true</createDependencyReducedPom>
+                    <createDependencyReducedPom>false</createDependencyReducedPom>
                     <filters>
                         <filter>
                             <artifact>*:*</artifact>
@@ -370,21 +408,51 @@
 
     <repositories>
         <repository>
-            <id>central</id>
-            <name>libs-releases</name>
-            <url>http://artifactory.nm.flipkart.com:8081/artifactory/libs-releases</url>
+            <id>fk-art-snapshot</id>
+            <name>Flipkart-Artifactory</name>
+            <url>http://10.85.59.116/artifactory/v1.0/artifacts/libs-snapshots-local</url>
         </repository>
         <repository>
-            <snapshots/>
-            <id>snapshots</id>
-            <name>libs-snapshots</name>
-            <url>http://artifactory.nm.flipkart.com:8081/artifactory/libs-snapshots</url>
+            <id>fk-art-release</id>
+            <name>Flipkart-Artifactory</name>
+            <url>http://10.85.59.116/artifactory/v1.0/artifacts/libs-release-local</url>
         </repository>
-        <repository>
-            <id>ops-build-0008</id>
-            <name>ops-build-0008-releases</name>
-            <url>http://artifactory.nm.flipkart.com:8081/artifactory/clojars-repo</url>
-        </repository>
-
     </repositories>
+
+    <!--<repositories>-->
+    <!--<repository>-->
+    <!--<id>central</id>-->
+    <!--<name>libs-releases</name>-->
+    <!--<url>http://artifactory.nm.flipkart.com:8081/artifactory/libs-releases</url>-->
+    <!--</repository>-->
+    <!--<repository>-->
+    <!--<snapshots/>-->
+    <!--<id>snapshots</id>-->
+    <!--<name>libs-snapshots</name>-->
+    <!--<url>http://artifactory.nm.flipkart.com:8081/artifactory/libs-snapshots</url>-->
+    <!--</repository>-->
+    <!--<repository>-->
+    <!--<id>ops-build-0008</id>-->
+    <!--<name>ops-build-0008-releases</name>-->
+    <!--<url>http://artifactory.nm.flipkart.com:8081/artifactory/clojars-repo</url>-->
+    <!--</repository>-->
+
+    <!--</repositories>-->
+
+    <!--<pluginRepositories>-->
+    <!--<pluginRepository>-->
+    <!--<snapshots>-->
+    <!--<enabled>false</enabled>-->
+    <!--</snapshots>-->
+    <!--<id>central</id>-->
+    <!--<name>plugins-releases</name>-->
+    <!--<url>http://artifactory.nm.flipkart.com:8081/artifactory/plugins-releases</url>-->
+    <!--</pluginRepository>-->
+    <!--<pluginRepository>-->
+    <!--<snapshots/>-->
+    <!--<id>snapshots</id>-->
+    <!--<name>plugins-snapshots</name>-->
+    <!--<url>http://artifactory.nm.flipkart.com:8081/artifactory/plugins-snapshots</url>-->
+    <!--</pluginRepository>-->
+    <!--</pluginRepositories>-->
 </project>

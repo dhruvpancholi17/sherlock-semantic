@@ -1,6 +1,7 @@
 package com.flipkart.sherlock.semantic.autosuggest.models;
 
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 /**
@@ -8,6 +9,7 @@ import lombok.Getter;
  */
 @Getter
 @AllArgsConstructor
+@EqualsAndHashCode
 public class ProductSuggestion {
-    private String id;
+    private final String id;
 }

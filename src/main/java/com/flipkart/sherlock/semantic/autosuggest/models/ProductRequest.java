@@ -11,6 +11,6 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 public class ProductRequest {
-    private Params params;
-    private AutoSuggestSolrResponse autoSuggestSolrResponse;
+    private final Params params;
+    private final AutoSuggestSolrResponse autoSuggestSolrResponse;
 }

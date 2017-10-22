@@ -1,0 +1,72 @@
+#!/bin/bash
+
+function die() {
+  echo "ERROR: $*" >&2
+  exit 2
+}
+
+function usage() {
+  [ -n "$1" ] && echo "Error: $*" >&2
+  echo "Usage: $0 <command>" >&2
+  echo "     commands: help, start" >&2
+  [ -n "$1" ] && exit 1
+  exit 0
+}
+
+function get_status() {
+  [ "200" == $(curl -s -w "%{http_code}\\n" -X GET "$ROTATION_STATUS_URL" -o /dev/null) ];
+}
+
+function set_status() {
+  command=$1
+  [ "200" == $(curl -s -w "%{http_code}\\n" -X GET "$ROTATION_URL?command=$command" -o /dev/null) ];
+}
+
+function do_warmup() {
+  echo "Warming up flash..."
+  curl -s -w "" "http://localhost:$FLASH_JETTY_PORT/sherlock/stores/search.flipkart.com/autosuggest?q=q" -o /dev/null
+}
+
+function take_oor() {
+  ! get_status && echo 'Error: Already Out-of-Rotation!' && return 1
+  echo "Taking out of rotation..."
+  set_status oor
+  sleep 5;
+  ! get_status && echo "SUCCESS: Now Out-of-Rotation"
+}
+
+function put_bir() {
+  get_status && echo 'Error: Already In-Rotation!' && return 1
+  echo "Putting back in rotation..."
+  set_status bir
+  sleep 5;
+  get_status && echo "SUCCESS: Back-in-Rotation"
+}
+
+PAC="fk-sherlock-flash"
+curuser=$(whoami)
+source /etc/default/$PAC
+
+CMD="$1"
+case "$CMD" in
+    help) usage;;
+    status) (get_status && echo "In-Rotation") || (echo "Out-of-Rotation" && exit 1);;
+    oor)
+        take_oor
+        ;;
+    bir)
+        put_bir
+        ;;
+    start)
+        [ "$curuser" == "$USER" ] || die "'start' command must be run as user $USER; to start the service, run: sudo /etc/init.d/$PAC start"
+        cd /usr/share/$PAC
+        echo "Starting $PAC"
+        exec java $JAVA_OPTS -cp /usr/share/$PAC/$PAC.jar com.flipkart.sherlock.semantic.app.AutoSuggestApp
+        do_warmup
+        put_bir
+        ;;
+    stop)
+        take_oor
+        echo "SUCCESS: Shutdown" || die "FAILED";
+        ;;
+esac

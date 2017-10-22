@@ -11,6 +11,6 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 public class ProductResponse {
-    private AutoSuggestSolrResponse autoSuggestSolrResponse;
-    private List<ProductSuggestion> productSuggestions;
+    private final AutoSuggestSolrResponse autoSuggestSolrResponse;
+    private final List<ProductSuggestion> productSuggestions;
 }

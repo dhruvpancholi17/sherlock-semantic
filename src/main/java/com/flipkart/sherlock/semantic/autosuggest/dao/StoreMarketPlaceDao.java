@@ -12,6 +12,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.flipkart.sherlock.semantic.autosuggest.helpers.MarketAnalyzer.FLIP_MART;
+
 /**
  * Created by dhruv.pancholi on 30/05/17.
  */
@@ -39,11 +41,13 @@ public class StoreMarketPlaceDao {
 
             Map<String, Object> metaMap = jsonSeDe.readValue(metadata, metadataTypereference);
 
-            if (metaMap == null || !metaMap.containsKey("marketplaceId")) continue;
+            if (metaMap == null || !metaMap.containsKey("marketplaceId") || metaMap.get("marketplaceId") == null) {
+                continue;
+            }
+
             String marketplaceId = String.valueOf(metaMap.get("marketplaceId"));
             marketplaceId = marketplaceId.toLowerCase();
-            marketplaceId = ("grocery".equals(marketplaceId)) ? MarketAnalyzer.FLIP_MART : marketplaceId;
-
+            if ("grocery".equals(marketplaceId)) marketplaceId = FLIP_MART;
             storeMarketPlaceMap.put(storeId, marketplaceId);
         }
     }

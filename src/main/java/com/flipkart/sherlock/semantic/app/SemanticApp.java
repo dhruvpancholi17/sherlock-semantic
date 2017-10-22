@@ -3,8 +3,9 @@ package com.flipkart.sherlock.semantic.app;
 
 import com.flipkart.sherlock.semantic.common.dao.mysql.entity.MysqlConfig;
 import com.flipkart.sherlock.semantic.common.dao.mysql.entity.MysqlConnectionPoolConfig;
-import com.flipkart.sherlock.semantic.core.augment.init.MiscInitProvider;
-import com.flipkart.sherlock.semantic.core.augment.init.MysqlDaoProvider;
+import com.flipkart.sherlock.semantic.common.init.MiscInitProvider;
+import com.flipkart.sherlock.semantic.common.init.MysqlDaoProvider;
+import com.flipkart.sherlock.semantic.common.util.FkConfigServiceWrapper;
 import com.flipkart.sherlock.semantic.resources.TestDaoResource;
 import com.flipkart.sherlock.semantic.resources.TestResource;
 import com.google.inject.Guice;
@@ -22,6 +23,8 @@ import org.glassfish.jersey.servlet.ServletContainer;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import static com.flipkart.sherlock.semantic.app.AppConstants.AUTOSUGGEST_BUCKET;
+
 /**
  * Created by anurag.laddha on 02/04/17.
  */
@@ -34,7 +37,8 @@ public class SemanticApp {
         //TODO way to copy solr core details at a suitable location and setting that as solr home
         System.setProperty("solr.solr.home", "/tmp/solrhome/solr");
 
-        MysqlConfig mysqlConfig = new MysqlConfig("localhost", 3306, "root", "", "sherlock");
+        FkConfigServiceWrapper fkConfigServiceWrapper = new FkConfigServiceWrapper(AUTOSUGGEST_BUCKET, true);
+        MysqlConfig mysqlConfig = MysqlConfig.getConfig(fkConfigServiceWrapper);
         MysqlConnectionPoolConfig connectionPoolConfig = new MysqlConnectionPoolConfig.MysqlConnectionPoolConfigBuilder(1,10)
             .setInitialPoolSize(1)
             .setAcquireIncrement(2)

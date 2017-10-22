@@ -29,7 +29,7 @@ public class AutoSuggestDisabledQueriesDao extends AbstractReloadableMapCache<St
         for (AutoSuggestDisabled autoSuggestDisabledQuery : autoSuggestDisabledQueries) {
             String prefix = autoSuggestDisabledQuery.getPrefix();
             if (prefix == null || prefix.isEmpty()) continue;
-            prefixMap.put(prefix, null);
+            prefixMap.put(prefix, prefix);
         }
         return prefixMap;
     }

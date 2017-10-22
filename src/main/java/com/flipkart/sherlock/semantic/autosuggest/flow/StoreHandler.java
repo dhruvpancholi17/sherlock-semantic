@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static com.flipkart.sherlock.semantic.autosuggest.helpers.MarketAnalyzer.DEFAULT_MARKET_PLACE_IDS;
+import static com.flipkart.sherlock.semantic.autosuggest.helpers.MarketAnalyzer.FLIP_MART;
 
 /**
  * Created by dhruv.pancholi on 27/04/17.
@@ -32,7 +33,7 @@ public class StoreHandler {
 
     private static final List<Store> EMPTY_STORE_LIST = new ArrayList<>();
 
-    private static final List<String> allStores = Arrays.asList("search.flipkart.com", "all", "m.flipkart.com", "flipkart.com");
+    private static final List<String> ALL_STORES = Arrays.asList("search.flipkart.com", "all", "m.flipkart.com", "flipkart.com");
 
     /**
      * @param productStores   A string field retrieved from meta
@@ -67,7 +68,7 @@ public class StoreHandler {
             if (!marketPlaceIds.contains(marketPlaceId)) continue;
             String canonicalTitle = storePathCanonicalTitleDao.getCanonicalTitle(store);
             if (canonicalTitle == null) continue;
-            stores.add(new Store(store, canonicalTitle, marketPlaceId));
+            stores.add(new Store(store, canonicalTitle, FLIP_MART.equals(marketPlaceId) ? "GROCERY" : "FLIPKART"));
         }
 
         stores = (stores.size() > maxStores) ? stores.subList(0, maxStores) : stores;
@@ -76,7 +77,7 @@ public class StoreHandler {
     }
 
     public int getNumberOfDocsWithStores(List<AutoSuggestDoc> autoSuggestDocs) {
-        if (autoSuggestDocs.size() < 2) return autoSuggestDocs.size();
+        if (autoSuggestDocs.size() < 2) return 0;
         AutoSuggestDoc firstDoc = autoSuggestDocs.get(0);
         AutoSuggestDoc secondDoc = autoSuggestDocs.get(1);
         return (secondDoc.getCtrObj().getPHits() >= 0.25 * firstDoc.getCtrObj().getPHits()) ? 2 : 1;
@@ -87,7 +88,7 @@ public class StoreHandler {
         String[] nodes = store.split("/");
         StringBuffer sb = new StringBuffer();
         for (int i = 0; i < nodes.length; i++) {
-            if (allStores.contains(nodes[i])) continue;
+            if (ALL_STORES.contains(nodes[i])) continue;
             if (i == nodes.length - 1) sb.append(nodes[i]);
             else sb.append(nodes[i] + "/");
         }

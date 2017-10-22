@@ -1,20 +1,29 @@
 package com.flipkart.sherlock.semantic.core.search;
 
-import com.flipkart.sherlock.semantic.common.solr.Core;
-import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.response.QueryResponse;
-
 import java.util.Map;
 
 /**
  * Created by anurag.laddha on 23/05/17.
  */
 public interface ISearchEngine {
-    SearchResponse query(SearchRequest request, String collection, Map<String, String> params);
 
-    SearchResponse query(SearchRequest request, Core core);
+    enum SearchParam {
+        CORE,
+        EXPERIMENT,
+        HOST,
+        PORT
+    }
 
-    SpellResponse querySpell(SearchRequest request, Core core);
+    /**
+     * Query engine for searching relevant documents
+     * @return
+     */
+    SearchResponse query(SearchRequest request, Map<SearchParam, String> params);
 
-    QueryResponse query(SolrQuery solrQuery, String solrQueryString, Core core);
+    /**
+     * Query search engine for spell correction
+     * @param request: spell check request
+     * @return
+     */
+    SpellResponse spellQuery(SearchRequest request, Map<SearchParam, String> params);
 }
