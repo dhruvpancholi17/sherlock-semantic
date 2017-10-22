@@ -1,6 +1,7 @@
-*/target/
+target/
 *.iml
 .idea
 .DS_Store
 .classpath
 .settings/
+logs/

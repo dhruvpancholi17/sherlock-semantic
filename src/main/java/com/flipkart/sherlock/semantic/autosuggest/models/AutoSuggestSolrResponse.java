@@ -11,6 +11,6 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 public class AutoSuggestSolrResponse {
-    private String solrQuery;
-    private List<AutoSuggestDoc> autoSuggestDocs;
+    private final String solrQuery;
+    private final List<AutoSuggestDoc> autoSuggestDocs;
 }

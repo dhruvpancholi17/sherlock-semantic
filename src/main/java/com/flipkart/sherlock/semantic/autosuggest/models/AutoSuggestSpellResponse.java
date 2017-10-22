@@ -11,6 +11,6 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 public class AutoSuggestSpellResponse {
-    private String solrQuery;
-    private String correctedQuery;
+    private final String solrQuery;
+    private final String correctedQuery;
 }

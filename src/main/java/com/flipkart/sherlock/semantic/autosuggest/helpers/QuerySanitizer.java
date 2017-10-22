@@ -1,6 +1,7 @@
 package com.flipkart.sherlock.semantic.autosuggest.helpers;
 
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 import java.util.regex.Matcher;
@@ -12,6 +13,7 @@ import java.util.regex.Pattern;
 public class QuerySanitizer {
 
     @Getter
+    @EqualsAndHashCode
     @AllArgsConstructor
     public static class QueryPrefix {
         private String originalQuery;

@@ -83,7 +83,7 @@ public class ProductRequestHandler {
 
         int count = 0;
         for (Map.Entry<String, Double> entry : entries) {
-            if (count++ > 10) break;
+            if (++count > 1) break;
             productSuggestions.add(new ProductSuggestion(entry.getKey()));
         }
         return productSuggestions;

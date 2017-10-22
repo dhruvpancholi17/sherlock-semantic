@@ -1,0 +1,4 @@
+{"count":31,"contrib":75.60975609756098,"store":"6bo/5hp/lwb/n3u","dd-count":7.566064762440522,"dd-contrib":81.71209544522186}
+{"count":31,"contrib":75,"store":"6bo/5hp/lwb/n3u","dd-count":7.566064762440522,"dd-contrib":81.71209544522186}
+{"count":31,"contrib":75.60975609756098,"store":"6bo/5hp/lwb/n3u","dd-count":7,"dd-contrib":81.71209544522186}
+{"count":31,"contrib":75.60975609756098,"store":"6bo/5hp/lwb/n3u","dd-count":7.566064762440522,"dd-contrib":81}

@@ -1,25 +1,24 @@
 package com.flipkart.sherlock.semantic.core.search;
 
 import com.flipkart.sherlock.semantic.autosuggest.utils.JsonSeDe;
-import com.flipkart.sherlock.semantic.common.solr.AutoSuggestSolrServerProvider;
 import com.flipkart.sherlock.semantic.common.solr.Core;
 import com.flipkart.sherlock.semantic.common.solr.SolrServerProvider;
 import com.flipkart.sherlock.semantic.core.search.SearchRequest.Param;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServer;
-import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.QueryResponse;
-import org.apache.solr.client.solrj.response.SpellCheckResponse;
 import org.apache.solr.client.solrj.response.SpellCheckResponse.Suggestion;
-import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 /**
@@ -35,57 +34,72 @@ public class SolrSearchServer implements ISearchEngine {
     @Inject
     private SolrServerProvider solrServerProvider;
 
-    @Inject
-    private AutoSuggestSolrServerProvider autoSuggestSolrServerProvider;
-
-
     @Override
-    public SearchResponse query(SearchRequest request, String collection, Map<String, String> params) {
-        String experiment = "";
-        if (params.containsKey("experiment"))
-            experiment = params.get("experiment");
-        SolrQuery solrQuery = getSolrQueryFromSearchReq(request);
-        SolrServer solrServer = solrServerProvider.getSolrServer(collection, experiment);
-        try {
-            QueryResponse queryResponse = solrServer.query(solrQuery);
-            return getSearchResponseFromSolrResponse(jsonSeDe.writeValueAsString(solrQuery), queryResponse);
-        } catch (SolrServerException e) {
-            e.printStackTrace();
+    public SearchResponse query(SearchRequest request, Map<SearchParam, String> params) {
+        if (request != null && params != null && params.containsKey(SearchParam.CORE)) {
+            SolrQuery solrQuery = getSolrQueryFromSearchReq(request);
+            String solrQueryString = getSolrQueryString(solrQuery);
+            SolrServer solrServer = getSolrServerFromParams(params);
+            try {
+                QueryResponse queryResponse = solrServer.query(solrQuery);
+                log.info("{} Status={} NumDocs={} QTime={}", solrQueryString, queryResponse.getStatus(), queryResponse.getResults().size(), queryResponse.getQTime());
+                return getSearchResponseFromSolrResponse(jsonSeDe.writeValueAsString(solrQuery), queryResponse);
+            } catch (Exception e) {
+                log.error("SOLR query failed:   {}  {}", solrQueryString, e);
+            }
         }
         return null;
     }
 
+
     @Override
-    public SearchResponse query(SearchRequest request, Core core) {
+    public SpellResponse spellQuery(SearchRequest request, Map<SearchParam, String> params) {
+        if (request != null && params != null && params.containsKey(SearchParam.CORE)) {
+            SolrQuery solrQuery = getSolrQueryFromSearchReq(request);
+            String solrQueryString = getSolrQueryString(solrQuery);
+            SolrServer solrServer = getSolrServerFromParams(params);
 
-        SolrQuery solrQuery = getSolrQueryFromSearchReq(request);
-        String solrQueryString = getSolrQueryString(solrQuery);
-
-        QueryResponse queryResponse = query(solrQuery, solrQueryString, core);
-
-        if (queryResponse == null) return null;
-
-        return getSearchResponseFromSolrResponse(solrQueryString, queryResponse);
+            try {
+                QueryResponse queryResponse = solrServer.query(solrQuery);
+                log.info("{} Status={} NumDocs={} QTime={}", solrQueryString, queryResponse.getStatus(), queryResponse.getResults().size(), queryResponse.getQTime());
+                return getSpellResponseFromSolrResponse(solrQueryString, queryResponse);
+            } catch (Exception e) {
+                log.error("SOLR spellQuery failed:  {}  {}", solrQueryString, e);
+            }
+        }
+        return null;
     }
 
-    @Override
-    public SpellResponse querySpell(SearchRequest request, Core core) {
-        SolrQuery solrQuery = getSolrQueryFromSearchReq(request);
-        String solrQueryString = getSolrQueryString(solrQuery);
-        QueryResponse queryResponse = query(solrQuery, solrQueryString, core);
-        return getSpellResponseFromSolrResponse(solrQueryString, queryResponse);
+    private SolrServer getSolrServerFromParams(Map<SearchParam, String> params) {
+
+        String solrHost = params.get(SearchParam.HOST);
+        Integer solrPort = params.get(SearchParam.PORT) != null ? Integer.parseInt(params.get(SearchParam.PORT)) : null;
+        String solrCore = params.get(SearchParam.CORE);
+
+        if (StringUtils.isBlank(solrCore) || StringUtils.isBlank(solrHost) || solrPort == null) {
+            throw new IllegalArgumentException("Invalid solr core properties: " + solrHost + " " + String.valueOf(solrPort) + " " + solrCore);
+        }
+        Core core = new Core(solrHost, solrPort, solrCore);
+        SolrServer solrServer = solrServerProvider.getSolrServer(core);
+        if (solrServer == null) throw new RuntimeException("Unable to retrieve SolrServer with core: " + core);
+        return solrServer;
     }
 
     private SpellResponse getSpellResponseFromSolrResponse(String solrQueryString, QueryResponse queryResponse) {
-        if (queryResponse == null) return null;
-        SpellCheckResponse spellCheckResponse = queryResponse.getSpellCheckResponse();
-        if (spellCheckResponse == null) return null;
-        List<Suggestion> suggestions = spellCheckResponse.getSuggestions();
-        if (suggestions == null || suggestions.size() == 0) return null;
-        return new SpellResponse(solrQueryString, queryResponse.getSpellCheckResponse().getSuggestions().get(0).getAlternatives());
+
+        if (queryResponse != null && queryResponse.getSpellCheckResponse() != null) {
+            List<Suggestion> solrSpellSuggestions = queryResponse.getSpellCheckResponse().getSuggestions();
+            List<SpellResponse.SpellSuggestion> spellSuggestions = new ArrayList<>();
+            solrSpellSuggestions.forEach(s -> spellSuggestions.add(new SpellResponse.SpellSuggestion(s.getToken(),
+                    s.getAlternatives())));
+
+            return new SpellResponse(solrQueryString, spellSuggestions);
+        }
+
+        return null;
     }
 
-    public String getSolrQueryString(SolrQuery solrQuery) {
+    private String getSolrQueryString(SolrQuery solrQuery) {
         String solrQueryString = solrQuery.toString();
         try {
             solrQueryString = URLDecoder.decode(solrQuery.toString(), "UTF-8");
@@ -95,48 +109,26 @@ public class SolrSearchServer implements ISearchEngine {
         return solrQueryString;
     }
 
-    /**
-     * @param solrQuery
-     * @param solrQueryString Only for the logging purpose and to avoid recomputing it for debugging
-     * @param core
-     * @return
-     */
-    @Override
-    public QueryResponse query(SolrQuery solrQuery, String solrQueryString, Core core) {
-
-        SolrServer solrServer = autoSuggestSolrServerProvider.getSolrServer(core);
-
-        try {
-            QueryResponse queryResponse = solrServer.query(solrQuery);
-            log.info("{} Status={} NumDocs={} QTime={}", solrQueryString, queryResponse.getStatus(), queryResponse.getResults().size(), queryResponse.getQTime());
-            return queryResponse;
-        } catch (SolrServerException e) {
-            log.error("Cannot query SolrServer correctly for request: {}", solrQueryString, e);
-        }
-
-        return null;
-    }
 
     private SearchResponse getSearchResponseFromSolrResponse(String solrQuery, QueryResponse queryResponse) {
-        SolrDocumentList solrDocs = queryResponse.getResults();
-        SearchResponse searchResponse = new SearchResponse(solrQuery, new ArrayList<>());
-
-        if (solrDocs == null || solrDocs.isEmpty()) return searchResponse;
-
-        for (SolrDocument solrDoc : solrDocs) {
-            Map<String, Object> docMap = new HashMap<>();
-            solrDoc.forEach(docMap::put);
-            searchResponse.addDoc(docMap);
+        if (queryResponse != null) {
+            List<Map<String, Object>> searchResults = new ArrayList<>();
+            SolrDocumentList solrDocs = queryResponse.getResults();
+            if (solrDocs != null && solrDocs.size() > 0) {
+                solrDocs.forEach(currResult -> searchResults.add(currResult.getFieldValueMap()));
+            }
+            return new SearchResponse(solrQuery, searchResults);
         }
-        return searchResponse;
+        return null;
     }
 
 
     private SolrQuery getSolrQueryFromSearchReq(SearchRequest request) {
         SolrQuery solrQuery = new SolrQuery();
-        Set<Entry<Param, ArrayList<String>>> entries = request.getRequestParams().entrySet();
-        for (Entry<Param, ArrayList<String>> entry : entries) {
-            solrQuery.setParam(entry.getKey().getParamName(), entry.getValue().toArray(new String[entry.getValue().size()]));
+        if (request.getRequestParams().size() > 0) {
+            for (Entry<Param, ArrayList<String>> entry : request.getRequestParams().entrySet()) {
+                solrQuery.setParam(entry.getKey().getParamName(), entry.getValue().toArray(new String[entry.getValue().size()]));
+            }
         }
         return solrQuery;
     }

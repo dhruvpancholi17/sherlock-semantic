@@ -13,8 +13,18 @@ public class AutoSuggestQueryAnalyzer {
     @Inject
     private AutoSuggestDisabledQueriesDao autoSuggestDisabledQueriesDao;
 
+    public static String getCleanQuery(String query) {
+        if (query == null) return null;
+        query = query.toLowerCase();
+        query = query.replaceAll("[+,]", " ");
+        query = query.replaceAll("[^A-Za-z0-9&/*_ .'-]", "");
+        query = query.trim();
+        return query;
+    }
+
     public boolean isDisabled(String query) {
         if (query == null) return false;
+        if (query.length() > 48) return true;
         query = query.toLowerCase();
 
         Map<String, String> negativeMap = autoSuggestDisabledQueriesDao.getMap();

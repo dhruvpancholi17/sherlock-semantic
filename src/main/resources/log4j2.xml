@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="WARN">
     <Properties>
-        <Property name="log-path">logs/</Property>
+        <Property name="log-path">/var/log/flipkart/fk-sherlock-flash</Property>
     </Properties>
     <appenders>
         <Console name="console-log" target="SYSTEM_OUT">
@@ -9,42 +9,90 @@
         </Console>
 
         <RollingFile name="ErrorFile" fileName="${log-path}/error.log"
-                     filePattern="${log-path}/error-%d{yyyy-MM-dd}-%i.log" >
+                     filePattern="${log-path}/error-%d{yyyy-MM-dd}-%i.log">
             <PatternLayout>
                 <pattern>[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n</pattern>
             </PatternLayout>
             <Policies>
-                <SizeBasedTriggeringPolicy size="1 GB" />
+                <SizeBasedTriggeringPolicy size="256 MB"/>
             </Policies>
-            <DefaultRolloverStrategy max="3"/>
+            <DefaultRolloverStrategy max="2">
+                <Delete basePath="${log-path}">
+                    <IfFileName glob="error-*.log">
+                        <IfAny>
+                            <IfAccumulatedFileCount exceeds="2"/>
+                        </IfAny>
+                    </IfFileName>
+                </Delete>
+            </DefaultRolloverStrategy>
         </RollingFile>
+
+
         <RollingFile name="AppFile" fileName="${log-path}/app.log"
-                     filePattern="${log-path}/app-%d{yyyy-MM-dd}-%i.log" >
+                     filePattern="${log-path}/app-%d{yyyy-MM-dd}-%i.log">
             <PatternLayout>
                 <pattern>[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n</pattern>
             </PatternLayout>
             <Policies>
-                <SizeBasedTriggeringPolicy size="1 GB" />
+                <SizeBasedTriggeringPolicy size="256 MB"/>
             </Policies>
-            <DefaultRolloverStrategy max="1"/>
+            <DefaultRolloverStrategy max="2">
+                <Delete basePath="${log-path}">
+                    <IfFileName glob="app-*.log">
+                        <IfAny>
+                            <IfAccumulatedFileCount exceeds="2"/>
+                        </IfAny>
+                    </IfFileName>
+                </Delete>
+            </DefaultRolloverStrategy>
         </RollingFile>
+
+
         <RollingFile name="SolrLog" fileName="${log-path}/solr.log"
-                     filePattern="${log-path}/app-%d{yyyy-MM-dd}-%i.log" >
+                     filePattern="${log-path}/solr-%d{yyyy-MM-dd}-%i.log">
             <PatternLayout>
                 <pattern>[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n</pattern>
             </PatternLayout>
             <Policies>
-                <SizeBasedTriggeringPolicy size="1 GB" />
+                <SizeBasedTriggeringPolicy size="256 MB"/>
             </Policies>
-            <DefaultRolloverStrategy max="1"/>
+            <DefaultRolloverStrategy max="2">
+                <Delete basePath="${log-path}">
+                    <IfFileName glob="solr-*.log">
+                        <IfAny>
+                            <IfAccumulatedFileCount exceeds="2"/>
+                        </IfAny>
+                    </IfFileName>
+                </Delete>
+            </DefaultRolloverStrategy>
         </RollingFile>
+
+        <RollingFile name="AccessLog" fileName="${log-path}/access.log"
+                     filePattern="${log-path}/access-%d{yyyy-MM-dd}-%i.log">
+            <PatternLayout>
+                <pattern>[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n</pattern>
+            </PatternLayout>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="256 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="2">
+                <Delete basePath="${log-path}">
+                    <IfFileName glob="access-*.log">
+                        <IfAny>
+                            <IfAccumulatedFileCount exceeds="2"/>
+                        </IfAny>
+                    </IfFileName>
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingFile>
+
     </appenders>
     <Loggers>
         <Logger name="org.eclipse.jetty" level="debug" additivity="false">
-            <appender-ref ref="console-log" level="debug"/>
+            <appender-ref ref="AccessLog" level="debug"/>
         </Logger>
         <Logger name="org.eclipse.jetty" level="info" additivity="false">
-            <appender-ref ref="console-log" level="info"/>
+            <appender-ref ref="AccessLog" level="info"/>
         </Logger>
 
         <Logger name="com.flipkart.sherlock.semantic.core.search" level="debug" additivity="false">
@@ -61,6 +109,10 @@
 
         <Root level="info">
             <appender-ref ref="AppFile"/>
+        </Root>
+
+        <Root level="error">
+            <appender-ref ref="ErrorFile"/>
         </Root>
 
     </Loggers>

@@ -1,23 +1,25 @@
 package com.flipkart.sherlock.semantic.autosuggest.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
  * Created by dhruv.pancholi on 01/06/17.
  */
 @Getter
+@AllArgsConstructor
 public class TransformedCtrObj {
 
     @JsonProperty("impressions")
-    private int impressions;
+    private final int impressions;
 
     @JsonProperty("p-hits")
-    private double pHits;
+    private final double pHits;
 
     @JsonProperty("state-hits")
-    private double stateHits;
+    private final double stateHits;
 
     @JsonProperty("ctr")
-    private double ctr;
+    private final double ctr;
 }
