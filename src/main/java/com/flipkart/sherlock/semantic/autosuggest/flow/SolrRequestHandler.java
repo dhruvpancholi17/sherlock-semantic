@@ -149,7 +149,11 @@ public class SolrRequestHandler {
             fqs.add("impressions_int" + ":[" + params.getImpressionsThreshold() + " TO *]");
         }
 
-        fqs.add(params.getPrefixField() + ":\"" + queryPrefix.getPrefix() + "\"");
+        String prefixField = (queryPrefix.getPrefix().length() >= params.getMinCharsForIncorrectPrefix())
+                ? params.getPrefixField()
+                : params.getPristinePrefixField();
+
+        fqs.add(prefixField + ":\"" + queryPrefix.getPrefix() + "\"");
 
         fqs.add("-" + PRODUCT_STORE + ":\"[]\"");
 

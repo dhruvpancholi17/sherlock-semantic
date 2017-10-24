@@ -34,6 +34,7 @@ public class Params {
     private int numTokens = 0;
     private int impressionsThreshold = 100;
     private double stateHitsThreshold = 0;
+    private int minCharsForIncorrectPrefix = 4;
 
     private double wilsonCtrThreshold = 0;
     private double ctrThreshold = 0.05;
@@ -51,6 +52,8 @@ public class Params {
     private String phraseField = "text_edgytext_phrase";
     private String boostFunction = "min(div(log(field(impressions_sint)),log(10)),10.0)^1";
     private String ctrField = "ctr_float";
+
+    private String pristinePrefixField = "prefix_edgytext";
 
     private List<String> completionTypes = DEFAULT_COMPLETION_TYPES;
     private List<String> storeNodes = DEFAULT_STORE_NODES;
