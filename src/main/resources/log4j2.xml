@@ -91,6 +91,7 @@
         <Logger name="org.eclipse.jetty" level="debug" additivity="false">
             <appender-ref ref="AccessLog" level="debug"/>
         </Logger>
+
         <Logger name="org.eclipse.jetty" level="info" additivity="false">
             <appender-ref ref="AccessLog" level="info"/>
         </Logger>
@@ -101,6 +102,18 @@
 
         <Logger name="com.flipkart.sherlock.semantic.core.search" level="info" additivity="false">
             <appender-ref ref="SolrLog"/>
+        </Logger>
+
+        <Logger name="com.flipkart" level="debug" additivity="false">
+            <appender-ref ref="AppFile"/>
+        </Logger>
+
+        <Logger name="com.flipkart" level="info" additivity="false">
+            <appender-ref ref="AppFile"/>
+        </Logger>
+
+        <Logger name="com.flipkart" level="error" additivity="false">
+            <appender-ref ref="ErrorFile"/>
         </Logger>
 
         <Root level="debug">

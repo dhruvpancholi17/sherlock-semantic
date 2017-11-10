@@ -29,3 +29,42 @@ sudo apt-get update
 for PACKAGE in $PACKAGES; do
   sudo apt-get install --yes --allow-unauthenticated $PACKAGE
 done
+
+
+#Jenkins Scripts
+
+LAST_SUCCESSFUL_BUILD_VERSION=$(reposervice --host repo-svc-app-0001.nm.flipkart.com --port 8080 env --name "sherlock-autosuggest-env" --appkey dude | grep "fk-sherlock-flash" | awk '{print $2}' | awk 'BEGIN{FS="fk-sherlock-flash/"}{print$2}')
+BUILD_VER_NUMBER=$(python -c "print $LAST_SUCCESSFUL_BUILD_VERSION + 1")
+BUILD_VER_NUMBER="0.0.$BUILD_VER_NUMBER"
+
+function die() {
+    echo "ERROR: $1" >&2
+    echo "Aborting." >&2
+    exit 1
+}
+
+LOCAL_DIR=`pwd`
+PACKAGE="fk-sherlock-flash"
+
+[ -n "$LOCAL_DIR" ]	|| die "No base dir specified."
+[ -n "$PACKAGE" ]	|| die "No package name specified."
+[ -d "$LOCAL_DIR" ]	|| die "Base dir '$LOCAL_DIR' does not exist."
+
+echo $JAVA_HOME
+
+DEB_DIR="$LOCAL_DIR/deb-templates/$PACKAGE"
+cp $LOCAL_DIR/target/$PACKAGE*.jar $DEB_DIR/usr/share/$PACKAGE/$PACKAGE.jar
+
+echo "Updating CONTROL file ..."
+sed -e "s/_VERSION_/${BUILD_VER_NUMBER}/" -i $DEB_DIR/DEBIAN/control
+sed -e "s/_PACKAGE_/${PACKAGE}/" -i $DEB_DIR/DEBIAN/control
+echo "Building deb file ${PACKAGE}_${BUILD_VER_NUMBER}.deb..."
+DEBIAN_PACKAGE="$LOCAL_DIR/${PACKAGE}_${BUILD_VER_NUMBER}.deb"
+dpkg-deb -b $DEB_DIR $DEBIAN_PACKAGE
+
+echo $DEBIAN_PACKAGE
+FLASH_REPO_VERSION=$(reposervice --host repo-svc-app-0001.nm.flipkart.com --port 8080 pubrepo --repo fk-sherlock-flash --appkey clientkey --debs $DEBIAN_PACKAGE | awk 'BEGIN{FS="fk-sherlock-flash/"}{print$2}')
+
+REPO_PAYLOAD="[{\"repoName\":\"oracle-java\",\"repoReferenceType\":\"EXACT\",\"repoVersion\":8},{\"repoName\":\"fk-ops-tomcat8-base\",\"repoReferenceType\":\"EXACT\",\"repoVersion\":1},{\"repoName\":\"fk-ops-sgp-sherlock\",\"repoReferenceType\":\"EXACT\",\"repoVersion\":114},{\"repoName\":\"fk-sherlock-haproxy\",\"repoReferenceType\":\"EXACT\",\"repoVersion\":25},{\"repoName\":\"fk-sherlock-flash\",\"repoReferenceType\":\"EXACT\",\"repoVersion\":$FLASH_REPO_VERSION},{\"repoName\":\"logsvc\",\"repoReferenceType\":\"EXACT\",\"repoVersion\":301},{\"repoName\":\"fk-config-service-confd\",\"repoReferenceType\":\"EXACT\",\"repoVersion\":54},{\"repoName\":\"fk-ops-sgp-sherlock\",\"repoReferenceType\":\"EXACT\",\"repoVersion\":33},{\"repoName\":\"cosmos-v3\",\"repoReferenceType\":\"EXACT\",\"repoVersion\":22}]"
+
+curl -X PUT -H "Content-Type: application/json" -d $REPO_PAYLOAD 'http://repo-svc-app-0001.nm.flipkart.com:8080/env/sherlock-autosuggest-env?appkey="12"'
