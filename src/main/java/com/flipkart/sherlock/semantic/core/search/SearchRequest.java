@@ -20,6 +20,7 @@ public class SearchRequest {
     private Map<Param, ArrayList<String>> requestParams = new HashMap<>();
 
     public static enum Param {
+        SOURCE("source"),
 
         QT(CommonParams.QT),
         Q(CommonParams.Q),

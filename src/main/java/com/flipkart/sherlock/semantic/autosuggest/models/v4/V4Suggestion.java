@@ -11,8 +11,8 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class V4Suggestion {
-    private final String titleText;
-    private final String subTitleText;
+    private final String title;
+    private final String subTitle;
     private final V4ContentType contentType;
     private final V4Store store;
 

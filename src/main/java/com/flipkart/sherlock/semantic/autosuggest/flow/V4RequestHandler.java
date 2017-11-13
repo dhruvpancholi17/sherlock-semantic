@@ -98,7 +98,7 @@ public class V4RequestHandler {
 
     private V4SuggestionRow getV4QuerySuggestionRow(String query, Store store) {
         V4Suggestion v4Suggestion = V4Suggestion.builder()
-                .titleText(query)
+                .title(query)
                 .contentType(getV4QueryType(query, store))
                 .store(getV4Store(store))
                 .clickUrl(getQueryStoreUrl(query, store))
@@ -110,7 +110,7 @@ public class V4RequestHandler {
         V4Suggestion v4Suggestion = V4Suggestion.builder()
                 .pid(id)
                 .contentType(V4ContentType.RECENT)
-                .titleText("Quick Heal TOTAL SECURITY 2USER 1YEAR")
+                .title("Quick Heal TOTAL SECURITY 2USER 1YEAR")
                 .imageUrl("https://rukminim1.flixcart.com/image/832/832/j2516kw0/security-software/e/4/n/total-security-2-pc-1-year-tr2-original-imaetezd8ydffquf.jpeg?q=70")
                 .clickUrl("/quick-heal-total-security-2user-1year/p/itmet7fvcdhzuhm7?pid=SECEP6PSD9H3RFFB")
                 .build();
