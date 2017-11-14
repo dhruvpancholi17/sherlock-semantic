@@ -86,7 +86,7 @@ public class AutoSuggestApp {
         contextDefault.addEventListener(new SherlockMetricsServletContextListener());
         contextDefault.addServlet(new ServletHolder(new ServletContainer(resourceConfig)), "/*");
         contextDefault.addServlet(com.codahale.metrics.servlets.MetricsServlet.class, "/metrics");
-        contextDefault.addServlet(new ServletHolder(new HystrixMetricsStreamServlet()),"/hystrix.stream");
+//        contextDefault.addServlet(new ServletHolder(new HystrixMetricsStreamServlet()),"/hystrix.stream");
         contextDefault.setVirtualHosts(new String[]{"@AutoSuggestApplication"});
         contexts.addHandler(contextDefault);
 
