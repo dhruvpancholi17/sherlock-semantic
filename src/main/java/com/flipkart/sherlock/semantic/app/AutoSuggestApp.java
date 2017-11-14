@@ -13,6 +13,7 @@ import com.flipkart.sherlock.semantic.common.util.FkConfigServiceWrapper;
 import com.flipkart.sherlock.semantic.common.util.SherlockMetricsServletContextListener;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.netflix.hystrix.contrib.metrics.eventstream.HystrixMetricsStreamServlet;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
@@ -85,6 +86,7 @@ public class AutoSuggestApp {
         contextDefault.addEventListener(new SherlockMetricsServletContextListener());
         contextDefault.addServlet(new ServletHolder(new ServletContainer(resourceConfig)), "/*");
         contextDefault.addServlet(com.codahale.metrics.servlets.MetricsServlet.class, "/metrics");
+        contextDefault.addServlet(new ServletHolder(new HystrixMetricsStreamServlet()),"/hystrix.stream");
         contextDefault.setVirtualHosts(new String[]{"@AutoSuggestApplication"});
         contexts.addHandler(contextDefault);
 
