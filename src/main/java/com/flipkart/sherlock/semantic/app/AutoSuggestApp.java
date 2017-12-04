@@ -99,8 +99,8 @@ public class AutoSuggestApp {
         try {
             Publisher.INSTANCE.init();
             Publisher.INSTANCE.withMetricRegistry(JmxMetricRegistry.INSTANCE.getInstance());
-        } catch (Exception e) {
-            log.error("Unable to Initiallize DG library", e);
+        } catch (Exception e ) {
+            log.info("Unable to Initiallize DG library", e);
         }
 
         try {

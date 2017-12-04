@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import javax.validation.constraints.Null;
 import java.util.List;
 
 /**
@@ -45,7 +46,7 @@ public class AutoSuggestDoc {
     private final List<ProductStore> productStores;
 
     @JsonProperty(SOLR_SCORE)
-    private final Double solrScore;
+    private final Float solrScore;
 
     @JsonProperty(WILSON_CTR)
     private final Double wilsonCTR;

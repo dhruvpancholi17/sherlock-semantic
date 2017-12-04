@@ -76,7 +76,9 @@ JAVA_OPTS="$JAVA_OPTS \
 
 
 ### Flash DG specific JAVA_OPTS ###
-JAVA_OPTS="$JAVA_OPTS -Darchaius.configurationSource.additionalUrls=file:///usr/share/fk-sherlock-flash/config.properties -Dorg.newsclub.net.unix.library.path=/usr/share/specter/uds-lib/"
+JAVA_OPTS="$JAVA_OPTS \
+-Darchaius.configurationSource.additionalUrls=file:///usr/share/fk-sherlock-flash/config.properties \
+-Dorg.newsclub.net.unix.library.path=/usr/share/specter/uds-lib/"
 
 JAVA_OPTS="$JAVA_OPTS \
 -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000"
