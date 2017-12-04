@@ -12,6 +12,8 @@
         <module>semantic-tooling</module>
         <!--<module>common</module>-->
         <module>autosuggest</module>
+        <module>commons</module>
+        <module>normalise</module>
     </modules>
 
     <properties>
