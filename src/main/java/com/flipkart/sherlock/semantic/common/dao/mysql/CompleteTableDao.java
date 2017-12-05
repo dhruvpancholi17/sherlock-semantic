@@ -119,7 +119,6 @@ public interface CompleteTableDao {
     List<SearchConfigs> getSearchConfigs();
 
 
-
     @Data
     @AllArgsConstructor
     public static class StorePathMetaData implements Serializable {
@@ -138,4 +137,26 @@ public interface CompleteTableDao {
     @Mapper(StorePathMetaDataMapper.class)
     @SqlQuery("SELECT * FROM `store-path`")
     List<StorePathMetaData> getStorePathCanonicalTitles();
+
+    @Data
+    @AllArgsConstructor
+    public static class AutoSuggestColdStart implements Serializable {
+        private int position;
+        private String type;
+        private String content;
+    }
+
+    public static class AutoSuggestColdStartMapper implements ResultSetMapper<AutoSuggestColdStart> {
+        @Override
+        public AutoSuggestColdStart map(int i, ResultSet resultSet, StatementContext statementContext) throws SQLException {
+            return new AutoSuggestColdStart(resultSet.getInt("position"),
+                    resultSet.getString("type"),
+                    resultSet.getString("content"));
+        }
+    }
+
+    @Mapper(AutoSuggestColdStartMapper.class)
+    @SqlQuery("SELECT * FROM `autosuggest_coldstart`")
+    List<AutoSuggestColdStart> getAutoSuggestColdStarts();
+
 }

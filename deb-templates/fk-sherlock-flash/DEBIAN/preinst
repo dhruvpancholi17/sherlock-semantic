@@ -1,0 +1,6 @@
+#!/bin/bash -e
+
+cat <<END >/etc/default/fk-bigfoot-dart.env
+export DART_CONFIG_SVC_BUCKETS=prod-fdpingestion-specter
+export SPECTER_CONFIG_SVC_BUCKETS=prod-fdp-specter,semantic.autosuggest.data_governance
+END

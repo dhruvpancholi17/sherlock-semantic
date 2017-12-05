@@ -10,6 +10,7 @@ import com.flipkart.sherlock.semantic.common.init.MysqlDaoProvider;
 import com.flipkart.sherlock.semantic.common.metrics.MetricsManager;
 import com.flipkart.sherlock.semantic.common.metrics.MetricsManager.TracedItem;
 import com.flipkart.sherlock.semantic.common.util.FkConfigServiceWrapper;
+import com.flipkart.sherlock.semantic.common.util.JmxMetricRegistry;
 import com.flipkart.sherlock.semantic.common.util.SherlockMetricsServletContextListener;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -23,6 +24,7 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
+import service.Publisher;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -30,6 +32,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 
 import static com.flipkart.sherlock.semantic.app.AppConstants.AUTOSUGGEST_BUCKET;
 import static com.flipkart.sherlock.semantic.autosuggest.views.AutoSuggestView.COSMOS_AUTO_SUGGEST_COMPONENT;
+import static com.flipkart.sherlock.semantic.autosuggest.views.AutoSuggestView.COSMOS_AUTO_SUGGEST_V4_COMPONENT;
 import static com.flipkart.sherlock.semantic.common.metrics.MetricsManager.ActionType.*;
 import static com.flipkart.sherlock.semantic.common.metrics.MetricsManager.Service.Autosuggest;
 
@@ -84,6 +87,7 @@ public class AutoSuggestApp {
         contextDefault.addEventListener(new SherlockMetricsServletContextListener());
         contextDefault.addServlet(new ServletHolder(new ServletContainer(resourceConfig)), "/*");
         contextDefault.addServlet(com.codahale.metrics.servlets.MetricsServlet.class, "/metrics");
+//        contextDefault.addServlet(new ServletHolder(new HystrixMetricsStreamServlet()),"/hystrix.stream");
         contextDefault.setVirtualHosts(new String[]{"@AutoSuggestApplication"});
         contexts.addHandler(contextDefault);
 
@@ -91,10 +95,19 @@ public class AutoSuggestApp {
 
         server.setRequestLog(new Slf4jRequestLog());
 
+        // publisher for data governance
+        try {
+            Publisher.INSTANCE.init();
+            Publisher.INSTANCE.withMetricRegistry(JmxMetricRegistry.INSTANCE.getInstance());
+        } catch (Exception e ) {
+            log.info("Unable to Initiallize DG library", e);
+        }
+
         try {
             server.start();
             server.join();
         } finally {
+            Publisher.INSTANCE.shutdown();
             server.stop();
         }
     }
@@ -110,6 +123,12 @@ public class AutoSuggestApp {
         tracedItems.add(new TracedItem(NULL, Autosuggest, COSMOS_AUTO_SUGGEST_COMPONENT));
         tracedItems.add(new TracedItem(SUCCESS, Autosuggest, COSMOS_AUTO_SUGGEST_COMPONENT));
         tracedItems.add(new TracedItem(LATENCY, Autosuggest, COSMOS_AUTO_SUGGEST_COMPONENT));
+
+        tracedItems.add(new TracedItem(ERROR, Autosuggest, COSMOS_AUTO_SUGGEST_V4_COMPONENT));
+        tracedItems.add(new TracedItem(RPS, Autosuggest, COSMOS_AUTO_SUGGEST_V4_COMPONENT));
+        tracedItems.add(new TracedItem(NULL, Autosuggest, COSMOS_AUTO_SUGGEST_V4_COMPONENT));
+        tracedItems.add(new TracedItem(SUCCESS, Autosuggest, COSMOS_AUTO_SUGGEST_V4_COMPONENT));
+        tracedItems.add(new TracedItem(LATENCY, Autosuggest, COSMOS_AUTO_SUGGEST_V4_COMPONENT));
         return tracedItems;
     }
 

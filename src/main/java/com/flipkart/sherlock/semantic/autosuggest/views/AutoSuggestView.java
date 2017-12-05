@@ -1,10 +1,13 @@
 package com.flipkart.sherlock.semantic.autosuggest.views;
 
 import com.flipkart.sherlock.semantic.autosuggest.dao.AutoSuggestCacheRefresher;
+import com.flipkart.sherlock.semantic.autosuggest.dataGovernance.Ingester;
 import com.flipkart.sherlock.semantic.autosuggest.flow.ParamsHandler;
 import com.flipkart.sherlock.semantic.autosuggest.flow.ProductRequestHandler;
 import com.flipkart.sherlock.semantic.autosuggest.flow.QueryRequestHandler;
+import com.flipkart.sherlock.semantic.autosuggest.flow.V4RequestHandler;
 import com.flipkart.sherlock.semantic.autosuggest.models.*;
+import com.flipkart.sherlock.semantic.autosuggest.models.v4.V4AutoSuggestResponse;
 import com.flipkart.sherlock.semantic.autosuggest.utils.JsonSeDe;
 import com.flipkart.sherlock.semantic.common.metrics.MetricsManager;
 import com.google.inject.Inject;
@@ -12,10 +15,7 @@ import com.google.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.core.*;
 import java.util.Map;
 import java.util.UUID;
 
@@ -30,6 +30,8 @@ import static com.flipkart.sherlock.semantic.common.metrics.MetricsManager.Servi
 public class AutoSuggestView {
 
     public static final String COSMOS_AUTO_SUGGEST_COMPONENT = "api_autosuggest";
+
+    public static final String COSMOS_AUTO_SUGGEST_V4_COMPONENT = "api_autosuggest_v4";
 
     @Inject
     private JsonSeDe jsonSeDe;
@@ -46,6 +48,9 @@ public class AutoSuggestView {
     @Inject
     private ParamsHandler paramsHandler;
 
+    @Inject
+    private V4RequestHandler v4RequestHandler;
+
 
     @GET
     @Produces(MediaType.TEXT_PLAIN)
@@ -57,7 +62,7 @@ public class AutoSuggestView {
     @GET
     @Path("/sherlock/stores/{store : .+}/autosuggest")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response pathMethod(@PathParam("store") String store, @Context UriInfo uriInfo) {
+    public Response pathMethod(@PathParam("store") String store, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
 
         MetricsManager.Service service = Autosuggest;
         String component = COSMOS_AUTO_SUGGEST_COMPONENT;
@@ -66,6 +71,8 @@ public class AutoSuggestView {
 
         try {
             Response response = MetricsManager.logTime(service, component, () -> {
+
+                String payloadId = UUID.randomUUID().toString();
 
                 Params params = paramsHandler.getParams(store, uriInfo);
 
@@ -76,8 +83,10 @@ public class AutoSuggestView {
                         .getProductSuggestions(params.getQuery(),
                                 new ProductRequest(params, queryResponse.getAutoSuggestSolrResponse()));
 
+                new Ingester().publishData(payloadId, queryResponse, params, productResponse, headers, uriInfo);
+
                 AutoSuggestResponse autoSuggestResponse = new AutoSuggestResponse(
-                        UUID.randomUUID().toString(),
+                        payloadId ,
                         queryResponse.getQuerySuggestions(),
                         productResponse.getProductSuggestions(),
                         params.isDebug() ? params : null,
@@ -93,6 +102,38 @@ public class AutoSuggestView {
                 return Response.status(Response.Status.OK)
                         .type(MediaType.APPLICATION_JSON_TYPE)
                         .entity(jsonSeDe.writeValueAsString(autoSuggestResponse))
+                        .build();
+            });
+            MetricsManager.logSuccess(service, component);
+            return response;
+        } catch (Exception e) {
+            MetricsManager.logError(service, component, e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Internal Server Error").build();
+        }
+    }
+
+    @GET
+    @Path("/sherlock/v4/stores/{store : .+}/autosuggest")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response autoSuggestV4(@PathParam("store") String store, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+        MetricsManager.Service service = Autosuggest;
+        String component = COSMOS_AUTO_SUGGEST_V4_COMPONENT;
+
+        MetricsManager.logRequests(service, component);
+
+        try {
+            Response response = MetricsManager.logTime(service, component, () -> {
+
+                V4AutoSuggestResponse v4Response = v4RequestHandler.getV4Response(store, uriInfo, headers);
+
+                if (v4Response.getSuggestions() == null || v4Response.getSuggestions().isEmpty()) {
+                    log.info("Empty response for query: {}", jsonSeDe.writeValueAsString(uriInfo.getQueryParameters()));
+                    MetricsManager.logNullResponse(Autosuggest, COSMOS_AUTO_SUGGEST_V4_COMPONENT);
+                }
+
+                return Response.status(Response.Status.OK)
+                        .type(MediaType.APPLICATION_JSON_TYPE)
+                        .entity(jsonSeDe.writeValueAsString(v4Response))
                         .build();
             });
             MetricsManager.logSuccess(service, component);

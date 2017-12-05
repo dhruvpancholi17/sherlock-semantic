@@ -132,7 +132,7 @@ public class SolrRequestHandler {
 
         searchRequest.addParam(SearchRequest.Param.QT, "dismax");
         searchRequest.addParam(SearchRequest.Param.Q, queryPrefix.getQuery());
-        searchRequest.addParam(SearchRequest.Param.FL, Arrays.asList(LOGGED_QC_QUERY, CORRECTED_QUERY, CTR_OBJ, PRODUCT_OBJECT, PRODUCT_STORE));
+        searchRequest.addParam(SearchRequest.Param.FL, Arrays.asList(LOGGED_QC_QUERY, CORRECTED_QUERY, CTR_OBJ, PRODUCT_OBJECT, PRODUCT_STORE, WILSON_CTR_FL, SOLR_SCORE));
 
         List<String> fqs = new ArrayList<>();
 
@@ -149,7 +149,11 @@ public class SolrRequestHandler {
             fqs.add("impressions_int" + ":[" + params.getImpressionsThreshold() + " TO *]");
         }
 
-        fqs.add(params.getPrefixField() + ":\"" + queryPrefix.getPrefix() + "\"");
+        String prefixField = (queryPrefix.getPrefix().length() >= params.getMinCharsForIncorrectPrefix())
+                ? params.getPrefixField()
+                : params.getPristinePrefixField();
+
+        fqs.add(prefixField + ":\"" + queryPrefix.getPrefix() + "\"");
 
         fqs.add("-" + PRODUCT_STORE + ":\"[]\"");
 
@@ -167,6 +171,8 @@ public class SolrRequestHandler {
         searchRequest.addParam(SearchRequest.Param.BQ, params.getPhraseField() + ":\"" + (queryPrefix.getOriginalQuery().equals("") ? "*:*" : queryPrefix.getOriginalQuery()) + "\"^" + params.getPhraseBoost());
         searchRequest.addParam(SearchRequest.Param.SORT, params.getSortFunctions());
         searchRequest.addParam(SearchRequest.Param.ROWS, String.valueOf(params.getRows()));
+
+        searchRequest.addParam(SearchRequest.Param.SOURCE, "flash");
 
         return searchRequest;
     }
@@ -196,6 +202,8 @@ public class SolrRequestHandler {
         searchRequest.addParam(SearchRequest.Param.SPELLCHECK_MAX_COLLATION_TRIES, "5");
         searchRequest.addParam(SearchRequest.Param.SPELLCHECK_COLLATE_EXTENDED_RESULTS, "true");
         searchRequest.addParam(SearchRequest.Param.SPELLCHECK_ONLY_MORE_POPULAR, "true");
+
+        searchRequest.addParam(SearchRequest.Param.SOURCE, "flash");
 
         return searchRequest;
     }
@@ -227,17 +235,19 @@ public class SolrRequestHandler {
             });
             if (productStores == null) continue;
 
+            Float solrScore = (Float) solrDoc.get(SOLR_SCORE);
+            if(solrScore == null) continue;
+
+            Double wilsonCTR = (Double) solrDoc.get(WILSON_CTR);
+            if(wilsonCTR == null) continue;
 
             autoSuggestDocs.add(new AutoSuggestDoc(
                     (String) solrDoc.get(LOGGED_QC_QUERY),
                     (String) solrDoc.get(CORRECTED_QUERY),
                     ctrObj,
                     decayedProductObjs,
-                    productStores));
+                    productStores, solrScore, wilsonCTR));
         }
-
         return new AutoSuggestSolrResponse(searchResponse.getSolrQuery(), autoSuggestDocs);
     }
-
-
 }

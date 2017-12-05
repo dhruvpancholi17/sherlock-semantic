@@ -1,7 +1,7 @@
 Package: _PACKAGE_
 Version: _VERSION_
 Architecture: all
-Depends: oracle-j2sdk1.8, cosmos-collectd, cosmos-jmx, stream-relay
+Depends: oracle-j2sdk1.8, cosmos-collectd, cosmos-jmx, stream-relay, specter
 Section: flipkart/w3
 Priority: standard
 Maintainer: Sherlock Dev <sherlock-dev@flipkart.com>
