@@ -2,10 +2,7 @@ package com.flipkart.sherlock.semantic.autosuggest.views;
 
 import com.flipkart.sherlock.semantic.autosuggest.dao.AutoSuggestCacheRefresher;
 import com.flipkart.sherlock.semantic.autosuggest.dataGovernance.Ingester;
-import com.flipkart.sherlock.semantic.autosuggest.flow.ParamsHandler;
-import com.flipkart.sherlock.semantic.autosuggest.flow.ProductRequestHandler;
-import com.flipkart.sherlock.semantic.autosuggest.flow.QueryRequestHandler;
-import com.flipkart.sherlock.semantic.autosuggest.flow.V4RequestHandler;
+import com.flipkart.sherlock.semantic.autosuggest.flow.*;
 import com.flipkart.sherlock.semantic.autosuggest.models.*;
 import com.flipkart.sherlock.semantic.autosuggest.models.v4.V4AutoSuggestResponse;
 import com.flipkart.sherlock.semantic.autosuggest.utils.JsonSeDe;
@@ -16,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -51,6 +49,12 @@ public class AutoSuggestView {
     @Inject
     private V4RequestHandler v4RequestHandler;
 
+    @Inject
+    private UserInsightHandler userInsightHandler;
+
+    @Inject
+    private L2Handler l2Handler;
+
 
     @GET
     @Produces(MediaType.TEXT_PLAIN)
@@ -72,6 +76,11 @@ public class AutoSuggestView {
         try {
             Response response = MetricsManager.logTime(service, component, () -> {
 
+
+                String accountId = getAccountId(headers);
+
+                UserInsightResponse userInsightResponse = userInsightHandler.getUserInsight(accountId);
+
                 String payloadId = UUID.randomUUID().toString();
 
                 Params params = paramsHandler.getParams(store, uriInfo);
@@ -83,20 +92,24 @@ public class AutoSuggestView {
                         .getProductSuggestions(params.getQuery(),
                                 new ProductRequest(params, queryResponse.getAutoSuggestSolrResponse()));
 
-                new Ingester().publishData(payloadId, queryResponse, params, productResponse, headers, uriInfo);
+                // new Ingester().publishData(payloadId, queryResponse, params, productResponse, headers, uriInfo);
 
                 AutoSuggestResponse autoSuggestResponse = new AutoSuggestResponse(
-                        payloadId ,
+                        payloadId,
                         queryResponse.getQuerySuggestions(),
                         productResponse.getProductSuggestions(),
                         params.isDebug() ? params : null,
                         params.isDebug() ? queryResponse.getAutoSuggestSolrResponse().getSolrQuery() : null,
                         params.isDebug() ? productResponse.getAutoSuggestSolrResponse().getSolrQuery() : null,
-                        params.isDebug() ? productResponse.getAutoSuggestSolrResponse().getAutoSuggestDocs() : null);
+                        productResponse.getAutoSuggestSolrResponse().getAutoSuggestDocs());
 
                 if (autoSuggestResponse.getQuerySuggestions() == null || autoSuggestResponse.getQuerySuggestions().isEmpty()) {
                     log.info("Empty response for query: {}", params.getQuery());
                     MetricsManager.logNullResponse(Autosuggest, COSMOS_AUTO_SUGGEST_COMPONENT);
+                }
+
+                if(params.isL2Enable()) {
+                    autoSuggestResponse = l2Handler.getReRankedResponse(params, autoSuggestResponse, userInsightResponse);
                 }
 
                 return Response.status(Response.Status.OK)
@@ -110,6 +123,12 @@ public class AutoSuggestView {
             MetricsManager.logError(service, component, e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Internal Server Error").build();
         }
+    }
+
+    private static String getAccountId(HttpHeaders headers) {
+        List<String> values = headers.getRequestHeader("X-Flipkart-AccountId");
+        if (values == null || values.size() == 0) return null;
+        return values.get(0);
     }
 
     @GET

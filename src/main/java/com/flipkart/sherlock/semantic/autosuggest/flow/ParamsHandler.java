@@ -54,6 +54,28 @@ public class ParamsHandler {
         paramsBuilder.storeNodes(storeNodes);
         paramsBuilder.leafNode(storeNodes.get(storeNodes.size() - 1));
 
+        String uieString = uriInfo.getQueryParameters().getFirst("uie");
+        if (uieString != null && !uieString.isEmpty()) {
+            paramsBuilder.uie(uieString);
+        } else {
+            paramsBuilder.uie("");
+        }
+
+        String alphaString = uriInfo.getQueryParameters().getFirst("alpha");
+        if (alphaString != null && !alphaString.isEmpty()) {
+            paramsBuilder.alpha(Double.valueOf(alphaString));
+        } else {
+            paramsBuilder.alpha(0.0);
+        }
+
+        String isL2EnableString = uriInfo.getQueryParameters().getFirst("isL2Enable");
+        if (isL2EnableString != null && !isL2EnableString.isEmpty()) {
+            paramsBuilder.isL2Enable(Boolean.valueOf(isL2EnableString));
+        }
+        else {
+            paramsBuilder.isL2Enable(true);
+        }
+
         updateDebug(paramsBuilder, solrConfig, uriInfo);
 
         String query = uriInfo.getQueryParameters().getFirst("q");

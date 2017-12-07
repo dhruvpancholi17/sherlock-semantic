@@ -15,4 +15,7 @@ import java.util.List;
 public class QuerySuggestion {
     private final String query;
     private final List<Store> stores;
+    private final Double solrScore;
+    private final Double uieScore;
+    private final Double combinedScore;
 }

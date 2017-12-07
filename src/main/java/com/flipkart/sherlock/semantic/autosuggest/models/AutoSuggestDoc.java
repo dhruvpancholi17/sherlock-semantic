@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-import javax.validation.constraints.Null;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by dhruv.pancholi on 01/06/17.
@@ -17,7 +17,7 @@ public class AutoSuggestDoc {
     public static final String LOGGED_QC_QUERY = "logged-qc-query_sstring";
 
     public static final String CORRECTED_QUERY = "corrected-query_sstring";
-    
+
     public static final String CTR_OBJ = "ctr-obj_sstring";
 
     public static final String PRODUCT_OBJECT = "product-obj_sstring";
@@ -29,6 +29,8 @@ public class AutoSuggestDoc {
     public static final String WILSON_CTR = "wilson_ctr";
 
     public static final String SOLR_SCORE = "score";
+
+    public static final String STORE_CLASSIFIER = "store-classifier_sstring";
 
     @JsonProperty(LOGGED_QC_QUERY)
     private final String loggedQuery;
@@ -50,4 +52,8 @@ public class AutoSuggestDoc {
 
     @JsonProperty(WILSON_CTR)
     private final Double wilsonCTR;
+
+    @JsonProperty(STORE_CLASSIFIER)
+    private final Map<String, Double> storeClassifier;
+
 }

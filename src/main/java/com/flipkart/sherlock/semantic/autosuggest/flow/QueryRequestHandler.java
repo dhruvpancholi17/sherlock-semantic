@@ -60,7 +60,7 @@ public class QueryRequestHandler {
                     params.getMaxNumberOfStorePerQuery(),
                     params.getStore(),
                     params.getMarketPlaceIds()) : new ArrayList<>();
-            querySuggestions.add(new QuerySuggestion(correctedQuery, stores));
+            querySuggestions.add(new QuerySuggestion(correctedQuery, stores, null, null, null));
             processCount++;
         }
 

@@ -17,7 +17,7 @@ public class QuerySuggestionTest extends BaseModelTest {
 
     @Test
     public void testFields() {
-        QuerySuggestion querySuggestion = new QuerySuggestion(null, null);
+        QuerySuggestion querySuggestion = new QuerySuggestion(null, null, null, null, null);
         Assert.assertEquals(QUERY_SUGGESTION_FIELDS, new HashSet<String>(ObjectUtils.getFieldNames(querySuggestion)));
         ObjectUtils.invokeGetters(QUERY_SUGGESTION_FIELDS, querySuggestion);
         Assert.assertFalse(ObjectUtils.containsSetters(querySuggestion));

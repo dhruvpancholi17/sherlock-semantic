@@ -59,4 +59,7 @@ public class Params {
     private List<String> storeNodes = DEFAULT_STORE_NODES;
     private List<String> marketPlaceIds = DEFAULT_MARKET_PLACE_IDS;
     private List<String> sortFunctions = Arrays.asList("score desc", "ranking-score_sfloat desc", "p-hits_sfloat desc", "ctr_sfloat desc");
+    private String uie = "";
+    private Double alpha = 0.0;
+    private boolean isL2Enable = true;
 }

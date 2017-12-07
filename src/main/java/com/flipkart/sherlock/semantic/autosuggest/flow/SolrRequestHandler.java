@@ -11,6 +11,7 @@ import com.flipkart.sherlock.semantic.common.hystrix.HystrixCommandWrapper;
 import com.flipkart.sherlock.semantic.common.util.FkConfigServiceWrapper;
 import com.flipkart.sherlock.semantic.core.search.*;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
@@ -132,7 +133,7 @@ public class SolrRequestHandler {
 
         searchRequest.addParam(SearchRequest.Param.QT, "dismax");
         searchRequest.addParam(SearchRequest.Param.Q, queryPrefix.getQuery());
-        searchRequest.addParam(SearchRequest.Param.FL, Arrays.asList(LOGGED_QC_QUERY, CORRECTED_QUERY, CTR_OBJ, PRODUCT_OBJECT, PRODUCT_STORE, WILSON_CTR_FL, SOLR_SCORE));
+        searchRequest.addParam(SearchRequest.Param.FL, Arrays.asList(LOGGED_QC_QUERY, CORRECTED_QUERY, CTR_OBJ, PRODUCT_OBJECT, PRODUCT_STORE, WILSON_CTR_FL, SOLR_SCORE, STORE_CLASSIFIER));
 
         List<String> fqs = new ArrayList<>();
 
@@ -236,17 +237,28 @@ public class SolrRequestHandler {
             if (productStores == null) continue;
 
             Float solrScore = (Float) solrDoc.get(SOLR_SCORE);
-            if(solrScore == null) continue;
+            if (solrScore == null) continue;
 
             Double wilsonCTR = (Double) solrDoc.get(WILSON_CTR);
-            if(wilsonCTR == null) continue;
+            if (wilsonCTR == null) continue;
+
+            String storeClassifierString = (String) solrDoc.get(STORE_CLASSIFIER);
+
+            Map<String, Double> storeClassifierData = Maps.newHashMap();
+
+            if(storeClassifierString != null && !storeClassifierString.isEmpty()) {
+                storeClassifierData = jsonSeDe.readValue(storeClassifierString, new TypeReference<Map<String, Double>>() {
+                });
+            }
 
             autoSuggestDocs.add(new AutoSuggestDoc(
                     (String) solrDoc.get(LOGGED_QC_QUERY),
                     (String) solrDoc.get(CORRECTED_QUERY),
                     ctrObj,
                     decayedProductObjs,
-                    productStores, solrScore, wilsonCTR));
+                    productStores, solrScore, wilsonCTR,
+                    storeClassifierData
+            ));
         }
         return new AutoSuggestSolrResponse(searchResponse.getSolrQuery(), autoSuggestDocs);
     }
