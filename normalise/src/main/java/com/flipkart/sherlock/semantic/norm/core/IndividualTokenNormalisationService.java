@@ -1,5 +1,6 @@
 package com.flipkart.sherlock.semantic.norm.core;
 
+import com.flipkart.sherlock.semantic.commons.Constants;
 import com.flipkart.sherlock.semantic.norm.entity.BrandInfo;
 import com.flipkart.sherlock.semantic.norm.util.NormConstants;
 import com.google.common.base.Joiner;
@@ -26,7 +27,7 @@ public class IndividualTokenNormalisationService implements INormalise {
     private SingulariseResourcesDataSource singulariseResourcesDataSource;
     private static final String spaceDelim = "\\s+";
     private final int maxBrandTokenLength;
-    private Joiner spaceJoiner = Joiner.on(" ").skipNulls();
+    private Joiner spaceJoiner = Joiner.on(Constants.DELIM_SPACE).skipNulls();
 
 
     @Inject

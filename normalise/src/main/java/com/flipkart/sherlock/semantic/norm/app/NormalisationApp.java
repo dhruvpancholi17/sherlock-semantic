@@ -2,7 +2,11 @@ package com.flipkart.sherlock.semantic.norm.app;
 
 import com.flipkart.sherlock.semantic.commons.dao.mysql.entity.MysqlConfig;
 import com.flipkart.sherlock.semantic.commons.dao.mysql.entity.MysqlConnectionPoolConfig;
+import com.flipkart.sherlock.semantic.commons.init.CommonInitProvider;
 import com.flipkart.sherlock.semantic.commons.init.MysqlDBIProvider;
+import com.flipkart.sherlock.semantic.commons.util.http.FkHttpClient;
+import com.flipkart.sherlock.semantic.commons.util.http.FkHttpClientConfig;
+import com.flipkart.sherlock.semantic.commons.util.http.FkHttpClientLifecycleManager;
 import com.flipkart.sherlock.semantic.norm.init.NormInitProvider;
 import com.flipkart.sherlock.semantic.norm.resources.NormResource;
 import com.google.inject.Guice;
@@ -38,10 +42,31 @@ public class NormalisationApp extends Application<NormalisationYmlConfig> {
             .MysqlConnectionPoolConfigBuilder(1,10).build();
 
         Injector injector = Guice.createInjector(
-                    new MysqlDBIProvider(mysqlConfig, mysqlConnectionPoolConfig),
-                    new NormInitProvider(brandCacheExpirySec, singulariseResourceCacheExpirySec, maxBrandEvaluateTokenLength, cacheReloadExecutorService));
+            new CommonInitProvider(environment.metrics(), getHttpClientConfig()),
+            new MysqlDBIProvider(mysqlConfig, mysqlConnectionPoolConfig),
+            new NormInitProvider(brandCacheExpirySec, singulariseResourceCacheExpirySec, maxBrandEvaluateTokenLength, cacheReloadExecutorService));
 
+        /**
+         * Initialise resources
+         */
         environment.jersey().register(injector.getInstance(NormResource.class));
+
+        /**
+         * Object lifecycle
+         */
+        environment.lifecycle().manage(new FkHttpClientLifecycleManager(injector.getInstance(FkHttpClient.class)));
+    }
+
+
+    private FkHttpClientConfig getHttpClientConfig(){
+        //TODO integrate with config service
+        return new FkHttpClientConfig.FkHttpClientConfigBuilder()
+            .setConnectTimeoutMs(1000)
+            .setConnectionRequestTimeoutMs(1000)
+            .setSocketTimeoutMs(2000)
+            .setMaxConnections(50)
+            .setMaxConnectionsPerRoute(5)
+            .build();
     }
 
     public static void main(String[] args) throws Exception {
