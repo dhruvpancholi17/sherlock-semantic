@@ -117,7 +117,7 @@ public class FkHttpClient implements Closeable {
 
 
     /**
-     * Executes given POST request and casts response to given type
+     * Executes given POST request
      * @return: status code
      * @throws Exception
      */
@@ -126,7 +126,7 @@ public class FkHttpClient implements Closeable {
             CloseableHttpResponse httpResponse = null;
             try {
                 httpResponse = this.httpClient.execute(httpPost);
-                int statusCode = httpResponse.getStatusLine().getStatusCode();;
+                int statusCode = httpResponse.getStatusLine().getStatusCode();
                 EntityUtils.consumeQuietly(httpResponse.getEntity());
                 return statusCode;
             }
