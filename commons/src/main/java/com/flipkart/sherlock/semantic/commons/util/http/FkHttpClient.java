@@ -1,8 +1,11 @@
 package com.flipkart.sherlock.semantic.commons.util.http;
 
 import com.codahale.metrics.MetricRegistry;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.HttpStatus;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -16,7 +19,6 @@ import javax.annotation.concurrent.ThreadSafe;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 
 /**
  * Created by anurag.laddha on 05/12/17.
@@ -24,6 +26,7 @@ import java.util.function.Function;
 
 /**
  * Flipkart wrapper for Apache Http client
+ * Ensures resource clean up after executing http requests
  * Please ensure all methods remain threadsafe
  */
 
@@ -33,9 +36,12 @@ import java.util.function.Function;
 public class FkHttpClient implements Closeable {
 
     private CloseableHttpClient httpClient;
+    private ObjectMapper objectMapper;
     private final Object syncObj = new Object();
 
-    public FkHttpClient(FkHttpClientConfig clientConfig, MetricRegistry metricRegistry){
+    public FkHttpClient(FkHttpClientConfig clientConfig, ObjectMapper objectMapper, MetricRegistry metricRegistry){
+
+        this.objectMapper = objectMapper;
 
         //Configure timeouts
         RequestConfig requestConfig = RequestConfig.custom()
@@ -55,15 +61,23 @@ public class FkHttpClient implements Closeable {
         //TODO setup guage for connection pool stats
     }
 
-    public <R> R getRequest(HttpGet httpGet, Function<CloseableHttpResponse, R> process) throws Exception{
-        if (httpGet != null){
+    /**
+     * Executes given GET request, and casts response to given type
+     * @return: returns null in case of error
+     * @throws Exception
+     */
+    public <T> T executeGetRequest(HttpGet httpGet, TypeReference<T> typeReference) throws Exception{
+        if (httpGet != null && typeReference != null){
+            T returnValue = null;
             CloseableHttpResponse httpResponse = null;
             try {
                 httpResponse = this.httpClient.execute(httpGet);
-                R output = process.apply(httpResponse);
+                if (httpResponse.getStatusLine().getStatusCode() == HttpStatus.SC_OK){
+                    returnValue = this.objectMapper.readValue(httpResponse.getEntity().getContent(), typeReference);
+                }
                 //Ensure entity is fully consumed so that underlying connection can be returned back to the pool for reuse
                 EntityUtils.consumeQuietly(httpResponse.getEntity());
-                return output;
+                return returnValue;
             }
             catch(Exception ex){
                 log.error("Error while executing GET request: " + httpGet.getURI().toString(), ex);
@@ -74,16 +88,47 @@ public class FkHttpClient implements Closeable {
         return null;
     }
 
+    /**
+     * Executes given POST request and casts response to given type
+     * @return: returns null in case of error
+     * @throws Exception
+     */
+    public <T> T executePostRequest(HttpPost httpPost, TypeReference<T> typeReference) throws Exception{
+        if (httpPost != null && typeReference != null){
+            T returnValue = null;
+            CloseableHttpResponse httpResponse = null;
+            try {
+                httpResponse = this.httpClient.execute(httpPost);
+                if (httpResponse.getStatusLine().getStatusCode() == HttpStatus.SC_OK){
+                    returnValue = this.objectMapper.readValue(httpResponse.getEntity().getContent(), typeReference);
+                }
+                //Ensure entity is fully consumed so that underlying connection can be returned back to the pool for reuse
+                EntityUtils.consumeQuietly(httpResponse.getEntity());
+                return returnValue;
+            }
+            catch(Exception ex){
+                log.error("Error while executing GET request: " + httpPost.getURI().toString(), ex);
+                closeHttpResponseQuietly(httpResponse);
+                throw ex;
+            }
+        }
+        return null;
+    }
 
-    public <R> R postRequest(HttpPost httpPost, Function<CloseableHttpResponse, R> process) throws Exception{
+
+    /**
+     * Executes given POST request and casts response to given type
+     * @return: status code
+     * @throws Exception
+     */
+    public int executePostRequestNoResponse(HttpPost httpPost) throws Exception{
         if (httpPost != null){
             CloseableHttpResponse httpResponse = null;
             try {
                 httpResponse = this.httpClient.execute(httpPost);
-                R output = process.apply(httpResponse);
-                //Ensure entity is fully consumed so that underlying connection can be returned back to the pool for reuse
+                int statusCode = httpResponse.getStatusLine().getStatusCode();;
                 EntityUtils.consumeQuietly(httpResponse.getEntity());
-                return output;
+                return statusCode;
             }
             catch(Exception ex){
                 log.error("Error while executing POST request: " + httpPost.getURI().toString(), ex);
@@ -91,7 +136,7 @@ public class FkHttpClient implements Closeable {
                 throw ex;
             }
         }
-        return null;
+        return HttpStatus.SC_BAD_REQUEST;
     }
 
 

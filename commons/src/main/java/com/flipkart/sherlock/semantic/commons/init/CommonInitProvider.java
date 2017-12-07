@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.flipkart.sherlock.semantic.commons.util.http.FkHttpClient;
 import com.flipkart.sherlock.semantic.commons.util.http.FkHttpClientConfig;
 import com.google.inject.AbstractModule;
+import com.google.inject.Inject;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 
@@ -51,10 +52,11 @@ public class CommonInitProvider extends AbstractModule {
         return objectMapper;
     }
 
+    @Inject
     @Provides
     @Singleton
-    FkHttpClient getHttpClient(){
-        return new FkHttpClient(fkHttpClientConfig, metricRegistry);
+    FkHttpClient getHttpClient(ObjectMapper objectMapper){
+        return new FkHttpClient(fkHttpClientConfig, objectMapper, metricRegistry);
     }
 
     @Provides

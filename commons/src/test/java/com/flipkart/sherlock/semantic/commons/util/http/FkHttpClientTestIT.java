@@ -1,12 +1,13 @@
 package com.flipkart.sherlock.semantic.commons.util.http;
 
 import com.codahale.metrics.MetricRegistry;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.util.EntityUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.io.IOException;
+import java.util.Map;
 
 /**
  * Created by anurag.laddha on 07/12/17.
@@ -30,24 +31,15 @@ public class FkHttpClientTestIT {
             .build();
 
         MetricRegistry metricRegistry = new MetricRegistry();
-        FkHttpClient fkHttpClient = new FkHttpClient(fkHttpClientConfig, metricRegistry);
+        ObjectMapper objectMapper = new ObjectMapper();
+        FkHttpClient fkHttpClient = new FkHttpClient(fkHttpClientConfig, objectMapper, metricRegistry);
 
         HttpGet httpGet = new HttpGet("http://10.33.205.247:9007/sherlock/stores/search.flipkart.com/autosuggest?q=mob");
 
-        try {
-            String responseData = fkHttpClient.getRequest(httpGet, (resp) -> {
-                String content = null;
-                try {
-                    content = EntityUtils.toString(resp.getEntity());
-                    System.out.println(content);
-                } catch (IOException e) {
-                }
-                return content;
-            });
-            Assert.assertTrue(responseData.trim().length() > 0);
-        } catch (Exception e) {
-            Assert.fail("Get request failed");
-        }
+        Map<String, Object> content = fkHttpClient.executeGetRequest(httpGet, new TypeReference<Map<String, Object>>() {});
+        System.out.println("Content received: ");
+        System.out.println(content);
+        Assert.assertNotNull(content);
 
         fkHttpClient.close();
     }
