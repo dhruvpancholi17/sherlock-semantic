@@ -18,4 +18,5 @@ public class QuerySuggestion {
     private final Double solrScore;
     private final Double uieScore;
     private final Double combinedScore;
+    private final String topStoreBucket;
 }

@@ -71,9 +71,16 @@ public class ParamsHandler {
         String isL2EnableString = uriInfo.getQueryParameters().getFirst("isL2Enable");
         if (isL2EnableString != null && !isL2EnableString.isEmpty()) {
             paramsBuilder.isL2Enable(Boolean.valueOf(isL2EnableString));
-        }
-        else {
+        } else {
             paramsBuilder.isL2Enable(true);
+        }
+
+
+        String diversifyString = uriInfo.getQueryParameters().getFirst("diversify");
+        if (diversifyString != null && !diversifyString.isEmpty()) {
+            paramsBuilder.diversify(Boolean.valueOf(diversifyString));
+        } else {
+            paramsBuilder.diversify(true);
         }
 
         updateDebug(paramsBuilder, solrConfig, uriInfo);

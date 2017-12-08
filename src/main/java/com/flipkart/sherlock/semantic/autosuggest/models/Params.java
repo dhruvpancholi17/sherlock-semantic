@@ -62,4 +62,5 @@ public class Params {
     private String uie = "";
     private Double alpha = 0.0;
     private boolean isL2Enable = true;
+    private boolean diversify = true;
 }

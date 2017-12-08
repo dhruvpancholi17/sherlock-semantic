@@ -12,6 +12,7 @@ import com.google.inject.Singleton;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import static com.flipkart.sherlock.semantic.autosuggest.helpers.MarketAnalyzer.DEFAULT_MARKET_PLACE_IDS;
 import static com.flipkart.sherlock.semantic.autosuggest.helpers.MarketAnalyzer.FLIP_MART;
@@ -40,11 +41,42 @@ public class StoreHandler {
      * @param maxStores       Maximum number of stores to be returned
      * @param contextualStore Return only the stores, which starts with this store as root
      * @param marketPlaceIds  Filter out stores, whose marketPlaceId is present in this list
+     * @param storeClassifier
      * @return
      */
-    public List<Store> getStoresFromProductStore(List<ProductStore> productStores, int maxStores, String contextualStore, List<String> marketPlaceIds) {
+    public List<Store> getStoresFromProductStore(List<ProductStore> productStores, int maxStores, String contextualStore, List<String> marketPlaceIds, Map<String, Double> storeClassifier) {
 
         if (productStores == null) return EMPTY_STORE_LIST;
+
+        if (storeClassifier != null) {
+            int totalCount = 0;
+            double totalDdCount = 0;
+            List<ProductStore> productStoreList = new ArrayList<>(productStores.size());
+            for (ProductStore productStore : productStores) {
+                ProductStore newProductStore = null;
+                if (storeClassifier.containsKey(productStore.getStore())) {
+                    newProductStore = new ProductStore(
+                            (int) (productStore.getCount() * storeClassifier.get(productStore.getStore()) * 100),
+                            productStore.getDdCount() * storeClassifier.get(productStore.getStore()) * 100,
+                            productStore.getContrib(),
+                            productStore.getDdContrib(),
+                            productStore.getStore());
+                } else {
+                    newProductStore = productStore;
+                }
+                totalCount += newProductStore.getCount();
+                totalDdCount += newProductStore.getDdCount();
+                productStoreList.add(newProductStore);
+            }
+            productStores.clear();
+            for (ProductStore productStore : productStoreList) {
+                productStores.add(new ProductStore(productStore.getCount(),
+                        productStore.getDdCount(),
+                        productStore.getCount() * 100 / totalCount,
+                        productStore.getDdCount() * 100 / totalDdCount,
+                        productStore.getStore()));
+            }
+        }
 
         productStores.sort((o1, o2) -> Double.compare(o2.getDdCount(), o1.getDdCount()));
 

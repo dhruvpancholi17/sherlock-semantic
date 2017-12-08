@@ -13,4 +13,5 @@ public class WeightedAutoSuggestDoc {
     private final double solrWeight;
     private final double uieWeight;
     private final double combinedWeight;
+    private final String topStoreBucket;
 }

@@ -59,8 +59,8 @@ public class QueryRequestHandler {
                     autoSuggestDoc.getProductStores(),
                     params.getMaxNumberOfStorePerQuery(),
                     params.getStore(),
-                    params.getMarketPlaceIds()) : new ArrayList<>();
-            querySuggestions.add(new QuerySuggestion(correctedQuery, stores, null, null, null));
+                    params.getMarketPlaceIds(), null) : new ArrayList<>();
+            querySuggestions.add(new QuerySuggestion(correctedQuery, stores, null, null, null, null));
             processCount++;
         }
 
