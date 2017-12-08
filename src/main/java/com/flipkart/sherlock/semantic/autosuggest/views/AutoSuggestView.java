@@ -81,7 +81,7 @@ public class AutoSuggestView {
 
                 UserInsightResponse userInsightResponse = userInsightHandler.getUserInsight(accountId);
 
-                log.info("UIE response : ", jsonSeDe.writeValueAsString(userInsightResponse)));
+                log.info("UIE response : ", jsonSeDe.writeValueAsString(userInsightResponse));
 
                 String payloadId = UUID.randomUUID().toString();
 
