@@ -24,7 +24,7 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
-import service.Publisher;
+//import service.Publisher;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -97,8 +97,8 @@ public class AutoSuggestApp {
 
         // publisher for data governance
         try {
-            Publisher.INSTANCE.init();
-            Publisher.INSTANCE.withMetricRegistry(JmxMetricRegistry.INSTANCE.getInstance());
+            //Publisher.INSTANCE.init();
+            //Publisher.INSTANCE.withMetricRegistry(JmxMetricRegistry.INSTANCE.getInstance());
         } catch (Exception e ) {
             log.info("Unable to Initiallize DG library", e);
         }
@@ -107,7 +107,7 @@ public class AutoSuggestApp {
             server.start();
             server.join();
         } finally {
-            Publisher.INSTANCE.shutdown();
+            //Publisher.INSTANCE.shutdown();
             server.stop();
         }
     }

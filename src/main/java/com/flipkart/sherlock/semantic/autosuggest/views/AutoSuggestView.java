@@ -1,7 +1,7 @@
 package com.flipkart.sherlock.semantic.autosuggest.views;
 
 import com.flipkart.sherlock.semantic.autosuggest.dao.AutoSuggestCacheRefresher;
-import com.flipkart.sherlock.semantic.autosuggest.dataGovernance.Ingester;
+//import com.flipkart.sherlock.semantic.autosuggest.dataGovernance.Ingester;
 import com.flipkart.sherlock.semantic.autosuggest.flow.*;
 import com.flipkart.sherlock.semantic.autosuggest.models.*;
 import com.flipkart.sherlock.semantic.autosuggest.models.v4.V4AutoSuggestResponse;
@@ -80,6 +80,8 @@ public class AutoSuggestView {
                 String accountId = getAccountId(headers);
 
                 UserInsightResponse userInsightResponse = userInsightHandler.getUserInsight(accountId);
+
+                log.info("UIE response : ", jsonSeDe.writeValueAsString(userInsightResponse)));
 
                 String payloadId = UUID.randomUUID().toString();
 

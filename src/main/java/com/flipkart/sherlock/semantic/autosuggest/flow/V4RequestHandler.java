@@ -1,7 +1,7 @@
 package com.flipkart.sherlock.semantic.autosuggest.flow;
 
 import com.flipkart.sherlock.semantic.autosuggest.dao.AutoSuggestColdStartDao;
-import com.flipkart.sherlock.semantic.autosuggest.dataGovernance.Ingester;
+//import com.flipkart.sherlock.semantic.autosuggest.dataGovernance.Ingester;
 import com.flipkart.sherlock.semantic.autosuggest.helpers.MarketAnalyzer;
 import com.flipkart.sherlock.semantic.autosuggest.models.*;
 import com.flipkart.sherlock.semantic.autosuggest.models.v4.*;
@@ -61,7 +61,7 @@ public class V4RequestHandler {
                         new ProductRequest(params, queryResponse.getAutoSuggestSolrResponse()));
 
         List<V4SuggestionRow> v4Suggestions = getV4Suggestion(queryResponse, productResponse);
-        new Ingester().publishDataV4(payloadId, params, v4Suggestions, queryResponse, productResponse, headers, uriInfo);
+        // new Ingester().publishDataV4(payloadId, params, v4Suggestions, queryResponse, productResponse, headers, uriInfo);
         return new V4AutoSuggestResponse(
                 payloadId,
                 0,
