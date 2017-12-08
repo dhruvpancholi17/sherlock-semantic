@@ -45,7 +45,7 @@ public class UserInsightHandler {
 
     public UserInsightResponse getUserInsight(String accountId) {
 
-        log.info("Account id : {}", accountId);
+        log.error("Account id : {}", accountId);
 
         if(accountId == null || accountId.isEmpty()) return new UserInsightResponse(ImmutableMap.of());
 
