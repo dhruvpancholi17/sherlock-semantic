@@ -22,7 +22,7 @@ public class L2Handler {
 
     public AutoSuggestResponse getReRankedResponse(Params params, AutoSuggestResponse autoSuggestResponse, UserInsightResponse userInsightResponse) {
 
-        double alpha = 0.3;
+        double alpha = 0.4;
         double beta = 1 - alpha;
 
         List<AutoSuggestDoc> autoSuggestDocs = autoSuggestResponse.getAutoSuggestDocs();
