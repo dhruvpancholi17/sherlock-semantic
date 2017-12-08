@@ -47,14 +47,14 @@ public class UserInsightHandler {
 
         log.error("Account id : {}", accountId);
 
-        if(accountId == null || accountId.isEmpty()) return new UserInsightResponse(ImmutableMap.of());
+        if (accountId == null || accountId.isEmpty()) return new UserInsightResponse(ImmutableMap.of());
 
         HystrixCommandConfig commandConfig = getHystrixCommandConfig(HYSTRIX_GROUP_SOLR, HYSTRIX_COMMAND_SEARCH);
         String url = String.format(URL_REGEX, accountId);
-        List<Map<String,Object>> uieResponse = null;
+        List<Map<String, Object>> uieResponse = null;
 
         if (commandConfig != null) {
-            HystrixCommandWrapper<List<Map<String,Object>>> insightCommand = new HystrixCommandWrapper<>(commandConfig,
+            HystrixCommandWrapper<List<Map<String, Object>>> insightCommand = new HystrixCommandWrapper<>(commandConfig,
                     () -> executeUIERequest(url));
 
             uieResponse = HystrixCommandHelper.executeSync(insightCommand, commandConfig.getGroupKey(),
@@ -66,26 +66,25 @@ public class UserInsightHandler {
     }
 
     private UserInsightResponse convertResponse(List<Map<String, Object>> uieResponse) {
-        Map<String,Integer> storeWeightDistribution = Maps.newHashMap();
+        Map<String, Integer> storeWeightDistribution = Maps.newHashMap();
 
         for (Map<String, Object> insightMap : uieResponse) {
-            Map<String,Object> storeInsight = (Map<String,Object>) insightMap.get("_2");
-            if(storeInsight.containsKey("storeId") && storeInsight.get("storeId") != null && storeInsight.get("storeId") != "") {
+            Map<String, Object> storeInsight = (Map<String, Object>) insightMap.get("_2");
+            if (storeInsight.containsKey("storeId") && storeInsight.get("storeId") != null && storeInsight.get("storeId") != "" && !storeInsight.get("storeId").toString().equals("search.flipkart.com")) {
                 String storeId = storeInsight.get("storeId").toString();
                 Integer count = Integer.valueOf(storeInsight.get("count").toString());
-                if(storeWeightDistribution.containsKey(storeId)){
+                if (storeWeightDistribution.containsKey(storeId)) {
                     Integer occurrenceCount = storeWeightDistribution.get(storeId);
-                    storeWeightDistribution.put(storeId, occurrenceCount + count);
-                }
-                else {
-                    storeWeightDistribution.put(storeId, count);
+                    storeWeightDistribution.put(storeId, occurrenceCount + count + 1);
+                } else {
+                    storeWeightDistribution.put(storeId, count + 1);
                 }
             }
         }
         return new UserInsightResponse(storeWeightDistribution);
     }
 
-    private List<Map<String,Object>> executeUIERequest(String url) {
+    private List<Map<String, Object>> executeUIERequest(String url) {
         HttpClient client = HttpClientBuilder.create().build();
         HttpGet request = new HttpGet(url);
         try {
@@ -98,7 +97,8 @@ public class UserInsightHandler {
             while ((line = rd.readLine()) != null) {
                 result.append(line);
             }
-            return JsonSeDe.getInstance().readValue(result.toString(), new TypeReference<List<Map<String,Object>>>() {});
+            return JsonSeDe.getInstance().readValue(result.toString(), new TypeReference<List<Map<String, Object>>>() {
+            });
         } catch (IOException e) {
             log.error("UIE Failure : {}", e);
         }
