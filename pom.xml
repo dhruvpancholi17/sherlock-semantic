@@ -243,18 +243,6 @@
                         <goals>
                             <goal>shade</goal>
                         </goals>
-                        <!--<configuration>-->
-                        <!--<transformers>-->
-                        <!--<transformer-->
-                        <!--implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>-->
-                        <!--<transformer-->
-                        <!--implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">-->
-                        <!--<manifestEntries>-->
-                        <!--<Main-Class>com.flipkart.sherlock.semantic.app.SemanticApp</Main-Class>-->
-                        <!--</manifestEntries>-->
-                        <!--</transformer>-->
-                        <!--</transformers>-->
-                        <!--</configuration>-->
                     </execution>
                 </executions>
             </plugin>
