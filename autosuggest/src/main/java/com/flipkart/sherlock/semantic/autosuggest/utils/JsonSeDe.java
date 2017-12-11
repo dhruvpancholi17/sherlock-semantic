@@ -11,6 +11,7 @@ import static com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKN
 /**
  * Created by dhruv.pancholi on 30/05/17.
  */
+//TODO remove
 @AllArgsConstructor
 public class JsonSeDe {
 

@@ -3,7 +3,7 @@ package com.flipkart.sherlock.semantic.norm.app;
 import com.flipkart.sherlock.semantic.commons.dao.mysql.entity.MysqlConfig;
 import com.flipkart.sherlock.semantic.commons.dao.mysql.entity.MysqlConnectionPoolConfig;
 import com.flipkart.sherlock.semantic.commons.init.CommonInitProvider;
-import com.flipkart.sherlock.semantic.commons.init.MysqlDBIProvider;
+import com.flipkart.sherlock.semantic.commons.init.MysqlDBIInitProvider;
 import com.flipkart.sherlock.semantic.commons.util.http.FkHttpClient;
 import com.flipkart.sherlock.semantic.commons.util.http.FkHttpClientConfig;
 import com.flipkart.sherlock.semantic.commons.util.http.FkHttpClientLifecycleManager;
@@ -43,7 +43,7 @@ public class NormalisationApp extends Application<NormalisationYmlConfig> {
 
         Injector injector = Guice.createInjector(
             new CommonInitProvider(environment.metrics(), getHttpClientConfig()),
-            new MysqlDBIProvider(mysqlConfig, mysqlConnectionPoolConfig),
+            new MysqlDBIInitProvider(mysqlConfig, mysqlConnectionPoolConfig),
             new NormInitProvider(brandCacheExpirySec, singulariseResourceCacheExpirySec, maxBrandEvaluateTokenLength, cacheReloadExecutorService));
 
         /**

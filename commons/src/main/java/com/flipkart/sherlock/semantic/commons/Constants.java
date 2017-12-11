@@ -14,4 +14,7 @@ public class Constants {
 
     public static final String DELIM_COMMA = ",";
     public static final String DELIM_SPACE = " ";
+    public static final String DELIM_DOT = ".";
+
+    public static final String GUICE_CACHE_EXPIRY_HYSTRIX_CONFIG = "guiceHystrixCacheExpiry";
 }

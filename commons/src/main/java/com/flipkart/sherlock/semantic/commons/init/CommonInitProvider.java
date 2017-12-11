@@ -64,6 +64,4 @@ public class CommonInitProvider extends AbstractModule {
     MetricRegistry getMetricRegistry(){
         return this.metricRegistry;
     }
-
-
 }

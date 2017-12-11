@@ -19,12 +19,12 @@ import org.skife.jdbi.v2.DBI;
  */
 
 @Slf4j
-public class MysqlDBIProvider extends AbstractModule {
+public class MysqlDBIInitProvider extends AbstractModule {
 
     private final MysqlConfig mysqlConfig;
     private final MysqlConnectionPoolConfig mysqlConnectionPoolConfig;
 
-    public MysqlDBIProvider(MysqlConfig mysqlConfig, MysqlConnectionPoolConfig mysqlConnectionPoolConfig) {
+    public MysqlDBIInitProvider(MysqlConfig mysqlConfig, MysqlConnectionPoolConfig mysqlConnectionPoolConfig) {
         this.mysqlConfig = mysqlConfig;
         this.mysqlConnectionPoolConfig = mysqlConnectionPoolConfig;
     }
