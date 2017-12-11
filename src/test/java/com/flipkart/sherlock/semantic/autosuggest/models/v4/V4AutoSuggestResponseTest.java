@@ -35,9 +35,6 @@ public class V4AutoSuggestResponseTest {
         v4QueryStore_.setMarketPlaceId(V4MarketPlace.FLIPKART);
         v4AutoSuggestResponse_.getSuggestions().add(v4QueryStore_);
 
-        System.out.println(JsonSeDe.getInstance().writeValueAsString(v4AutoSuggestResponse_));
-
         V4AutoSuggestResponse v4AutoSuggestResponse_1 = JsonSeDe.getInstance().readValue(JsonSeDe.getInstance().writeValueAsString(v4AutoSuggestResponse_), V4AutoSuggestResponse.class);
-        System.out.println(v4AutoSuggestResponse_1);
     }
 }
