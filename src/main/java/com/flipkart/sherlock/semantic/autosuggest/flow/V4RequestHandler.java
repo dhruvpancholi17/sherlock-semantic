@@ -45,9 +45,11 @@ public class V4RequestHandler {
         Params params = paramsHandler.getParams(store, uriInfo);
 
         if (params.getQuery() == null || params.getQuery().isEmpty()) {
-            return new V4AutoSuggestResponse(payloadId, fkConfigServiceWrapper.getInt(AUTOSUGGEST_COLD_START_VERSION),
-                    autoSuggestColdStartDao.getColdStartRows(), null,
-                    null, null, null);
+            return new V4AutoSuggestResponse(payloadId,
+                    fkConfigServiceWrapper.getInt(AUTOSUGGEST_COLD_START_VERSION),
+                    autoSuggestColdStartDao.getColdStartRows(),
+                    null, null,
+                    null, null);
         }
 
         QueryResponse queryResponse = queryRequestHandler
@@ -57,20 +59,20 @@ public class V4RequestHandler {
                 .getProductSuggestions(params.getQuery(),
                         new ProductRequest(params, queryResponse.getAutoSuggestSolrResponse()));
 
-        List<V4SuggestionRow> v4Suggestions = getV4Suggestion(queryResponse, productResponse);
+        List<V4Suggestion> v4Suggestions = null;
 
         return new V4AutoSuggestResponse(
                 payloadId,
-                0,
-                v4Suggestions,
+                fkConfigServiceWrapper.getInt(AUTOSUGGEST_COLD_START_VERSION),
+                getV4Suggestion(queryResponse, productResponse),
                 params.isDebug() ? params : null,
                 params.isDebug() ? queryResponse.getAutoSuggestSolrResponse().getSolrQuery() : null,
                 params.isDebug() ? productResponse.getAutoSuggestSolrResponse().getSolrQuery() : null,
                 params.isDebug() ? productResponse.getAutoSuggestSolrResponse().getAutoSuggestDocs() : null);
     }
 
-    private List<V4SuggestionRow> getV4Suggestion(QueryResponse queryResponse, ProductResponse productResponse) {
-        List<V4SuggestionRow> suggestions = new ArrayList<>();
+    private List<V4Suggestion> getV4Suggestion(QueryResponse queryResponse, ProductResponse productResponse) {
+        List<V4Suggestion> suggestions = new ArrayList<>();
 
         int count = 0;
         List<QuerySuggestion> querySuggestions = queryResponse.getQuerySuggestions();
@@ -78,61 +80,63 @@ public class V4RequestHandler {
             String query = querySuggestion.getQuery();
             List<Store> stores = querySuggestion.getStores();
             if (stores == null || stores.size() == 0) {
-                suggestions.add(getV4QuerySuggestionRow(query, null));
+                suggestions.add(getV4QuerySuggestion(query, null));
             } else {
                 for (Store store : stores) {
-                    suggestions.add(getV4QuerySuggestionRow(query, store));
+                    suggestions.add(getV4QuerySuggestion(query, store));
                 }
             }
         }
 
         suggestions = (suggestions.size() > 10) ? suggestions.subList(0, 10) : suggestions;
 
-        List<ProductSuggestion> productSuggestions = productResponse.getProductSuggestions();
-        for (ProductSuggestion productSuggestion : productSuggestions) {
-            suggestions.add(getV4ProductSuggestionRow(productSuggestion.getId()));
-        }
+//        List<ProductSuggestion> productSuggestions = productResponse.getProductSuggestions();
+//        for (ProductSuggestion productSuggestion : productSuggestions) {
+//            suggestions.add(getV4ProductSuggestionRow(productSuggestion.getId()));
+//        }
 
         return suggestions;
     }
 
-    private V4SuggestionRow getV4QuerySuggestionRow(String query, Store store) {
-        V4Suggestion v4Suggestion = V4Suggestion.builder()
-                .title(query)
-                .contentType(getV4QueryType(query, store))
-                .store(getV4Store(store))
-                .clickUrl(getQueryStoreUrl(query, store))
-                .build();
-        return new V4SuggestionRow((store != null) ? V4SuggestionType.QUERY_STORE : V4SuggestionType.QUERY, v4Suggestion);
+    private V4Suggestion getV4QuerySuggestion(String query, Store store) {
+        V4Suggestion v4Suggestion = null;
+        if (store == null) {
+            V4Query v4Query = new V4Query();
+            v4Query.setType(V4SuggestionType.QUERY);
+            v4Query.setClickUrl(getQueryStoreUrl(query, null));
+            v4Query.setContentType(V4ContentType.RECENT);
+            v4Query.setQuery(query);
+            v4Suggestion = v4Query;
+        } else {
+            V4QueryStore v4QueryStore = new V4QueryStore();
+            v4QueryStore.setType(V4SuggestionType.QUERY_STORE);
+            v4QueryStore.setClickUrl(getQueryStoreUrl(query, store));
+            v4QueryStore.setContentType(V4ContentType.RECENT);
+            v4QueryStore.setQuery(query);
+            v4QueryStore.setStore(store.getTitle());
+            v4QueryStore.setMarketPlaceId(MarketAnalyzer.FLIP_MART.equals(store.getMarketPlaceId()) ?
+                    V4MarketPlace.GROCERY :
+                    V4MarketPlace.FLIPKART);
+            v4Suggestion = v4QueryStore;
+        }
+        return v4Suggestion;
     }
 
-    private V4SuggestionRow getV4ProductSuggestionRow(String id) {
-        V4Suggestion v4Suggestion = V4Suggestion.builder()
-                .pid(id)
-                .contentType(V4ContentType.RECENT)
-                .title("Quick Heal TOTAL SECURITY 2USER 1YEAR")
-                .imageUrl("https://rukminim1.flixcart.com/image/832/832/j2516kw0/security-software/e/4/n/total-security-2-pc-1-year-tr2-original-imaetezd8ydffquf.jpeg?q=70")
-                .clickUrl("/quick-heal-total-security-2user-1year/p/itmet7fvcdhzuhm7?pid=SECEP6PSD9H3RFFB")
-                .build();
-        return new V4SuggestionRow(V4SuggestionType.PRODUCT, v4Suggestion);
-    }
-
-    private V4ContentType getV4QueryType(String query, Store store) {
-        return V4ContentType.RECENT;
-    }
-
-    private V4Store getV4Store(Store store) {
-        if (store == null) return null;
-        String marketPlaceId = store.getMarketPlaceId();
-        V4MarketPlace v4MarketPlace = (MarketAnalyzer.FLIP_MART.equals(marketPlaceId)) ?
-                V4MarketPlace.GROCERY :
-                V4MarketPlace.FLIPKART;
-        return new V4Store(store.getTitle(), v4MarketPlace, store.getStore());
+    private V4Suggestion getV4ProductSuggestionRow(String id) {
+        V4Product v4Product = new V4Product();
+        v4Product.setType(V4SuggestionType.PRODUCT);
+        v4Product.setClickUrl("clickUrl");
+        v4Product.setContentType(V4ContentType.RECENT);
+        v4Product.setPid(id);
+        v4Product.setTitle("title");
+        v4Product.setImageUrl("imageUrl");
+        return v4Product;
     }
 
     private String getQueryStoreUrl(String query, Store store) {
-        return "/search?q=" + query +
+        String url = "/search?q=" + query +
                 ((store != null) ? ("&sid=" + store.getStore()) : "") +
                 "&as=on&as-show=on";
+        return url.replaceAll(" ", "+");
     }
 }

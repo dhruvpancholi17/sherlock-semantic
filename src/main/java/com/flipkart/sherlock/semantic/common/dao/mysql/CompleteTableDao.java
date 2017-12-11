@@ -142,7 +142,6 @@ public interface CompleteTableDao {
     @AllArgsConstructor
     public static class AutoSuggestColdStart implements Serializable {
         private int position;
-        private String type;
         private String content;
     }
 
@@ -150,7 +149,6 @@ public interface CompleteTableDao {
         @Override
         public AutoSuggestColdStart map(int i, ResultSet resultSet, StatementContext statementContext) throws SQLException {
             return new AutoSuggestColdStart(resultSet.getInt("position"),
-                    resultSet.getString("type"),
                     resultSet.getString("content"));
         }
     }

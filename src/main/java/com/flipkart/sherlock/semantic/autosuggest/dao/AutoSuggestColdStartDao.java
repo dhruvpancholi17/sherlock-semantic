@@ -1,8 +1,6 @@
 package com.flipkart.sherlock.semantic.autosuggest.dao;
 
 import com.flipkart.sherlock.semantic.autosuggest.models.v4.V4Suggestion;
-import com.flipkart.sherlock.semantic.autosuggest.models.v4.V4SuggestionRow;
-import com.flipkart.sherlock.semantic.autosuggest.models.v4.V4SuggestionType;
 import com.flipkart.sherlock.semantic.autosuggest.utils.JsonSeDe;
 import com.flipkart.sherlock.semantic.common.dao.mysql.CompleteTableDao;
 import com.flipkart.sherlock.semantic.common.dao.mysql.CompleteTableDao.AutoSuggestColdStart;
@@ -22,7 +20,7 @@ import java.util.concurrent.TimeUnit;
  */
 @Slf4j
 @Singleton
-public class AutoSuggestColdStartDao extends AbstractReloadableMapCache<List<V4SuggestionRow>> {
+public class AutoSuggestColdStartDao extends AbstractReloadableMapCache<List<V4Suggestion>> {
 
     private static final String DUMMY_VERSION = "dummy_version";
 
@@ -32,29 +30,27 @@ public class AutoSuggestColdStartDao extends AbstractReloadableMapCache<List<V4S
     }
 
     @Override
-    protected Map<String, List<V4SuggestionRow>> getFromSource() {
-        List<V4SuggestionRow> v4SuggestionRows = new ArrayList<>();
+    protected Map<String, List<V4Suggestion>> getFromSource() {
+        List<V4Suggestion> v4Suggestions = new ArrayList<>();
 
         List<AutoSuggestColdStart> autoSuggestColdStarts = completeTableDao.getAutoSuggestColdStarts();
         autoSuggestColdStarts.sort(Comparator.comparingInt(AutoSuggestColdStart::getPosition));
 
         for (AutoSuggestColdStart autoSuggestColdStart : autoSuggestColdStarts) {
             try {
-                V4SuggestionType v4SuggestionType = V4SuggestionType.valueOf(autoSuggestColdStart.getType());
                 V4Suggestion v4Suggestion = jsonSeDe.readValue(autoSuggestColdStart.getContent(), V4Suggestion.class);
-                v4SuggestionRows.add(new V4SuggestionRow(v4SuggestionType, v4Suggestion));
+                v4Suggestions.add(v4Suggestion);
             } catch (Exception e) {
-                log.error("Unable to process the row: {} {} {} {}",
+                log.error("Unable to process the row: {} {} {}",
                         autoSuggestColdStart.getPosition(),
-                        autoSuggestColdStart.getType(),
                         autoSuggestColdStart.getContent(),
                         e);
             }
         }
-        return ImmutableMap.of(DUMMY_VERSION, v4SuggestionRows);
+        return ImmutableMap.of(DUMMY_VERSION, v4Suggestions);
     }
 
-    public List<V4SuggestionRow> getColdStartRows() {
+    public List<V4Suggestion> getColdStartRows() {
         return getCached().get(DUMMY_VERSION);
     }
 }
