@@ -59,12 +59,12 @@ public class V4RequestHandler {
                 .getProductSuggestions(params.getQuery(),
                         new ProductRequest(params, queryResponse.getAutoSuggestSolrResponse()));
 
-        List<V4Suggestion> v4Suggestions = null;
+        List<V4Suggestion> v4Suggestions = getV4Suggestion(queryResponse, productResponse);
 
         return new V4AutoSuggestResponse(
                 payloadId,
                 fkConfigServiceWrapper.getInt(AUTOSUGGEST_COLD_START_VERSION),
-                getV4Suggestion(queryResponse, productResponse),
+                v4Suggestions,
                 params.isDebug() ? params : null,
                 params.isDebug() ? queryResponse.getAutoSuggestSolrResponse().getSolrQuery() : null,
                 params.isDebug() ? productResponse.getAutoSuggestSolrResponse().getSolrQuery() : null,
