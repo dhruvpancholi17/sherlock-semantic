@@ -83,7 +83,11 @@ public class AutoSuggestView {
                         .getProductSuggestions(params.getQuery(),
                                 new ProductRequest(params, queryResponse.getAutoSuggestSolrResponse()));
 
-                new Ingester().publishData(payloadId, queryResponse, params, productResponse, headers, uriInfo);
+                try {
+                    new Ingester().publishData(payloadId, queryResponse, params, productResponse, headers, uriInfo);
+                } catch (Exception e) {
+                    log.error("AutoSuggest DG Ingestion Error", e);
+                }
 
                 AutoSuggestResponse autoSuggestResponse = new AutoSuggestResponse(
                         payloadId ,
@@ -98,6 +102,8 @@ public class AutoSuggestView {
                     log.info("Empty response for query: {}", params.getQuery());
                     MetricsManager.logNullResponse(Autosuggest, COSMOS_AUTO_SUGGEST_COMPONENT);
                 }
+
+
 
                 return Response.status(Response.Status.OK)
                         .type(MediaType.APPLICATION_JSON_TYPE)

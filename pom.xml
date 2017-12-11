@@ -30,7 +30,7 @@
         <lucene.version>4.6.1</lucene.version>
         <metrics.version>3.1.2</metrics.version>
         <hystrix.version>1.5.10</hystrix.version>
-        <sherlock-dg.version>0.0.15</sherlock-dg.version>
+        <sherlock-dg.version>0.0.18</sherlock-dg.version>
         <archaius.version>0.7.4</archaius.version>
     </properties>
 

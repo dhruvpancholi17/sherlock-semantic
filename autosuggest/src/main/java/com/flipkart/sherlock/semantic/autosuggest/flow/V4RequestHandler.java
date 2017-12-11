@@ -1,7 +1,6 @@
 package com.flipkart.sherlock.semantic.autosuggest.flow;
 
 import com.flipkart.sherlock.semantic.autosuggest.dao.AutoSuggestColdStartDao;
-import com.flipkart.sherlock.semantic.autosuggest.dataGovernance.Ingester;
 import com.flipkart.sherlock.semantic.autosuggest.helpers.MarketAnalyzer;
 import com.flipkart.sherlock.semantic.autosuggest.models.*;
 import com.flipkart.sherlock.semantic.autosuggest.models.v4.*;
@@ -9,7 +8,7 @@ import com.flipkart.sherlock.semantic.common.util.FkConfigServiceWrapper;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
-import org.glassfish.jersey.server.ContainerRequest;
+
 
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.UriInfo;
@@ -63,8 +62,6 @@ public class V4RequestHandler {
                         new ProductRequest(params, queryResponse.getAutoSuggestSolrResponse()));
 
         List<V4Suggestion> v4Suggestions = getV4Suggestion(queryResponse, productResponse);
-        new Ingester().publishDataV4(payloadId, params, v4Suggestions, queryResponse, productResponse, headers, uriInfo);
-
         return new V4AutoSuggestResponse(
                 payloadId,
                 fkConfigServiceWrapper.getInt(AUTOSUGGEST_COLD_START_VERSION),

@@ -17,7 +17,7 @@ public class QueryResponseTest extends BaseModelTest {
 
     @Test
     public void testFields() {
-        QueryResponse queryResponse = new QueryResponse(null, null);
+        QueryResponse queryResponse = new QueryResponse(null, null, false, null);
         Assert.assertEquals(QUERY_RESPONSE_FIELDS, new HashSet<String>(ObjectUtils.getFieldNames(queryResponse)));
         ObjectUtils.invokeGetters(QUERY_RESPONSE_FIELDS, queryResponse);
         Assert.assertFalse(ObjectUtils.containsSetters(queryResponse));
