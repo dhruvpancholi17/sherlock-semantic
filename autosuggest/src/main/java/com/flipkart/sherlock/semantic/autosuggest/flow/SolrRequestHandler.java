@@ -149,7 +149,11 @@ public class SolrRequestHandler {
             fqs.add("impressions_int" + ":[" + params.getImpressionsThreshold() + " TO *]");
         }
 
-        fqs.add(params.getPrefixField() + ":\"" + queryPrefix.getPrefix() + "\"");
+        String prefixField = (queryPrefix.getPrefix().length() >= params.getMinCharsForIncorrectPrefix())
+                ? params.getPrefixField()
+                : params.getPristinePrefixField();
+
+        fqs.add(prefixField + ":\"" + queryPrefix.getPrefix() + "\"");
 
         fqs.add("-" + PRODUCT_STORE + ":\"[]\"");
 
@@ -167,6 +171,8 @@ public class SolrRequestHandler {
         searchRequest.addParam(SearchRequest.Param.BQ, params.getPhraseField() + ":\"" + (queryPrefix.getOriginalQuery().equals("") ? "*:*" : queryPrefix.getOriginalQuery()) + "\"^" + params.getPhraseBoost());
         searchRequest.addParam(SearchRequest.Param.SORT, params.getSortFunctions());
         searchRequest.addParam(SearchRequest.Param.ROWS, String.valueOf(params.getRows()));
+
+//        searchRequest.addParam(SearchRequest.Param.SOURCE, "flash");
 
         return searchRequest;
     }
@@ -196,6 +202,8 @@ public class SolrRequestHandler {
         searchRequest.addParam(SearchRequest.Param.SPELLCHECK_MAX_COLLATION_TRIES, "5");
         searchRequest.addParam(SearchRequest.Param.SPELLCHECK_COLLATE_EXTENDED_RESULTS, "true");
         searchRequest.addParam(SearchRequest.Param.SPELLCHECK_ONLY_MORE_POPULAR, "true");
+
+//        searchRequest.addParam(SearchRequest.Param.SOURCE, "flash");
 
         return searchRequest;
     }

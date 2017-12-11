@@ -39,6 +39,8 @@ public class ParamsHandlerTest {
         KEY_VALUE.put("stateHitsThreshold", 102);
         KEY_VALUE.put("wilsonCtrThreshold", 0.9);
         KEY_VALUE.put("ctrThreshold", 0.09);
+        KEY_VALUE.put("minCharsForIncorrectPrefix", 4);
+        KEY_VALUE.put("pristinePrefixField", "prefix_edgytext");
     }
 
     @Test
@@ -68,5 +70,7 @@ public class ParamsHandlerTest {
         assertEquals(102, params.getStateHitsThreshold(), 0);
         assertEquals(0.9, params.getWilsonCtrThreshold(), 0.01);
         assertEquals(0.09, params.getCtrThreshold(), 0.01);
+        assertEquals(4, params.getMinCharsForIncorrectPrefix());
+        assertEquals("prefix_edgytext", params.getPristinePrefixField());
     }
 }

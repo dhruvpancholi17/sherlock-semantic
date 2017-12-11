@@ -6,4 +6,5 @@ package com.flipkart.sherlock.semantic.app;
 public class AppConstants {
     public static final String AUTOSUGGEST_BUCKET = "sherlock-autosuggest";
     public static final String SOLR_CONFIG_PREFIX = "solr.";
+    public static final String AUTOSUGGEST_COLD_START_VERSION = "coldStartVersion";
 }

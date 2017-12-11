@@ -30,6 +30,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 
 import static com.flipkart.sherlock.semantic.app.AppConstants.AUTOSUGGEST_BUCKET;
 import static com.flipkart.sherlock.semantic.autosuggest.views.AutoSuggestView.COSMOS_AUTO_SUGGEST_COMPONENT;
+import static com.flipkart.sherlock.semantic.autosuggest.views.AutoSuggestView.COSMOS_AUTO_SUGGEST_V4_COMPONENT;
 import static com.flipkart.sherlock.semantic.common.metrics.MetricsManager.ActionType.*;
 import static com.flipkart.sherlock.semantic.common.metrics.MetricsManager.Service.Autosuggest;
 
@@ -84,6 +85,7 @@ public class AutoSuggestApp {
         contextDefault.addEventListener(new SherlockMetricsServletContextListener());
         contextDefault.addServlet(new ServletHolder(new ServletContainer(resourceConfig)), "/*");
         contextDefault.addServlet(com.codahale.metrics.servlets.MetricsServlet.class, "/metrics");
+//        contextDefault.addServlet(new ServletHolder(new HystrixMetricsStreamServlet()),"/hystrix.stream");
         contextDefault.setVirtualHosts(new String[]{"@AutoSuggestApplication"});
         contexts.addHandler(contextDefault);
 
@@ -110,6 +112,12 @@ public class AutoSuggestApp {
         tracedItems.add(new TracedItem(NULL, Autosuggest, COSMOS_AUTO_SUGGEST_COMPONENT));
         tracedItems.add(new TracedItem(SUCCESS, Autosuggest, COSMOS_AUTO_SUGGEST_COMPONENT));
         tracedItems.add(new TracedItem(LATENCY, Autosuggest, COSMOS_AUTO_SUGGEST_COMPONENT));
+
+        tracedItems.add(new TracedItem(ERROR, Autosuggest, COSMOS_AUTO_SUGGEST_V4_COMPONENT));
+        tracedItems.add(new TracedItem(RPS, Autosuggest, COSMOS_AUTO_SUGGEST_V4_COMPONENT));
+        tracedItems.add(new TracedItem(NULL, Autosuggest, COSMOS_AUTO_SUGGEST_V4_COMPONENT));
+        tracedItems.add(new TracedItem(SUCCESS, Autosuggest, COSMOS_AUTO_SUGGEST_V4_COMPONENT));
+        tracedItems.add(new TracedItem(LATENCY, Autosuggest, COSMOS_AUTO_SUGGEST_V4_COMPONENT));
         return tracedItems;
     }
 

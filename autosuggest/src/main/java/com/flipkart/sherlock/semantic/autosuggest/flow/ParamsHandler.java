@@ -92,8 +92,25 @@ public class ParamsHandler {
         updateImpressionsThreshold(paramsBuilder, solrConfig, uriInfo);
         updateStateHitsThreshold(paramsBuilder, solrConfig, uriInfo);
         updateNumTokens(paramsBuilder, solrConfig, uriInfo);
+        updatePrefixCorrectionFields(paramsBuilder, solrConfig, uriInfo);
 
         return paramsBuilder.build();
+    }
+
+    private void updatePrefixCorrectionFields(ParamsBuilder paramsBuilder, SolrConfig solrConfig, UriInfo uriInfo) {
+        String pristinePrefixField = uriInfo.getQueryParameters().getFirst("pristinePrefixField");
+        if (pristinePrefixField == null || pristinePrefixField.isEmpty()) {
+            paramsBuilder.pristinePrefixField(solrConfig.getPristinePrefixField());
+        } else {
+            paramsBuilder.pristinePrefixField(pristinePrefixField);
+        }
+
+        String minCharsForIncorrectPrefix = uriInfo.getQueryParameters().getFirst("minCharsForIncorrectPrefix");
+        if (minCharsForIncorrectPrefix == null || minCharsForIncorrectPrefix.isEmpty()) {
+            paramsBuilder.minCharsForIncorrectPrefix(solrConfig.getMinCharsForIncorrectPrefix());
+        } else {
+            paramsBuilder.minCharsForIncorrectPrefix(Integer.parseInt(minCharsForIncorrectPrefix));
+        }
     }
 
     private void updatePhraseField(ParamsBuilder paramsBuilder, SolrConfig solrConfig, UriInfo uriInfo) {
@@ -225,7 +242,7 @@ public class ParamsHandler {
     }
 
     private void updateStateHitsThreshold(ParamsBuilder paramsBuilder, SolrConfig solrConfig, UriInfo uriInfo) {
-            String s = uriInfo.getQueryParameters().getFirst("stateHitsThreshold");
+        String s = uriInfo.getQueryParameters().getFirst("stateHitsThreshold");
         if (s == null || s.isEmpty()) {
             paramsBuilder.stateHitsThreshold(solrConfig.getStateHitsThreshold());
         } else {

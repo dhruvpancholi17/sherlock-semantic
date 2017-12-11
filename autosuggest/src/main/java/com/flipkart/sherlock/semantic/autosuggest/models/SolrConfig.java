@@ -1,7 +1,6 @@
 package com.flipkart.sherlock.semantic.autosuggest.models;
 
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 /**
  * Created by dhruv.pancholi on 04/07/17.
@@ -18,6 +17,7 @@ public class SolrConfig {
     private int phraseBoost = 1;
     private int impressionsThreshold = 0;
     private int maxNumberOfStorePerQuery = 3;
+    private int minCharsForIncorrectPrefix = 4;
 
     private boolean solrSpellCorrection = true;
 
@@ -34,4 +34,5 @@ public class SolrConfig {
     private String phraseField = "text_edgytext_phrase";
     private String boostFunction = "min(div(log(field(impressions_sint)),log(10)),10.0)^1";
     private String sortFunctionString = "score desc,ranking-score_sfloat desc,p-hits_sfloat desc,ctr_sfloat desc";
+    private String pristinePrefixField = "prefix_edgytext";
 }

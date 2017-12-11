@@ -6,6 +6,7 @@ import com.flipkart.sherlock.semantic.common.dao.mysql.CompleteTableDao;
 import com.flipkart.sherlock.semantic.common.dao.mysql.CompleteTableDao.StorePathMetaData;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
 import java.util.List;
@@ -15,6 +16,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Created by dhruv.pancholi on 30/05/17.
  */
+@Slf4j
 @Singleton
 public class StorePathCanonicalTitleDao extends AbstractReloadableMapCache<String> {
 
@@ -35,7 +37,14 @@ public class StorePathCanonicalTitleDao extends AbstractReloadableMapCache<Strin
         for (StorePathMetaData storePathMetaData : storePathMetaDatas) {
             String metadata = storePathMetaData.getMetadata();
             if (metadata == null || metadata.isEmpty()) continue;
-            Map<String, Object> metadataMap = jsonSeDe.readValue(metadata, metadataTypereference);
+            Map<String, Object> metadataMap = null;
+            try {
+                metadataMap = jsonSeDe.readValue(metadata, metadataTypereference);
+            } catch (Exception e) {
+                log.error("Cannot de-serialize metadata {} for store: {}", metadata, storePathMetaData.getStorePath(), e);
+                continue;
+            }
+
             if (!metadataMap.containsKey("canonical-title")) continue;
             String canonicalTitle = (String) metadataMap.get("canonical-title");
             if (canonicalTitle == null || canonicalTitle.isEmpty()) continue;

@@ -205,6 +205,12 @@
             <version>${hystrix.version}</version>
         </dependency>
 
+        <!--<dependency>-->
+            <!--<groupId>com.netflix.hystrix</groupId>-->
+            <!--<artifactId>hystrix-metrics-event-stream</artifactId>-->
+            <!--<version>${hystrix.version}</version>-->
+        <!--</dependency>-->
+
         <!-- end of hystrix dependencies -->
 
     </dependencies>
@@ -329,4 +335,19 @@
         </repository>
     </repositories>
 
+
+
+    <!--</pluginRepositories>-->
+    <pluginRepositories>
+        <pluginRepository>
+            <id>fk-art-snapshot</id>
+            <name>Flipkart-Artifactory</name>
+            <url>http://10.85.59.116/artifactory/v1.0/artifacts/libs-snapshots-local</url>
+        </pluginRepository>
+        <pluginRepository>
+            <id>fk-art-release</id>
+            <name>Flipkart-Artifactory</name>
+            <url>http://10.85.59.116/artifactory/v1.0/artifacts/libs-release-local</url>
+        </pluginRepository>
+    </pluginRepositories>
 </project>

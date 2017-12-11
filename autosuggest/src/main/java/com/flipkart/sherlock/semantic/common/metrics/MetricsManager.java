@@ -4,6 +4,8 @@ import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.flipkart.sherlock.semantic.common.util.JmxMetricRegistry;
+import com.netflix.hystrix.contrib.codahalemetricspublisher.HystrixCodaHaleMetricsPublisher;
+import com.netflix.hystrix.strategy.HystrixPlugins;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -90,6 +92,11 @@ public class MetricsManager {
      */
     public static void init(Set<TracedItem> tracedItems) {
         if (!initialised && tracedItems != null) {
+
+            // Exposes hystrix metrics using given metric registry.
+            HystrixPlugins.getInstance().registerMetricsPublisher(new HystrixCodaHaleMetricsPublisher(
+                    JmxMetricRegistry.INSTANCE.getInstance()));
+
             for (TracedItem currItem : tracedItems) {
                 Service service = currItem.getService();
                 String componentName = currItem.getComponent();

@@ -7,6 +7,7 @@ import com.flipkart.sherlock.semantic.common.dao.mysql.CompleteTableDao;
 import com.flipkart.sherlock.semantic.common.dao.mysql.CompleteTableDao.Stores;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
 import java.util.List;
@@ -17,6 +18,7 @@ import static com.flipkart.sherlock.semantic.autosuggest.helpers.MarketAnalyzer.
 /**
  * Created by dhruv.pancholi on 30/05/17.
  */
+@Slf4j
 @Singleton
 public class StoreMarketPlaceDao {
 
@@ -39,7 +41,13 @@ public class StoreMarketPlaceDao {
             String metadata = store.getMetadata();
             if (metadata == null || metadata.isEmpty()) continue;
 
-            Map<String, Object> metaMap = jsonSeDe.readValue(metadata, metadataTypereference);
+            Map<String, Object> metaMap = null;
+            try {
+                metaMap = jsonSeDe.readValue(metadata, metadataTypereference);
+            } catch (Exception e) {
+                log.error("Cannot de-serialize metadata {} for store: {}", metadata, store.getId(), e);
+            }
+
 
             if (metaMap == null || !metaMap.containsKey("marketplaceId") || metaMap.get("marketplaceId") == null) {
                 continue;
