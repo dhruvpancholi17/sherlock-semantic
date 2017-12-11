@@ -4,10 +4,17 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.flipkart.sherlock</groupId>
-    <artifactId>semantic</artifactId>
-    <packaging>jar</packaging>
+    <groupId>com.flipkart.sherlock.semantic</groupId>
+    <artifactId>fk-sherlock-flash</artifactId>
+    <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
+    <modules>
+        <module>semantic-tooling</module>
+        <!--<module>common</module>-->
+        <module>autosuggest</module>
+        <module>commons</module>
+        <module>normalise</module>
+    </modules>
 
     <properties>
         <java.version>1.8</java.version>
@@ -48,50 +55,22 @@
                     <groupId>log4j</groupId>
                     <artifactId>log4j</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
 
         <!-- end of solr/lucene dependencies -->
 
-        <!-- Jersey/Jetty dependencies -->
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-server</artifactId>
-            <version>${jetty.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-servlet</artifactId>
-            <version>${jetty.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-webapp</artifactId>
-            <version>${jetty.version}</version>
-        </dependency>
+        <!--  utils dependencies -->
 
         <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-util</artifactId>
-            <version>${jetty.version}</version>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>21.0</version>
         </dependency>
-
-        <dependency>
-            <groupId>org.glassfish.jersey.core</groupId>
-            <artifactId>jersey-server</artifactId>
-            <version>${jersey.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.containers</groupId>
-            <artifactId>jersey-container-servlet-core</artifactId>
-            <version>${jersey.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.containers</groupId>
-            <artifactId>jersey-container-jetty-http</artifactId>
-            <version>${jersey.version}</version>
-        </dependency>
-        <!-- end of Jersey/Jetty dependencies -->
 
         <!-- DG Library dependencies-->
         <dependency>
@@ -201,37 +180,6 @@
         </dependency>
         <!-- end of mysql dependencies-->
 
-        <!-- logging dependencies -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.7.5</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-api</artifactId>
-            <version>${log4j2.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
-            <version>${log4j2.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-slf4j-impl</artifactId>
-            <version>${log4j2.version}</version>
-        </dependency>
-        <!--end of logging dependencies -->
-
-        <!-- solr requirement -->
-        <!--<dependency>-->
-        <!--<groupId>commons-logging</groupId>-->
-        <!--<artifactId>commons-logging</artifactId>-->
-        <!--<version>1.1.1</version>-->
-        <!--</dependency>-->
-        <!-- end of solr requirement -->
-
         <!-- testing -->
         <dependency>
             <groupId>junit</groupId>
@@ -284,22 +232,6 @@
         </dependency>
         <!-- End of config service dependencies -->
 
-        <!-- metrics dependencies -->
-
-        <dependency>
-            <groupId>io.dropwizard.metrics</groupId>
-            <artifactId>metrics-core</artifactId>
-            <version>${metrics.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>io.dropwizard.metrics</groupId>
-            <artifactId>metrics-servlets</artifactId>
-            <version>${metrics.version}</version>
-        </dependency>
-
-        <!-- end of  metrics dependencies -->
-
         <!-- hystrix dependencies -->
         <dependency>
             <groupId>com.netflix.hystrix</groupId>
@@ -313,26 +245,10 @@
             <version>${hystrix.version}</version>
         </dependency>
 
-        <!--<dependency>-->
-            <!--<groupId>com.netflix.hystrix</groupId>-->
-            <!--<artifactId>hystrix-metrics-event-stream</artifactId>-->
-            <!--<version>${hystrix.version}</version>-->
-        <!--</dependency>-->
-
         <!-- end of hystrix dependencies -->
 
     </dependencies>
     <build>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-            </resource>
-        </resources>
-        <testResources>
-            <testResource>
-                <directory>src/test/resources</directory>
-            </testResource>
-        </testResources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -367,18 +283,6 @@
                         <goals>
                             <goal>shade</goal>
                         </goals>
-                        <configuration>
-                            <transformers>
-                                <transformer
-                                        implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
-                                <transformer
-                                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <manifestEntries>
-                                        <Main-Class>com.flipkart.sherlock.semantic.app.SemanticApp</Main-Class>
-                                    </manifestEntries>
-                                </transformer>
-                            </transformers>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -465,6 +369,9 @@
         </repository>
     </repositories>
 
+
+
+    <!--</pluginRepositories>-->
     <pluginRepositories>
         <pluginRepository>
             <id>fk-art-snapshot</id>
@@ -477,40 +384,4 @@
             <url>http://10.85.59.116/artifactory/v1.0/artifacts/libs-release-local</url>
         </pluginRepository>
     </pluginRepositories>
-    <!--<repositories>-->
-    <!--<repository>-->
-    <!--<id>central</id>-->
-    <!--<name>libs-releases</name>-->
-    <!--<url>http://artifactory.nm.flipkart.com:8081/artifactory/libs-releases</url>-->
-    <!--</repository>-->
-    <!--<repository>-->
-    <!--<snapshots/>-->
-    <!--<id>snapshots</id>-->
-    <!--<name>libs-snapshots</name>-->
-    <!--<url>http://artifactory.nm.flipkart.com:8081/artifactory/libs-snapshots</url>-->
-    <!--</repository>-->
-    <!--<repository>-->
-    <!--<id>ops-build-0008</id>-->
-    <!--<name>ops-build-0008-releases</name>-->
-    <!--<url>http://artifactory.nm.flipkart.com:8081/artifactory/clojars-repo</url>-->
-    <!--</repository>-->
-
-    <!--</repositories>-->
-
-    <!--<pluginRepositories>-->
-    <!--<pluginRepository>-->
-    <!--<snapshots>-->
-    <!--<enabled>false</enabled>-->
-    <!--</snapshots>-->
-    <!--<id>central</id>-->
-    <!--<name>plugins-releases</name>-->
-    <!--<url>http://artifactory.nm.flipkart.com:8081/artifactory/plugins-releases</url>-->
-    <!--</pluginRepository>-->
-    <!--<pluginRepository>-->
-    <!--<snapshots/>-->
-    <!--<id>snapshots</id>-->
-    <!--<name>plugins-snapshots</name>-->
-    <!--<url>http://artifactory.nm.flipkart.com:8081/artifactory/plugins-snapshots</url>-->
-    <!--</pluginRepository>-->
-    <!--</pluginRepositories>-->
 </project>
