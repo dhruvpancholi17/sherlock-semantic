@@ -64,23 +64,32 @@ public class IndividualTokenNormalisationService implements INormalise {
 
             /**
              * Starting from each token, evaluate for increasing length of string till max brand length to check for substring being brand
+             * At each index, we want to find out the max brand length possible
              * Track brand substring index to prevent normalisation of tokens at those index
              */
+
             for (int startIndex = 0; startIndex < tokensArr.length; startIndex++) {
+                int maxEndIndexIncl = -1;
                 for (int len = 1; len <= maxBrandTokenLength; len++) {
                     endIndexInclusive = startIndex + len - 1;
                     if (endIndexInclusive < strLen) {
                         List<String> subList = tokensList.subList(startIndex, endIndexInclusive + 1);
                         String partialString = spaceJoiner.join(subList);
                         if (this.brandDataSource.isBrand(new BrandInfo(partialString, context.get(INormalise.Context.Store)))) {
-                            //we should not normalise tokens between start and end index inclusive
-                            skipNormIndexes.addAll(IntStream.rangeClosed(startIndex, endIndexInclusive).boxed().collect(Collectors.toSet()));
-                            startIndex = endIndexInclusive; //skip evaluation till end index
-                            break;
+                            maxEndIndexIncl = endIndexInclusive;
+                            //dont break, we want to evaluate for max length brand string starting from given index
                         }
                     } else {//gone past str len. Skip rest of evaluation.
                         break;
                     }
+                }
+                if (maxEndIndexIncl >= 0){
+                    /**
+                     * found at least one substring that was a brand name
+                     * skip evaluation for all the tokens that have been identified as brand
+                     */
+                    skipNormIndexes.addAll(IntStream.rangeClosed(startIndex, maxEndIndexIncl).boxed().collect(Collectors.toSet()));
+                    startIndex = maxEndIndexIncl;
                 }
             }
 
