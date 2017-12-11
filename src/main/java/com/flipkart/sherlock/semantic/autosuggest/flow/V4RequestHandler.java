@@ -92,7 +92,7 @@ public class V4RequestHandler {
 
 //        List<ProductSuggestion> productSuggestions = productResponse.getProductSuggestions();
 //        for (ProductSuggestion productSuggestion : productSuggestions) {
-//            suggestions.add(getV4ProductSuggestionRow(productSuggestion.getId()));
+//            suggestions.add(getV4ProductSuggestion(productSuggestion.getId()));
 //        }
 
         return suggestions;
@@ -122,7 +122,7 @@ public class V4RequestHandler {
         return v4Suggestion;
     }
 
-    private V4Suggestion getV4ProductSuggestionRow(String id) {
+    private V4Suggestion getV4ProductSuggestion(String id) {
         V4Product v4Product = new V4Product();
         v4Product.setType(V4SuggestionType.PRODUCT);
         v4Product.setClickUrl("clickUrl");
