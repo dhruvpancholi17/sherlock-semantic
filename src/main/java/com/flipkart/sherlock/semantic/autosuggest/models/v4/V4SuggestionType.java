@@ -8,5 +8,6 @@ public enum V4SuggestionType {
     QUERY,
     PRODUCT,
     RICH,
-    CLP
+    CLP,
+    PARTITION
 }

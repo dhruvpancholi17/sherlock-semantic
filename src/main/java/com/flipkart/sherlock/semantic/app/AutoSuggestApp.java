@@ -10,6 +10,7 @@ import com.flipkart.sherlock.semantic.common.init.MysqlDaoProvider;
 import com.flipkart.sherlock.semantic.common.metrics.MetricsManager;
 import com.flipkart.sherlock.semantic.common.metrics.MetricsManager.TracedItem;
 import com.flipkart.sherlock.semantic.common.util.FkConfigServiceWrapper;
+import com.flipkart.sherlock.semantic.common.util.JmxMetricRegistry;
 import com.flipkart.sherlock.semantic.common.util.SherlockMetricsServletContextListener;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -23,6 +24,7 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
+import service.Publisher;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -93,10 +95,19 @@ public class AutoSuggestApp {
 
         server.setRequestLog(new Slf4jRequestLog());
 
+        // publisher for data governance
+        try {
+            Publisher.INSTANCE.init();
+            Publisher.INSTANCE.withMetricRegistry(JmxMetricRegistry.INSTANCE.getInstance());
+        } catch (Exception e ) {
+            log.info("Unable to Initiallize DG library", e);
+        }
+
         try {
             server.start();
             server.join();
         } finally {
+            Publisher.INSTANCE.shutdown();
             server.stop();
         }
     }

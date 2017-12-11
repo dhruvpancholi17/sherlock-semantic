@@ -132,7 +132,7 @@ public class SolrRequestHandler {
 
         searchRequest.addParam(SearchRequest.Param.QT, "dismax");
         searchRequest.addParam(SearchRequest.Param.Q, queryPrefix.getQuery());
-        searchRequest.addParam(SearchRequest.Param.FL, Arrays.asList(LOGGED_QC_QUERY, CORRECTED_QUERY, CTR_OBJ, PRODUCT_OBJECT, PRODUCT_STORE));
+        searchRequest.addParam(SearchRequest.Param.FL, Arrays.asList(LOGGED_QC_QUERY, CORRECTED_QUERY, CTR_OBJ, PRODUCT_OBJECT, PRODUCT_STORE, WILSON_CTR_FL, SOLR_SCORE));
 
         List<String> fqs = new ArrayList<>();
 
@@ -235,17 +235,19 @@ public class SolrRequestHandler {
             });
             if (productStores == null) continue;
 
+            Float solrScore = (Float) solrDoc.get(SOLR_SCORE);
+            if(solrScore == null) continue;
+
+            Double wilsonCTR = (Double) solrDoc.get(WILSON_CTR);
+            if(wilsonCTR == null) continue;
 
             autoSuggestDocs.add(new AutoSuggestDoc(
                     (String) solrDoc.get(LOGGED_QC_QUERY),
                     (String) solrDoc.get(CORRECTED_QUERY),
                     ctrObj,
                     decayedProductObjs,
-                    productStores));
+                    productStores, solrScore, wilsonCTR));
         }
-
         return new AutoSuggestSolrResponse(searchResponse.getSolrQuery(), autoSuggestDocs);
     }
-
-
 }

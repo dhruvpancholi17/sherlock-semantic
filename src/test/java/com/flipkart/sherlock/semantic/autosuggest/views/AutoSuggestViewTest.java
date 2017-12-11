@@ -77,7 +77,7 @@ public class AutoSuggestViewTest {
             multivaluedMap.put("types", Collections.singletonList("query,product"));
             Mockito.when(uriInfo.getQueryParameters()).thenReturn(multivaluedMap);
 
-            Assert.assertTrue(isEquivalent(split[1], String.valueOf(autoSuggestView.pathMethod("search.flipkart.com", uriInfo).getEntity())));
+            Assert.assertTrue(isEquivalent(split[1], String.valueOf(autoSuggestView.pathMethod("search.flipkart.com", uriInfo, null).getEntity())));
         }
     }
 

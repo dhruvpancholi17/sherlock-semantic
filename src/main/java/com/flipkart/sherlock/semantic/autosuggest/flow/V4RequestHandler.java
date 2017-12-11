@@ -1,14 +1,19 @@
 package com.flipkart.sherlock.semantic.autosuggest.flow;
 
 import com.flipkart.sherlock.semantic.autosuggest.dao.AutoSuggestColdStartDao;
-import com.flipkart.sherlock.semantic.autosuggest.helpers.MarketAnalyzer;
+import com.flipkart.sherlock.semantic.autosuggest.dataGovernance.Ingester;
 import com.flipkart.sherlock.semantic.autosuggest.models.*;
 import com.flipkart.sherlock.semantic.autosuggest.models.v4.*;
+import com.flipkart.sherlock.semantic.autosuggest.models.v4.types.V4Product;
+import com.flipkart.sherlock.semantic.autosuggest.models.v4.types.V4Query;
+import com.flipkart.sherlock.semantic.autosuggest.models.v4.types.V4QueryStore;
+import com.flipkart.sherlock.semantic.autosuggest.models.v4.types.V4Rich;
 import com.flipkart.sherlock.semantic.common.util.FkConfigServiceWrapper;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.UriInfo;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +44,7 @@ public class V4RequestHandler {
     private FkConfigServiceWrapper fkConfigServiceWrapper;
 
 
-    public V4AutoSuggestResponse getV4Response(String store, UriInfo uriInfo) {
+    public V4AutoSuggestResponse getV4Response(String store, UriInfo uriInfo, HttpHeaders headers) {
         String payloadId = UUID.randomUUID().toString();
 
         Params params = paramsHandler.getParams(store, uriInfo);
@@ -58,7 +63,7 @@ public class V4RequestHandler {
                         new ProductRequest(params, queryResponse.getAutoSuggestSolrResponse()));
 
         List<V4SuggestionRow> v4Suggestions = getV4Suggestion(queryResponse, productResponse);
-
+        new Ingester().publishDataV4(payloadId, params, v4Suggestions, queryResponse, productResponse, headers, uriInfo);
         return new V4AutoSuggestResponse(
                 payloadId,
                 0,
@@ -78,10 +83,10 @@ public class V4RequestHandler {
             String query = querySuggestion.getQuery();
             List<Store> stores = querySuggestion.getStores();
             if (stores == null || stores.size() == 0) {
-                suggestions.add(getV4QuerySuggestionRow(query, null));
+//                suggestions.add(new V4SuggestionRow(V4SuggestionType.QUERY, getQuerySuggestion(query)));
             } else {
                 for (Store store : stores) {
-                    suggestions.add(getV4QuerySuggestionRow(query, store));
+//                    suggestions.add(new V4SuggestionRow(V4SuggestionType.QUERY_STORE, getQueryStoreSuggestion(query, store)));
                 }
             }
         }
@@ -90,49 +95,42 @@ public class V4RequestHandler {
 
         List<ProductSuggestion> productSuggestions = productResponse.getProductSuggestions();
         for (ProductSuggestion productSuggestion : productSuggestions) {
-            suggestions.add(getV4ProductSuggestionRow(productSuggestion.getId()));
+//            suggestions.add(new V4SuggestionRow(V4SuggestionType.PRODUCT, getProductSuggestion(productSuggestion.getId(), "", "")));
         }
 
         return suggestions;
     }
 
-    private V4SuggestionRow getV4QuerySuggestionRow(String query, Store store) {
-        V4Suggestion v4Suggestion = V4Suggestion.builder()
-                .title(query)
-                .contentType(getV4QueryType(query, store))
-                .store(getV4Store(store))
-                .clickUrl(getQueryStoreUrl(query, store))
-                .build();
-        return new V4SuggestionRow((store != null) ? V4SuggestionType.QUERY_STORE : V4SuggestionType.QUERY, v4Suggestion);
-    }
-
-    private V4SuggestionRow getV4ProductSuggestionRow(String id) {
-        V4Suggestion v4Suggestion = V4Suggestion.builder()
-                .pid(id)
+    private V4SuggestionRow getQuerySuggestion(String query) {
+        return V4Query.builder()
+                .clickUrl(getQueryUrl(query))
                 .contentType(V4ContentType.RECENT)
-                .title("Quick Heal TOTAL SECURITY 2USER 1YEAR")
-                .imageUrl("https://rukminim1.flixcart.com/image/832/832/j2516kw0/security-software/e/4/n/total-security-2-pc-1-year-tr2-original-imaetezd8ydffquf.jpeg?q=70")
-                .clickUrl("/quick-heal-total-security-2user-1year/p/itmet7fvcdhzuhm7?pid=SECEP6PSD9H3RFFB")
+                .query(query)
                 .build();
-        return new V4SuggestionRow(V4SuggestionType.PRODUCT, v4Suggestion);
     }
 
-    private V4ContentType getV4QueryType(String query, Store store) {
-        return V4ContentType.RECENT;
+    private V4SuggestionRow getQueryStoreSuggestion(String query, Store store) {
+        String clickUrl = getQueryUrl(query) + "&sid=" + store.getStore();
+        return V4QueryStore.builder()
+                .clickUrl(clickUrl)
+                .contentType(V4ContentType.RECENT)
+                .query(query)
+                .store(store.getTitle())
+                .marketplaceId(store.getMarketPlaceId())
+                .build();
     }
 
-    private V4Store getV4Store(Store store) {
-        if (store == null) return null;
-        String marketPlaceId = store.getMarketPlaceId();
-        V4MarketPlace v4MarketPlace = (MarketAnalyzer.FLIP_MART.equals(marketPlaceId)) ?
-                V4MarketPlace.GROCERY :
-                V4MarketPlace.FLIPKART;
-        return new V4Store(store.getTitle(), v4MarketPlace, store.getStore());
+    private String getQueryUrl(String query) {
+        return String.format("/search?q=%s&as=on&as-show=on", query);
     }
 
-    private String getQueryStoreUrl(String query, Store store) {
-        return "/search?q=" + query +
-                ((store != null) ? ("&sid=" + store.getStore()) : "") +
-                "&as=on&as-show=on";
+    private V4SuggestionRow getProductSuggestion(String pid, String title, String imageUrl) {
+        return V4Product.builder()
+                .clickUrl(String.format("https://www.flipkart.com/a/p/a?pid=%s", pid))
+                .contentType(V4ContentType.RECENT)
+                .pid(pid)
+                .title(title)
+                .imageUrl(imageUrl)
+                .build();
     }
 }

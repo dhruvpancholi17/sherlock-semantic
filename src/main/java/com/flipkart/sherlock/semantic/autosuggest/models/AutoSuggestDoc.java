@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import javax.validation.constraints.Null;
 import java.util.List;
 
 /**
@@ -23,6 +24,12 @@ public class AutoSuggestDoc {
 
     public static final String PRODUCT_STORE = "product-store-obj_sstring";
 
+    public static final String WILSON_CTR_FL = "wilson_ctr:field(wilson-ctr_float)";
+
+    public static final String WILSON_CTR = "wilson_ctr";
+
+    public static final String SOLR_SCORE = "score";
+
     @JsonProperty(LOGGED_QC_QUERY)
     private final String loggedQuery;
 
@@ -37,4 +44,10 @@ public class AutoSuggestDoc {
 
     @JsonProperty(PRODUCT_STORE)
     private final List<ProductStore> productStores;
+
+    @JsonProperty(SOLR_SCORE)
+    private final Float solrScore;
+
+    @JsonProperty(WILSON_CTR)
+    private final Double wilsonCTR;
 }
