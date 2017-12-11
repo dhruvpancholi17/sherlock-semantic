@@ -172,8 +172,6 @@ public class SolrRequestHandler {
         searchRequest.addParam(SearchRequest.Param.SORT, params.getSortFunctions());
         searchRequest.addParam(SearchRequest.Param.ROWS, String.valueOf(params.getRows()));
 
-//        searchRequest.addParam(SearchRequest.Param.SOURCE, "flash");
-
         return searchRequest;
     }
 
@@ -202,8 +200,6 @@ public class SolrRequestHandler {
         searchRequest.addParam(SearchRequest.Param.SPELLCHECK_MAX_COLLATION_TRIES, "5");
         searchRequest.addParam(SearchRequest.Param.SPELLCHECK_COLLATE_EXTENDED_RESULTS, "true");
         searchRequest.addParam(SearchRequest.Param.SPELLCHECK_ONLY_MORE_POPULAR, "true");
-
-//        searchRequest.addParam(SearchRequest.Param.SOURCE, "flash");
 
         return searchRequest;
     }
