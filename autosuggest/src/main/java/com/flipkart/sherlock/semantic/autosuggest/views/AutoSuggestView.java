@@ -62,6 +62,7 @@ public class AutoSuggestView {
     @GET
     @Path("/sherlock/stores/{store : .+}/autosuggest")
     @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
     public Response pathMethod(@PathParam("store") String store, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
 
         MetricsManager.Service service = Autosuggest;
@@ -121,7 +122,12 @@ public class AutoSuggestView {
     @GET
     @Path("/sherlock/v4/stores/{store : .+}/autosuggest")
     @Produces(MediaType.APPLICATION_JSON)
+<<<<<<< HEAD
     public Response autoSuggestV4(@PathParam("store") String store, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+=======
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response autoSuggestV4(@PathParam("store") String store, @Context UriInfo uriInfo) {
+>>>>>>> 98797dee4b178e88d0d2ae14d7fc4313cbe1aa59
         MetricsManager.Service service = Autosuggest;
         String component = COSMOS_AUTO_SUGGEST_V4_COMPONENT;
 
