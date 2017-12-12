@@ -21,10 +21,7 @@ import service.Transformer;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static com.flipkart.sherlock.semantic.autosuggest.dataGovernance.Constants.*;
@@ -33,40 +30,25 @@ import static com.flipkart.sherlock.semantic.autosuggest.dataGovernance.Constant
 public class Ingester implements Transformer {
 
 
-    public class AutoSuggestResponseData {
-        Params params;
-        ProductResponse productResponse;
-        String payLoadId;
-        QueryResponse queryResponse;
-        MultivaluedMap<String, String> header;
-        UriInfo uriInfo;
-
-        public AutoSuggestResponseData(String payLoadId, Params params, QueryResponse queryResponse, ProductResponse productResponse, MultivaluedMap<String, String> header, UriInfo uriInfo, Boolean vesrion) {
-            this.params = params;
-            this.productResponse = productResponse;
-            this.queryResponse = queryResponse;
-            this.header = header;
-            this.uriInfo = uriInfo;
-            this.payLoadId = payLoadId;
-        }
-
-    }
-
     @Override
     public BaseSchema transform(Object rawObject) throws TransformException {
         AutoSuggestResponseData autoSuggestData = (AutoSuggestResponseData) rawObject;
-        Params params = autoSuggestData.params;
-        MultivaluedMap<String, String> header = autoSuggestData.header;
-        String payloadId = autoSuggestData.payLoadId;
-        UriInfo uriInfo = autoSuggestData.uriInfo;
-        QueryResponse queryResponse = autoSuggestData.queryResponse;
-        ProductResponse productResponse = autoSuggestData.productResponse;
+        Params params = autoSuggestData.getParams();
+        MultivaluedMap<String, String> header = autoSuggestData.getHeader();
+        MultivaluedMap<String, String> queryParam = autoSuggestData.getQueryParam();
+        MultivaluedMap<String, String> pathParam = autoSuggestData.getPathParam();
+
+
+        String payloadId = autoSuggestData.getPayLoadId();
+        QueryResponse queryResponse = autoSuggestData.getQueryResponse();
+        ProductResponse productResponse = autoSuggestData.getProductResponse();
+
 
         AutoSuggest autoSuggest = new AutoSuggest();
         AutoSuggestRequest autoSuggestRequest = new AutoSuggestRequest();
         AutoSuggestResponse autoSuggestResponse = new AutoSuggestResponse();
 
-        loadAutoSuggestRequest(autoSuggestRequest, params, header, uriInfo);
+        loadAutoSuggestRequest(autoSuggestRequest, params, header, queryParam, pathParam);
         loadAutoSuggestResponse(payloadId, autoSuggestResponse, params, queryResponse, productResponse);
         autoSuggest.setAutoSuggestRequest(autoSuggestRequest);
         autoSuggest.setAutoSuggestResponse(autoSuggestResponse);
@@ -74,41 +56,46 @@ public class Ingester implements Transformer {
 
     }
 
-    private void loadAutoSuggestRequest(AutoSuggestRequest autoSuggestRequest, Params params, MultivaluedMap<String, String> header, UriInfo uriInfo) {
-        if(header.containsKey(xDeviceId))  autoSuggestRequest.setXDeviceId(header.getFirst(xDeviceId));
-        if(header.containsKey(xABIds)) autoSuggestRequest.setXABIdsList(header.get(xABIds));
-        if(header.containsKey(xRequestId)) autoSuggestRequest.setXRequestId(header.getFirst(xRequestId));
-        if(header.containsKey(xSearchSessionId)) autoSuggestRequest.setXSearchSessionId(header.getFirst(xSearchSessionId));
-        if(header.containsKey(xSearchQueryId)) autoSuggestRequest.setXSearchQueryId(header.getFirst(xSearchQueryId));
-        if(header.containsKey(xClientDeviceChannel)) autoSuggestRequest.setXClientDeviceChannel(header.getFirst(xClientDeviceChannel));
-
+    private void loadAutoSuggestRequest(AutoSuggestRequest autoSuggestRequest, Params params, MultivaluedMap<String, String> header, MultivaluedMap<String, String> queryParam, MultivaluedMap<String, String> pathParam) {
+        if (header != null) {
+            if(header.containsKey(xDeviceId))  autoSuggestRequest.setXDeviceId(header.getFirst(xDeviceId));
+            if(header.containsKey(xABIds)) autoSuggestRequest.setXABIdsList(header.get(xABIds));
+            if(header.containsKey(xRequestId)) autoSuggestRequest.setXRequestId(header.getFirst(xRequestId));
+            if(header.containsKey(xSearchSessionId)) autoSuggestRequest.setXSearchSessionId(header.getFirst(xSearchSessionId));
+            if(header.containsKey(xSearchQueryId)) autoSuggestRequest.setXSearchQueryId(header.getFirst(xSearchQueryId));
+            if(header.containsKey(xClientDeviceChannel)) autoSuggestRequest.setXClientDeviceChannel(header.getFirst(xClientDeviceChannel));
+        }
         autoSuggestRequest.setMarketPlaceId(params.getMarketPlaceIds().toString());
-        setParamsList(autoSuggestRequest, uriInfo);
+        setParamsList(autoSuggestRequest, queryParam, pathParam);
     }
 
-    private void setParamsList(AutoSuggestRequest autoSuggestRequest, UriInfo uriInfo) {
+    private void setParamsList(AutoSuggestRequest autoSuggestRequest, MultivaluedMap<String, String> queryParams, MultivaluedMap<String, String> pathParams) {
         ArrayList<RequestParamsMap> paramsMaps = new ArrayList<>();
-        for (Map.Entry pathParam : uriInfo.getPathParameters().entrySet()) {
-            String key = pathParam.getKey().toString();
-            String val = pathParam.getValue().toString();
-            RequestParamsMap requestParamsMap = new RequestParamsMap();
-            requestParamsMap.setKey(key);
-            requestParamsMap.setValueList(Collections.singletonList(val));
-            paramsMaps.add(requestParamsMap);
-            if(key.equalsIgnoreCase(store)) {
-                autoSuggestRequest.setStorePath(val);
+        if (pathParams != null) {
+            for (Map.Entry pathParam : pathParams.entrySet()) {
+                String key = pathParam.getKey().toString();
+                String val = pathParam.getValue().toString();
+                RequestParamsMap requestParamsMap = new RequestParamsMap();
+                requestParamsMap.setKey(key);
+                requestParamsMap.setValueList(Collections.singletonList(val));
+                paramsMaps.add(requestParamsMap);
+                if(key.equalsIgnoreCase(store)) {
+                    autoSuggestRequest.setStorePath(val);
+                }
             }
         }
 
-        for (Map.Entry queryParam : uriInfo.getQueryParameters().entrySet()) {
-            String key = queryParam.getKey().toString();
-            String val = queryParam.getValue().toString();
-            RequestParamsMap requestParamsMap = new RequestParamsMap();
-            requestParamsMap.setKey(queryParam.getKey().toString());
-            requestParamsMap.setValueList(Collections.singletonList(queryParam.getValue().toString()));
-            paramsMaps.add(requestParamsMap);
-            if (key.equalsIgnoreCase(originalPrefix)) {
-                autoSuggestRequest.setQueryPrefix(val);
+        if (queryParams != null) {
+            for (Map.Entry queryParam : queryParams.entrySet()) {
+                String key = queryParam.getKey().toString();
+                String val = queryParam.getValue().toString();
+                RequestParamsMap requestParamsMap = new RequestParamsMap();
+                requestParamsMap.setKey(queryParam.getKey().toString());
+                requestParamsMap.setValueList(Collections.singletonList(queryParam.getValue().toString()));
+                paramsMaps.add(requestParamsMap);
+                if (key.equalsIgnoreCase(originalPrefix)) {
+                    autoSuggestRequest.setQueryPrefix(val);
+                }
             }
         }
 
@@ -122,9 +109,11 @@ public class Ingester implements Transformer {
         TimerContext timerContext = timer.time();
         try {
             MultivaluedMap<String, String> header = ((ContainerRequest) headers).getHeaders();
-            String requestId = (header.containsKey(xRequestId)) ? header.getFirst(xRequestId) : defaultId;
-            Boolean isPerfTest = (header.containsKey(xPerfTest)) ? (Boolean.valueOf(header.getFirst(xPerfTest))) : false;
-            AutoSuggestResponseData autoSuggestData = new AutoSuggestResponseData(payloadId, params, queryResponse, productResponse, header, uriInfo, false);
+            MultivaluedMap<String, String> pathParam = uriInfo.getPathParameters();
+            MultivaluedMap<String, String> queryParam = uriInfo.getQueryParameters();
+            final String requestId = (header.containsKey(xRequestId)) ? header.getFirst(xRequestId) : defaultId;
+            final Boolean isPerfTest = (header.containsKey(xPerfTest)) ? (Boolean.valueOf(header.getFirst(xPerfTest))) : false;
+            AutoSuggestResponseData autoSuggestData = new AutoSuggestResponseData(payloadId, params, queryResponse, productResponse, header, queryParam, pathParam);
             IngestionObj ingestionObj = new IngestionObj("semantic_autosuggest", autoSuggestData, isPerfTest, MessageType.EVENT, IngestionMode.SPECTER, this, requestId);
             Publisher.INSTANCE.publish(ingestionObj);
         } catch (Exception e) {
@@ -234,4 +223,5 @@ public class Ingester implements Transformer {
             autoSuggestSuggestions.add(autoSuggestSuggestion);
         }
     }
+
 }
