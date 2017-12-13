@@ -1,6 +1,6 @@
 package com.flipkart.sherlock.semantic.common.dao.mysql.entity;
 
-import com.flipkart.sherlock.semantic.common.util.FkConfigServiceWrapper;
+import com.flipkart.sherlock.semantic.commons.config.FkConfigServiceWrapper;
 import lombok.*;
 
 import java.util.InvalidPropertiesFormatException;

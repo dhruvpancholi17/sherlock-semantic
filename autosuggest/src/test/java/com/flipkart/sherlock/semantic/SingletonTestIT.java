@@ -1,7 +1,7 @@
 package com.flipkart.sherlock.semantic;
 
 import com.flipkart.sherlock.semantic.common.config.SearchConfigProvider;
-import com.flipkart.sherlock.semantic.common.util.FkConfigServiceWrapper;
+import com.flipkart.sherlock.semantic.commons.config.FkConfigServiceWrapper;
 import com.flipkart.sherlock.semantic.core.augment.AugmentationConfigProvider;
 import com.flipkart.sherlock.semantic.core.augment.CachedNegativesDataSource;
 import com.flipkart.sherlock.semantic.core.augment.LocalCachedTermAlternativesDataSource;

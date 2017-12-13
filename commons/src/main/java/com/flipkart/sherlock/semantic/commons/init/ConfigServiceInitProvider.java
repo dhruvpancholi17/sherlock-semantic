@@ -2,29 +2,26 @@ package com.flipkart.sherlock.semantic.commons.init;
 
 import com.flipkart.sherlock.semantic.commons.config.FkConfigServiceWrapper;
 import com.google.inject.AbstractModule;
-import com.google.inject.Provides;
-import com.google.inject.Singleton;
 
 /**
  * Created by anurag.laddha on 11/12/17.
  */
+
+/**
+ * DI provider for Fk config service wrapper
+ * We are instantiating FkConfigServiceWrapper beforehand initialising DI framework
+ * because there might be configurations required (eg end points) to properly initialise all objects through DI f/w.
+ */
 public class ConfigServiceInitProvider extends AbstractModule {
 
-    private String bucketName;
-    private boolean appendEnvironment;
+    private FkConfigServiceWrapper fkConfigServiceWrapper;
 
-    public ConfigServiceInitProvider(String bucketName, boolean appendEnvironment) {
-        this.bucketName = bucketName;
-        this.appendEnvironment = appendEnvironment;
+    public ConfigServiceInitProvider(FkConfigServiceWrapper fkConfigServiceWrapper) {
+        this.fkConfigServiceWrapper = fkConfigServiceWrapper;
     }
 
     @Override
     protected void configure() {
-    }
-
-    @Provides
-    @Singleton
-    FkConfigServiceWrapper getConfigService(){
-        return new FkConfigServiceWrapper(bucketName, appendEnvironment);
+        bind(FkConfigServiceWrapper.class).toInstance(this.fkConfigServiceWrapper);
     }
 }

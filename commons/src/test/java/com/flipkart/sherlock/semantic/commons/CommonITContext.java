@@ -1,6 +1,7 @@
 package com.flipkart.sherlock.semantic.commons;
 
 import com.codahale.metrics.MetricRegistry;
+import com.flipkart.sherlock.semantic.commons.config.FkConfigServiceWrapper;
 import com.flipkart.sherlock.semantic.commons.dao.mysql.entity.MysqlConfig;
 import com.flipkart.sherlock.semantic.commons.dao.mysql.entity.MysqlConnectionPoolConfig;
 import com.flipkart.sherlock.semantic.commons.init.CommonInitProvider;
@@ -28,6 +29,7 @@ public class CommonITContext {
             synchronized (CommonITContext.class) {
                 if (injector == null) {
 
+                    FkConfigServiceWrapper fkConfigServiceWrapper = new FkConfigServiceWrapper("sherlock-autosuggest", true);
                     MetricRegistry metricRegistry = new MetricRegistry();
                     MysqlConfig mysqlConfig = new MysqlConfig("127.0.0.1", 3306, "root", "", "sherlock");
                     MysqlConnectionPoolConfig connectionPoolConfig = new MysqlConnectionPoolConfig.MysqlConnectionPoolConfigBuilder(1, 10)
@@ -37,7 +39,7 @@ public class CommonITContext {
 
                     injector = Guice.createInjector(new MysqlDBIInitProvider(mysqlConfig, connectionPoolConfig),
                         new CommonInitProvider(metricRegistry, getHttpClientConfig()),
-                        new ConfigServiceInitProvider("sherlock-autosuggest", true),
+                        new ConfigServiceInitProvider(fkConfigServiceWrapper),
                         new HystrixInitProvider(60, metricRegistry));
                 }
             }

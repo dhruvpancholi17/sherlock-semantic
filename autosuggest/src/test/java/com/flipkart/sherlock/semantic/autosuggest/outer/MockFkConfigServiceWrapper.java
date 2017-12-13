@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.flipkart.kloud.config.DynamicBucket;
 import com.flipkart.sherlock.semantic.autosuggest.utils.IOUtils;
 import com.flipkart.sherlock.semantic.autosuggest.utils.JsonSeDe;
-import com.flipkart.sherlock.semantic.common.util.FkConfigServiceWrapper;
+import com.flipkart.sherlock.semantic.commons.config.FkConfigServiceWrapper;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

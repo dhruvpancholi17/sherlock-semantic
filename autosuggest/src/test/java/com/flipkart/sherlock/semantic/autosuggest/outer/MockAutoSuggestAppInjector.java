@@ -4,7 +4,7 @@ import com.flipkart.sherlock.semantic.autosuggest.utils.JsonSeDe;
 import com.flipkart.sherlock.semantic.autosuggest.views.AutoSuggestView;
 import com.flipkart.sherlock.semantic.autosuggest.views.HealthCheckView;
 import com.flipkart.sherlock.semantic.common.dao.mysql.CompleteTableDao;
-import com.flipkart.sherlock.semantic.common.util.FkConfigServiceWrapper;
+import com.flipkart.sherlock.semantic.commons.config.FkConfigServiceWrapper;
 import com.flipkart.sherlock.semantic.core.search.SolrSearchServer;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;

@@ -1,7 +1,5 @@
 package com.flipkart.sherlock.semantic.app;
 
-
-import com.flipkart.sherlock.semantic.autosuggest.providers.WrapperProvider;
 import com.flipkart.sherlock.semantic.autosuggest.views.AutoSuggestView;
 import com.flipkart.sherlock.semantic.autosuggest.views.HealthCheckView;
 import com.flipkart.sherlock.semantic.common.dao.mysql.entity.MysqlConfig;
@@ -9,8 +7,9 @@ import com.flipkart.sherlock.semantic.common.dao.mysql.entity.MysqlConnectionPoo
 import com.flipkart.sherlock.semantic.common.init.MysqlDaoProvider;
 import com.flipkart.sherlock.semantic.common.metrics.MetricsManager;
 import com.flipkart.sherlock.semantic.common.metrics.MetricsManager.TracedItem;
-import com.flipkart.sherlock.semantic.common.util.FkConfigServiceWrapper;
+import com.flipkart.sherlock.semantic.commons.config.FkConfigServiceWrapper;
 import com.flipkart.sherlock.semantic.common.util.SherlockMetricsServletContextListener;
+import com.flipkart.sherlock.semantic.commons.init.ConfigServiceInitProvider;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import lombok.extern.slf4j.Slf4j;
@@ -44,8 +43,6 @@ public class AutoSuggestApp {
 
         MetricsManager.init(getTracedItems());
 
-        FkConfigServiceWrapper configServiceWrapper = new FkConfigServiceWrapper("sherlock-autosuggest", true);
-
         FkConfigServiceWrapper fkConfigServiceWrapper = new FkConfigServiceWrapper(AUTOSUGGEST_BUCKET, true);
         MysqlConfig mysqlConfig = MysqlConfig.getConfig(fkConfigServiceWrapper);
         log.info("Staring the host with the following MySQL config: {}", mysqlConfig.toString());
@@ -57,12 +54,12 @@ public class AutoSuggestApp {
                 .build();
 
         // By default, jetty task queue is unbounded. Reject requests once queue is full.
-        QueuedThreadPool threadPool = getWebserverThreadPool(configServiceWrapper);
+        QueuedThreadPool threadPool = getWebserverThreadPool(fkConfigServiceWrapper);
         threadPool.setName("JettyContainer");
 
         Injector injector = Guice.createInjector(
                 new MysqlDaoProvider(mysqlConfig, connectionPoolConfig),
-                new WrapperProvider(fkConfigServiceWrapper));
+                new ConfigServiceInitProvider(fkConfigServiceWrapper));
 
         // Create embedded jetty container
         Server server = new Server(threadPool);

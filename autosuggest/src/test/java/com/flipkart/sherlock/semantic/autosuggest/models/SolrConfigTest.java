@@ -5,7 +5,7 @@ import com.flipkart.sherlock.semantic.autosuggest.helpers.AutoSuggestQueryAnalyz
 import com.flipkart.sherlock.semantic.autosuggest.helpers.MarketAnalyzer;
 import com.flipkart.sherlock.semantic.autosuggest.utils.IOUtils;
 import com.flipkart.sherlock.semantic.autosuggest.utils.JsonSeDe;
-import com.flipkart.sherlock.semantic.common.util.FkConfigServiceWrapper;
+import com.flipkart.sherlock.semantic.commons.config.FkConfigServiceWrapper;
 import com.flipkart.sherlock.semantic.test.utils.ObjectUtils;
 import org.junit.Assert;
 import org.junit.Before;

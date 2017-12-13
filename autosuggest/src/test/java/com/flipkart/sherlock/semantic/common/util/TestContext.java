@@ -4,13 +4,13 @@ package com.flipkart.sherlock.semantic.common.util;
  * Created by anurag.laddha on 16/04/17.
  */
 
-import com.flipkart.sherlock.semantic.autosuggest.providers.WrapperProvider;
 import com.flipkart.sherlock.semantic.common.dao.mysql.entity.MysqlConfig;
 import com.flipkart.sherlock.semantic.common.dao.mysql.entity.MysqlConnectionPoolConfig;
-import com.flipkart.sherlock.semantic.common.init.ConfigServiceInitProvider;
 import com.flipkart.sherlock.semantic.common.init.HystrixConfigProvider;
 import com.flipkart.sherlock.semantic.common.init.MiscInitProvider;
 import com.flipkart.sherlock.semantic.common.init.MysqlDaoProvider;
+import com.flipkart.sherlock.semantic.commons.config.FkConfigServiceWrapper;
+import com.flipkart.sherlock.semantic.commons.init.ConfigServiceInitProvider;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Key;
@@ -36,15 +36,14 @@ public class TestContext {
                     FkConfigServiceWrapper fkConfigServiceWrapper = new FkConfigServiceWrapper(AUTOSUGGEST_BUCKET, true);
                     MysqlConfig mysqlConfig = MysqlConfig.getConfig(fkConfigServiceWrapper);
                     MysqlConnectionPoolConfig connectionPoolConfig = new MysqlConnectionPoolConfig.MysqlConnectionPoolConfigBuilder(1, 10)
-                            .setInitialPoolSize(1)
-                            .setAcquireIncrement(2)
-                            .setMaxIdleTimeSec((int) TimeUnit.MINUTES.toSeconds(30)).build();
+                        .setInitialPoolSize(1)
+                        .setAcquireIncrement(2)
+                        .setMaxIdleTimeSec((int) TimeUnit.MINUTES.toSeconds(30)).build();
 
                     injector = Guice.createInjector(new MysqlDaoProvider(mysqlConfig, connectionPoolConfig),
-                            new WrapperProvider(fkConfigServiceWrapper),
-                            new MiscInitProvider(10, 5),
-                            new ConfigServiceInitProvider(fkConfigServiceWrapper),
-                            new HystrixConfigProvider((int) TimeUnit.MINUTES.toMillis(2)));
+                        new ConfigServiceInitProvider(fkConfigServiceWrapper),
+                        new MiscInitProvider(10, 5),
+                        new HystrixConfigProvider((int) TimeUnit.MINUTES.toMillis(2)));
                 }
             }
         }
