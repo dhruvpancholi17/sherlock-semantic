@@ -33,7 +33,7 @@ public class HystrixCommandWrapper<R> extends HystrixCommand<R> {
             .andThreadPoolPropertiesDefaults(HystrixThreadPoolProperties.Setter()
                 .withCoreSize(commandConfig.getPoolCoreSize())
                 .withMaximumSize(commandConfig.getPoolMaxSize())
-                .withAllowMaximumSizeToDivergeFromCoreSize(true)
+                .withAllowMaximumSizeToDivergeFromCoreSize(commandConfig.isAllowMaximumSizeToDivergeFromCoreSize())
                 .withMaxQueueSize(commandConfig.getPoolMaxQueueSize())));
         this.command = command;
         this.commandConfig = commandConfig;

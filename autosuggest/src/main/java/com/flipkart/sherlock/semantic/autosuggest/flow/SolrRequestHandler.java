@@ -5,10 +5,10 @@ import com.flipkart.sherlock.semantic.autosuggest.helpers.QuerySanitizer.QueryPr
 import com.flipkart.sherlock.semantic.autosuggest.models.AutoSuggestDoc;
 import com.flipkart.sherlock.semantic.autosuggest.models.*;
 import com.flipkart.sherlock.semantic.autosuggest.utils.JsonSeDe;
-import com.flipkart.sherlock.semantic.common.hystrix.HystrixCommandConfig;
-import com.flipkart.sherlock.semantic.common.hystrix.HystrixCommandHelper;
-import com.flipkart.sherlock.semantic.common.hystrix.HystrixCommandWrapper;
+import com.flipkart.sherlock.semantic.commons.hystrix.HystrixCommandHelper;
 import com.flipkart.sherlock.semantic.commons.config.FkConfigServiceWrapper;
+import com.flipkart.sherlock.semantic.commons.hystrix.HystrixCommandConfig;
+import com.flipkart.sherlock.semantic.commons.hystrix.HystrixCommandWrapper;
 import com.flipkart.sherlock.semantic.core.search.*;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
@@ -60,8 +60,7 @@ public class SolrRequestHandler {
             HystrixCommandWrapper<SearchResponse> searchCommand = new HystrixCommandWrapper<>(commandConfig,
                     () -> executeSearchRequest(solrSearchServer, searchRequest, params));
 
-            searchResponse = HystrixCommandHelper.executeSync(searchCommand, commandConfig.getGroupKey(),
-                    commandConfig.getCommandKey());
+            searchResponse = HystrixCommandHelper.executeSync(searchCommand);
         } else {
             log.error("Could not find config key for group: {}, command: {}", HYSTRIX_GROUP_SOLR, HYSTRIX_COMMAND_SEARCH);
         }
@@ -77,8 +76,7 @@ public class SolrRequestHandler {
         if (commandConfig != null) {
             HystrixCommandWrapper<SpellResponse> spellCommand = new HystrixCommandWrapper<>(commandConfig,
                     () -> executeSpellRequest(solrSearchServer, spellRequest, params));
-            spellResponse = HystrixCommandHelper.executeSync(spellCommand, commandConfig.getGroupKey(),
-                    commandConfig.getCommandKey());
+            spellResponse = HystrixCommandHelper.executeSync(spellCommand);
         } else {
             log.error("Could not find config key for group: {}, command: {}", HYSTRIX_GROUP_SOLR, HYSTRIX_COMMAND_SPELL);
         }

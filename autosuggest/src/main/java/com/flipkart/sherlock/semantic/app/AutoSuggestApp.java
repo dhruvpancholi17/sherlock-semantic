@@ -7,9 +7,11 @@ import com.flipkart.sherlock.semantic.common.dao.mysql.entity.MysqlConnectionPoo
 import com.flipkart.sherlock.semantic.common.init.MysqlDaoProvider;
 import com.flipkart.sherlock.semantic.common.metrics.MetricsManager;
 import com.flipkart.sherlock.semantic.common.metrics.MetricsManager.TracedItem;
+import com.flipkart.sherlock.semantic.common.util.JmxMetricRegistry;
 import com.flipkart.sherlock.semantic.commons.config.FkConfigServiceWrapper;
 import com.flipkart.sherlock.semantic.common.util.SherlockMetricsServletContextListener;
 import com.flipkart.sherlock.semantic.commons.init.ConfigServiceInitProvider;
+import com.flipkart.sherlock.semantic.commons.init.HystrixInitProvider;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +28,7 @@ import org.glassfish.jersey.servlet.ServletContainer;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import static com.flipkart.sherlock.semantic.app.AppConstants.AUTOSUGGEST_BUCKET;
 import static com.flipkart.sherlock.semantic.autosuggest.views.AutoSuggestView.COSMOS_AUTO_SUGGEST_COMPONENT;
@@ -58,8 +61,9 @@ public class AutoSuggestApp {
         threadPool.setName("JettyContainer");
 
         Injector injector = Guice.createInjector(
-                new MysqlDaoProvider(mysqlConfig, connectionPoolConfig),
-                new ConfigServiceInitProvider(fkConfigServiceWrapper));
+            new MysqlDaoProvider(mysqlConfig, connectionPoolConfig),
+            new ConfigServiceInitProvider(fkConfigServiceWrapper),
+            new HystrixInitProvider((int)TimeUnit.MINUTES.toSeconds(2), JmxMetricRegistry.INSTANCE.getInstance()));
 
         // Create embedded jetty container
         Server server = new Server(threadPool);
