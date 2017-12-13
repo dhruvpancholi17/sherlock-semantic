@@ -1,4 +1,4 @@
-package com.flipkart.sherlock.semantic.common.hystrix;
+package com.flipkart.sherlock.semantic.commons.hystrix;
 
 import com.netflix.hystrix.HystrixCommand;
 import lombok.extern.slf4j.Slf4j;

@@ -1,6 +1,7 @@
-package com.flipkart.sherlock.semantic.common.hystrix;
+package com.flipkart.sherlock.semantic.commons.hystrix;
 
 import com.flipkart.sherlock.semantic.TestUtils;
+import com.flipkart.sherlock.semantic.commons.hystrix.HystrixCommandConfig;
 import junit.framework.Assert;
 import org.junit.Test;
 
