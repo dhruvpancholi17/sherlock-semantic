@@ -4,7 +4,6 @@ package com.flipkart.sherlock.semantic.autosuggest.dataGovernance;
 import com.flipkart.sherlock.semantic.autosuggest.models.Params;
 import com.flipkart.sherlock.semantic.autosuggest.models.ProductResponse;
 import com.flipkart.sherlock.semantic.autosuggest.models.QueryResponse;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 

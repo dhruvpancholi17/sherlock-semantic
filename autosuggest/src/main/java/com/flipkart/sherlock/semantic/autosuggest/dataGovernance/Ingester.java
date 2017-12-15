@@ -59,7 +59,11 @@ public class Ingester implements Transformer {
         if (header != null) {
             if(header.containsKey(xDeviceId))  autoSuggestRequest.setXDeviceId(header.getFirst(xDeviceId));
             if(header.containsKey(xABIds)) autoSuggestRequest.setXABIdsList(header.get(xABIds));
-            if(header.containsKey(xRequestId)) autoSuggestRequest.setXRequestId(header.getFirst(xRequestId));
+            if(header.containsKey(xRequestId)) {
+                autoSuggestRequest.setXRequestId(header.getFirst(xRequestId));
+            } else {
+                autoSuggestRequest.setXRequestId(defaultId);
+            }
             if(header.containsKey(xSearchSessionId)) autoSuggestRequest.setXSearchSessionId(header.getFirst(xSearchSessionId));
             if(header.containsKey(xSearchQueryId)) autoSuggestRequest.setXSearchQueryId(header.getFirst(xSearchQueryId));
             if(header.containsKey(xClientDeviceChannel)) autoSuggestRequest.setXClientDeviceChannel(header.getFirst(xClientDeviceChannel));
