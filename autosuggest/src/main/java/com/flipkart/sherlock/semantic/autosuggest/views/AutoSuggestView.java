@@ -73,7 +73,7 @@ public class AutoSuggestView {
         try {
             Response response = MetricsManager.logTime(service, component, () -> {
 
-                String payloadId = UUID.randomUUID().toString();
+                final String payloadId = UUID.randomUUID().toString();
 
                 Params params = paramsHandler.getParams(store, uriInfo);
 

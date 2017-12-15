@@ -46,7 +46,7 @@ public class AutoSuggestDoc {
     private final List<ProductStore> productStores;
 
     @JsonProperty(SOLR_SCORE)
-    private final Float solrScore;
+    private final Double solrScore;
 
     @JsonProperty(WILSON_CTR)
     private final Double wilsonCTR;

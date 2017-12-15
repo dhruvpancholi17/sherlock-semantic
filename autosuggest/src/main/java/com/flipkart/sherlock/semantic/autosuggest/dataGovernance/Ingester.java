@@ -201,7 +201,7 @@ public class Ingester implements Transformer {
             AutoSuggestDoc autoSuggestDoc = autoSuggestDocs.get(autoSuggestDocIndex++);
 
             TransformedCtrObj ctrObj = autoSuggestDoc.getCtrObj();
-            Double solrScore = autoSuggestDoc.getSolrScore().doubleValue();
+            Double solrScore = autoSuggestDoc.getSolrScore();
             Double wilsonCtr = autoSuggestDoc.getWilsonCTR();
 
             if ((querySuggestion.getStores() != null) && (querySuggestion.getStores().size() > 0)) {

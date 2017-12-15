@@ -231,8 +231,7 @@ public class SolrRequestHandler {
             });
             if (productStores == null) continue;
 
-            Float solrScore = Float.valueOf(String.valueOf(solrDoc.get(SOLR_SCORE)));
-            if(solrScore == null) continue;
+            Double solrScore = Double.valueOf(solrDoc.get(SOLR_SCORE).toString());
 
             Double wilsonCTR = (Double) solrDoc.get(WILSON_CTR);
             if(wilsonCTR == null) continue;

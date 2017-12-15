@@ -37,7 +37,7 @@ public class IngesterTest {
 
     //private Ingester.AutoSuggestResponseData autoSuggestResponseData = new Ingester.AutoSuggestResponseData();
 
-    private String payloadId = "6323a204-b181-4f78-8330-5d2c2e32ed65";
+    private String payloadId = "ID-NOT-FOUND";
     private JsonSeDe instance;
     private QueryResponse queryResponse;
     private ProductResponse productResponse;
