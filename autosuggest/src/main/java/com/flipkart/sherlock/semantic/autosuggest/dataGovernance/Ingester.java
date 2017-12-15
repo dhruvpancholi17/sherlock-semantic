@@ -105,7 +105,7 @@ public class Ingester implements Transformer {
     // Load data for auto-suggest Version 3
 
     public void publishData(QueryResponse queryResponse,Params params, ProductResponse productResponse, HttpHeaders headers, UriInfo uriInfo) {
-        Timer timer = JmxMetricRegistry.INSTANCE.getInstance().timer("AutoSuggest DG publish timer");
+        Timer timer = JmxMetricRegistry.INSTANCE.getInstance().timer("DG-publish-timer");
         Context timerContext = timer.time();
         try {
             MultivaluedMap<String, String> header = ((ContainerRequest) headers).getHeaders();

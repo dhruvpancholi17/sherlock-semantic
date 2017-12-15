@@ -13,7 +13,7 @@ import java.util.Set;
  */
 public class QueryResponseTest extends BaseModelTest {
 
-    private static final Set<String> QUERY_RESPONSE_FIELDS = ImmutableSet.of("autoSuggestSolrResponse", "querySuggestions");
+    private static final Set<String> QUERY_RESPONSE_FIELDS = ImmutableSet.of("autoSuggestSolrResponse", "querySuggestions", "isSolrSpellCorrectionUsed", "solrSpellCorrectionOutput");
 
     @Test
     public void testFields() {

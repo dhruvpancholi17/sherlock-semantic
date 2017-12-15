@@ -13,7 +13,7 @@ import java.util.Set;
  */
 public class AutoSuggestDocTest extends BaseModelTest {
 
-    private static final Set<String> AUTOSUGGEST_DOC_FIELDS = ImmutableSet.of("loggedQuery", "correctedQuery", "ctrObj", "decayedProductObjs", "productStores");
+    private static final Set<String> AUTOSUGGEST_DOC_FIELDS = ImmutableSet.of("loggedQuery", "correctedQuery", "ctrObj", "decayedProductObjs", "productStores", "solrScore", "wilsonCTR");
 
     @Test
     public void testFields() {
