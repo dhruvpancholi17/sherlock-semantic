@@ -4,6 +4,7 @@ import com.flipkart.sherlock.semantic.autosuggest.views.AutoSuggestView;
 import com.flipkart.sherlock.semantic.autosuggest.views.HealthCheckView;
 import com.flipkart.sherlock.semantic.common.dao.mysql.entity.MysqlConfig;
 import com.flipkart.sherlock.semantic.common.dao.mysql.entity.MysqlConnectionPoolConfig;
+import com.flipkart.sherlock.semantic.common.init.JsonSerdeInitProvider;
 import com.flipkart.sherlock.semantic.common.init.MysqlDaoProvider;
 import com.flipkart.sherlock.semantic.common.metrics.MetricsManager;
 import com.flipkart.sherlock.semantic.common.metrics.MetricsManager.TracedItem;
@@ -61,6 +62,7 @@ public class AutoSuggestApp {
         threadPool.setName("JettyContainer");
 
         Injector injector = Guice.createInjector(
+            new JsonSerdeInitProvider(),
             new MysqlDaoProvider(mysqlConfig, connectionPoolConfig),
             new ConfigServiceInitProvider(fkConfigServiceWrapper),
             new HystrixInitProvider((int)TimeUnit.MINUTES.toSeconds(2), JmxMetricRegistry.INSTANCE.getInstance()));
