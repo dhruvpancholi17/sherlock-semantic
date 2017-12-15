@@ -53,10 +53,10 @@ public class IngesterTest {
         MockitoAnnotations.initMocks(this);
         ingesterSpy = spy(ingester);
         instance = JsonSeDe.getInstance();
-        jsonQueryResponse = IOUtils.open("src/test/resources/AutoSuggestDG/QueryResponse.json").readAll();
-        jsonProductResponse = IOUtils.open("src/test/resources/AutoSuggestDG/ProductResponse.json").readAll();
-        jsonParams = IOUtils.open("src/test/resources/AutoSuggestDG/Params.json").readAll();
-        jsonAutoSuggestResponse = IOUtils.open("src/test/resources/AutoSuggestDG/IngesterAutoSuggestResponse.json").readAll();
+        jsonQueryResponse = IOUtils.openFromResource("AutoSuggestDG/QueryResponse.json").readAll();
+        jsonProductResponse = IOUtils.openFromResource("AutoSuggestDG/ProductResponse.json").readAll();
+        jsonParams = IOUtils.openFromResource("AutoSuggestDG/Params.json").readAll();
+        jsonAutoSuggestResponse = IOUtils.openFromResource("AutoSuggestDG/IngesterAutoSuggestResponse.json").readAll();
         queryResponse = instance.readValue(jsonQueryResponse, QueryResponse.class);
         productResponse = instance.readValue(jsonProductResponse, ProductResponse.class);
         params = instance.readValue(jsonParams, Params.class);

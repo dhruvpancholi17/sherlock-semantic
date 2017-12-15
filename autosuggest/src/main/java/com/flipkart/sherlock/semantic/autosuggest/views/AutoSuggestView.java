@@ -85,7 +85,7 @@ public class AutoSuggestView {
                                 new ProductRequest(params, queryResponse.getAutoSuggestSolrResponse()));
 
                 try {
-                    new Ingester().publishData(payloadId, queryResponse, params, productResponse, headers, uriInfo);
+                    new Ingester().publishData(queryResponse, params, productResponse, headers, uriInfo);
                 } catch (Exception e) {
                     log.error("AutoSuggest DG Ingestion Error", e);
                 }
@@ -123,7 +123,7 @@ public class AutoSuggestView {
     @Path("/sherlock/v4/stores/{store : .+}/autosuggest")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response autoSuggestV4(@PathParam("store") String store, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
+    public Response autoSuggestV4(@PathParam("store") String store, @Context UriInfo uriInfo) {
         MetricsManager.Service service = Autosuggest;
         String component = COSMOS_AUTO_SUGGEST_V4_COMPONENT;
 
@@ -132,7 +132,7 @@ public class AutoSuggestView {
         try {
             Response response = MetricsManager.logTime(service, component, () -> {
 
-                V4AutoSuggestResponse v4Response = v4RequestHandler.getV4Response(store, uriInfo, headers);
+                V4AutoSuggestResponse v4Response = v4RequestHandler.getV4Response(store, uriInfo);
 
                 if (v4Response.getSuggestions() == null || v4Response.getSuggestions().isEmpty()) {
                     log.info("Empty response for query: {}", jsonSeDe.writeValueAsString(uriInfo.getQueryParameters()));

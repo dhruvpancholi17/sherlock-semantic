@@ -5,10 +5,7 @@ import com.flipkart.seraph.fkint.cp.discover_search.*;
 import com.flipkart.seraph.fkint.cp.discover_search.AutoSuggestResponse;
 import com.flipkart.seraph.schema.BaseSchema;
 import com.flipkart.sherlock.semantic.autosuggest.models.*;
-import com.yammer.metrics.Metrics;
-import com.yammer.metrics.core.Meter;
-import com.yammer.metrics.core.Timer;
-import com.yammer.metrics.core.TimerContext;
+import com.flipkart.sherlock.semantic.common.util.JmxMetricRegistry;
 import entity.IngestionMode;
 import entity.IngestionObj;
 import entity.MessageType;
@@ -16,13 +13,15 @@ import exception.TransformException;
 import lombok.extern.slf4j.Slf4j;
 import org.glassfish.jersey.server.ContainerRequest;
 import service.Publisher;
+import com.codahale.metrics.Meter;
+import com.codahale.metrics.Timer;
+import com.codahale.metrics.Timer.Context;
 import service.Transformer;
 
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 import static com.flipkart.sherlock.semantic.autosuggest.dataGovernance.Constants.*;
 
@@ -71,10 +70,11 @@ public class Ingester implements Transformer {
 
     private void setParamsList(AutoSuggestRequest autoSuggestRequest, MultivaluedMap<String, String> queryParams, MultivaluedMap<String, String> pathParams) {
         ArrayList<RequestParamsMap> paramsMaps = new ArrayList<>();
+        String key,val;
         if (pathParams != null) {
             for (Map.Entry pathParam : pathParams.entrySet()) {
-                String key = pathParam.getKey().toString();
-                String val = pathParam.getValue().toString();
+                key = pathParam.getKey().toString();
+                val = pathParam.getValue().toString();
                 RequestParamsMap requestParamsMap = new RequestParamsMap();
                 requestParamsMap.setKey(key);
                 requestParamsMap.setValueList(Collections.singletonList(val));
@@ -87,11 +87,11 @@ public class Ingester implements Transformer {
 
         if (queryParams != null) {
             for (Map.Entry queryParam : queryParams.entrySet()) {
-                String key = queryParam.getKey().toString();
-                String val = queryParam.getValue().toString();
+                key = queryParam.getKey().toString();
+                val = queryParam.getValue().toString();
                 RequestParamsMap requestParamsMap = new RequestParamsMap();
                 requestParamsMap.setKey(queryParam.getKey().toString());
-                requestParamsMap.setValueList(Collections.singletonList(queryParam.getValue().toString()));
+                requestParamsMap.setValueList(Collections.singletonList(val));
                 paramsMaps.add(requestParamsMap);
                 if (key.equalsIgnoreCase(originalPrefix)) {
                     autoSuggestRequest.setQueryPrefix(val);
@@ -104,20 +104,20 @@ public class Ingester implements Transformer {
 
     // Load data for auto-suggest Version 3
 
-    public void publishData(String payloadId, QueryResponse queryResponse,Params params, ProductResponse productResponse, HttpHeaders headers, UriInfo uriInfo) {
-        Timer timer = Metrics.newTimer(Ingester.class, "AutoSuggest DG publish timer");
-        TimerContext timerContext = timer.time();
+    public void publishData(QueryResponse queryResponse,Params params, ProductResponse productResponse, HttpHeaders headers, UriInfo uriInfo) {
+        Timer timer = JmxMetricRegistry.INSTANCE.getInstance().timer("AutoSuggest DG publish timer");
+        Context timerContext = timer.time();
         try {
             MultivaluedMap<String, String> header = ((ContainerRequest) headers).getHeaders();
             MultivaluedMap<String, String> pathParam = uriInfo.getPathParameters();
             MultivaluedMap<String, String> queryParam = uriInfo.getQueryParameters();
             final String requestId = (header.containsKey(xRequestId)) ? header.getFirst(xRequestId) : defaultId;
             final Boolean isPerfTest = (header.containsKey(xPerfTest)) ? (Boolean.valueOf(header.getFirst(xPerfTest))) : false;
-            AutoSuggestResponseData autoSuggestData = new AutoSuggestResponseData(payloadId, params, queryResponse, productResponse, header, queryParam, pathParam);
+            AutoSuggestResponseData autoSuggestData = new AutoSuggestResponseData(requestId, params, queryResponse, productResponse, header, queryParam, pathParam);
             IngestionObj ingestionObj = new IngestionObj("semantic_autosuggest", autoSuggestData, isPerfTest, MessageType.EVENT, IngestionMode.SPECTER, this, requestId);
             Publisher.INSTANCE.publish(ingestionObj);
         } catch (Exception e) {
-            Meter meter = Metrics.newMeter(Ingester.class, "DG-publish-exception", "count", TimeUnit.SECONDS);
+            Meter meter = JmxMetricRegistry.INSTANCE.getInstance().meter("DG-publish-exception");
             meter.mark();
             log.error("AutoSuggest DG Exception" , e);
         } finally {

@@ -41,7 +41,7 @@ public class V4RequestHandler {
     private FkConfigServiceWrapper fkConfigServiceWrapper;
 
 
-    public V4AutoSuggestResponse getV4Response(String store, UriInfo uriInfo, HttpHeaders headers) {
+    public V4AutoSuggestResponse getV4Response(String store, UriInfo uriInfo) {
         String payloadId = UUID.randomUUID().toString();
 
         Params params = paramsHandler.getParams(store, uriInfo);
