@@ -83,9 +83,9 @@ public class Ingester implements Transformer {
                 requestParamsMap.setKey(key);
                 requestParamsMap.setValueList(Collections.singletonList(val));
                 paramsMaps.add(requestParamsMap);
-                if(key.equalsIgnoreCase(store)) {
-                    autoSuggestRequest.setStorePath(val);
-                }
+            }
+            if(pathParams.containsKey(store)) {
+                autoSuggestRequest.setStorePath(pathParams.getFirst(store));
             }
         }
 
@@ -97,12 +97,12 @@ public class Ingester implements Transformer {
                 requestParamsMap.setKey(queryParam.getKey().toString());
                 requestParamsMap.setValueList(Collections.singletonList(val));
                 paramsMaps.add(requestParamsMap);
-                if (key.equalsIgnoreCase(originalPrefix)) {
-                    autoSuggestRequest.setQueryPrefix(val);
-                }
+
+            }
+            if (queryParams.containsKey(originalPrefix)) {
+                autoSuggestRequest.setQueryPrefix(queryParams.getFirst(originalPrefix));
             }
         }
-
         autoSuggestRequest.setRequestParamsList(paramsMaps);
     }
 
