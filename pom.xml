@@ -13,6 +13,7 @@
         <module>semantic-tooling</module>
         <module>autosuggest</module>
         <module>normalise</module>
+        <module>models</module>
     </modules>
 
     <properties>
@@ -252,6 +253,13 @@
 
         <!-- end of hystrix dependencies -->
 
+        <!--Flipkart AB library integration -->
+        <dependency>
+            <groupId>com.flipkart</groupId>
+            <artifactId>ablibrary</artifactId>
+            <version>3.2.2</version>
+        </dependency>
+
     </dependencies>
     <build>
         <plugins>
@@ -373,7 +381,6 @@
             <url>http://10.85.59.116/artifactory/v1.0/artifacts/libs-release-local</url>
         </repository>
     </repositories>
-
 
 
     <!--</pluginRepositories>-->

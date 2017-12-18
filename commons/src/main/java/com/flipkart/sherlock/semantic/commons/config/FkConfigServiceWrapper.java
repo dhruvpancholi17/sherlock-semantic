@@ -3,6 +3,7 @@ package com.flipkart.sherlock.semantic.commons.config;
 import com.flipkart.kloud.config.ConfigClient;
 import com.flipkart.kloud.config.DynamicBucket;
 import com.google.common.annotations.VisibleForTesting;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 
@@ -17,6 +18,7 @@ import java.util.concurrent.Callable;
  * Creates bucket name as: <bucket name>-<environment>
  */
 @Slf4j
+@NoArgsConstructor
 public class FkConfigServiceWrapper {
 
     private static final String FK_ENV_FILE = "/etc/default/fk-env";
