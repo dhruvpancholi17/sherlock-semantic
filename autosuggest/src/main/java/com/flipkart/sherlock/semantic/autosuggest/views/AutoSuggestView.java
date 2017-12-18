@@ -1,6 +1,7 @@
 package com.flipkart.sherlock.semantic.autosuggest.views;
 
 import com.flipkart.sherlock.semantic.autosuggest.dao.AutoSuggestCacheRefresher;
+import com.flipkart.sherlock.semantic.autosuggest.dataGovernance.Ingester;
 import com.flipkart.sherlock.semantic.autosuggest.flow.ParamsHandler;
 import com.flipkart.sherlock.semantic.autosuggest.flow.ProductRequestHandler;
 import com.flipkart.sherlock.semantic.autosuggest.flow.QueryRequestHandler;
@@ -14,10 +15,7 @@ import com.google.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.core.*;
 import java.util.Map;
 import java.util.UUID;
 
@@ -65,7 +63,7 @@ public class AutoSuggestView {
     @Path("/sherlock/stores/{store : .+}/autosuggest")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response pathMethod(@PathParam("store") String store, @Context UriInfo uriInfo) {
+    public Response pathMethod(@PathParam("store") String store, @Context UriInfo uriInfo, @Context HttpHeaders headers) {
 
         MetricsManager.Service service = Autosuggest;
         String component = COSMOS_AUTO_SUGGEST_COMPONENT;
@@ -74,6 +72,8 @@ public class AutoSuggestView {
 
         try {
             Response response = MetricsManager.logTime(service, component, () -> {
+
+                final String payloadId = UUID.randomUUID().toString();
 
                 Params params = paramsHandler.getParams(store, uriInfo);
 
@@ -84,8 +84,14 @@ public class AutoSuggestView {
                         .getProductSuggestions(params.getQuery(),
                                 new ProductRequest(params, queryResponse.getAutoSuggestSolrResponse()));
 
+                try {
+                    new Ingester().publishData(queryResponse, params, productResponse, headers, uriInfo);
+                } catch (Exception e) {
+                    log.error("AutoSuggest DG Ingestion Error", e);
+                }
+
                 AutoSuggestResponse autoSuggestResponse = new AutoSuggestResponse(
-                        UUID.randomUUID().toString(),
+                        payloadId ,
                         queryResponse.getQuerySuggestions(),
                         productResponse.getProductSuggestions(),
                         params.isDebug() ? params : null,
@@ -97,6 +103,8 @@ public class AutoSuggestView {
                     log.info("Empty response for query: {}", params.getQuery());
                     MetricsManager.logNullResponse(Autosuggest, COSMOS_AUTO_SUGGEST_COMPONENT);
                 }
+
+
 
                 return Response.status(Response.Status.OK)
                         .type(MediaType.APPLICATION_JSON_TYPE)

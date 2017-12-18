@@ -9,6 +9,8 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 
+
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.UriInfo;
 import java.util.ArrayList;
 import java.util.List;
@@ -60,7 +62,6 @@ public class V4RequestHandler {
                         new ProductRequest(params, queryResponse.getAutoSuggestSolrResponse()));
 
         List<V4Suggestion> v4Suggestions = getV4Suggestion(queryResponse, productResponse);
-
         return new V4AutoSuggestResponse(
                 payloadId,
                 fkConfigServiceWrapper.getInt(AUTOSUGGEST_COLD_START_VERSION),

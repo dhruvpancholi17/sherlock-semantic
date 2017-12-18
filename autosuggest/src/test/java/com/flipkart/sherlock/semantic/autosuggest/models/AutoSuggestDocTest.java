@@ -13,11 +13,11 @@ import java.util.Set;
  */
 public class AutoSuggestDocTest extends BaseModelTest {
 
-    private static final Set<String> AUTOSUGGEST_DOC_FIELDS = ImmutableSet.of("loggedQuery", "correctedQuery", "ctrObj", "decayedProductObjs", "productStores");
+    private static final Set<String> AUTOSUGGEST_DOC_FIELDS = ImmutableSet.of("loggedQuery", "correctedQuery", "ctrObj", "decayedProductObjs", "productStores", "solrScore", "wilsonCTR");
 
     @Test
     public void testFields() {
-        AutoSuggestDoc autoSuggestDoc = new AutoSuggestDoc(null, null, null, null, null);
+        AutoSuggestDoc autoSuggestDoc = new AutoSuggestDoc(null, null, null, null, null, null, null);
         Assert.assertEquals(AUTOSUGGEST_DOC_FIELDS, new HashSet<>(ObjectUtils.getFieldNames(autoSuggestDoc)));
         ObjectUtils.invokeGetters(AUTOSUGGEST_DOC_FIELDS, autoSuggestDoc);
 

@@ -13,10 +13,7 @@ import org.mockito.MockitoAnnotations;
 
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.core.*;
 import java.util.Collections;
 import java.util.List;
 
@@ -46,8 +43,8 @@ public class AutoSuggestViewTest {
         Assert.assertEquals("/", AutoSuggestView.class.getAnnotation(Path.class).value());
         Assert.assertEquals(new String[]{MediaType.TEXT_PLAIN}, AutoSuggestView.class.getMethod("serverRunning").getAnnotation(Produces.class).value());
 
-        Assert.assertEquals("/sherlock/stores/{store : .+}/autosuggest", AutoSuggestView.class.getMethod("pathMethod", String.class, UriInfo.class).getAnnotation(Path.class).value());
-        Assert.assertEquals(new String[]{MediaType.APPLICATION_JSON}, AutoSuggestView.class.getMethod("pathMethod", String.class, UriInfo.class).getAnnotation(Produces.class).value());
+        Assert.assertEquals("/sherlock/stores/{store : .+}/autosuggest", AutoSuggestView.class.getMethod("pathMethod", String.class, UriInfo.class, HttpHeaders.class).getAnnotation(Path.class).value());
+        Assert.assertEquals(new String[]{MediaType.APPLICATION_JSON}, AutoSuggestView.class.getMethod("pathMethod", String.class, UriInfo.class, HttpHeaders.class).getAnnotation(Produces.class).value());
 
         Assert.assertEquals("sherlock/cacherefresh", AutoSuggestView.class.getMethod("cacheRefresh", String.class).getAnnotation(Path.class).value());
         Assert.assertEquals(new String[]{MediaType.APPLICATION_JSON}, AutoSuggestView.class.getMethod("cacheRefresh", String.class).getAnnotation(Produces.class).value());
@@ -77,7 +74,7 @@ public class AutoSuggestViewTest {
             multivaluedMap.put("types", Collections.singletonList("query,product"));
             Mockito.when(uriInfo.getQueryParameters()).thenReturn(multivaluedMap);
 
-            Assert.assertTrue(isEquivalent(split[1], String.valueOf(autoSuggestView.pathMethod("search.flipkart.com", uriInfo).getEntity())));
+            Assert.assertTrue(isEquivalent(split[1], String.valueOf(autoSuggestView.pathMethod("search.flipkart.com", uriInfo, null).getEntity())));
         }
     }
 

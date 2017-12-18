@@ -29,6 +29,8 @@
         <lucene.version>4.6.1</lucene.version>
         <metrics.version>3.1.2</metrics.version>
         <hystrix.version>1.5.10</hystrix.version>
+        <sherlock-dg.version>0.0.18</sherlock-dg.version>
+        <archaius.version>0.7.4</archaius.version>
     </properties>
 
     <dependencies>
@@ -69,6 +71,44 @@
             <version>21.0</version>
         </dependency>
 
+        <!-- DG Library dependencies-->
+        <dependency>
+            <groupId>com.flipkart.sherrinford</groupId>
+            <artifactId>sherlock-dg</artifactId>
+            <version>${sherlock-dg.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.netflix.archaius</groupId>
+            <artifactId>archaius-core</artifactId>
+            <version>${archaius.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>com.google.guava</artifactId>
+                    <groupId>guava</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>slf4j-api</artifactId>
+                    <groupId>org.slf4j</groupId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.google.code.findbugs</groupId>
+                    <artifactId>annotations</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-core</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- end of DG library dependencies -->
+
+        <!--  utils dependencies -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
@@ -201,6 +241,12 @@
         <dependency>
             <groupId>com.netflix.hystrix</groupId>
             <artifactId>hystrix-codahale-metrics-publisher</artifactId>
+            <version>${hystrix.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.netflix.hystrix</groupId>
+            <artifactId>hystrix-metrics-event-stream</artifactId>
             <version>${hystrix.version}</version>
         </dependency>
 

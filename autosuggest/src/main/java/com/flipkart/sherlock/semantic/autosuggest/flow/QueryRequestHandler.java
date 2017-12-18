@@ -37,13 +37,16 @@ public class QueryRequestHandler {
         AutoSuggestSolrResponse autoSuggestSolrResponse = (queryRequest.getAutoSuggestSolrResponse() == null) ? solrRequestHandler.getAutoSuggestSolrResponse(queryPrefix, params) : queryRequest.getAutoSuggestSolrResponse();
 
         List<AutoSuggestDoc> autoSuggestDocs = autoSuggestSolrResponse.getAutoSuggestDocs();
-        
+
+        Boolean isSolrSpellCorrectionUsed = false;
+
         if (autoSuggestDocs.size() == 0 && params.isSolrSpellCorrection()) {
             AutoSuggestSpellResponse autoSuggestSpellResponse = solrRequestHandler.getAutoSuggestSolrSpellCorrectionResponse(queryPrefix, params);
             if (autoSuggestSpellResponse != null) {
                 queryPrefix = getQueryPrefix(autoSuggestSpellResponse.getCorrectedQuery());
                 autoSuggestSolrResponse = solrRequestHandler.getAutoSuggestSolrResponse(queryPrefix, params);
                 autoSuggestDocs = autoSuggestSolrResponse.getAutoSuggestDocs();
+                isSolrSpellCorrectionUsed = true;
             }
         }
 
@@ -64,6 +67,6 @@ public class QueryRequestHandler {
             processCount++;
         }
 
-        return new QueryResponse(autoSuggestSolrResponse, querySuggestions);
+        return new QueryResponse(autoSuggestSolrResponse, querySuggestions, isSolrSpellCorrectionUsed, queryPrefix.getOriginalQuery());
     }
 }

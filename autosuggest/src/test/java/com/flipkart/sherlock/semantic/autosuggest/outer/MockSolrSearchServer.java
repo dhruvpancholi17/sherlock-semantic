@@ -16,6 +16,7 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.*;
 
+import static com.flipkart.sherlock.semantic.autosuggest.models.AutoSuggestDoc.*;
 import static org.mockito.Matchers.any;
 
 /**
@@ -64,11 +65,7 @@ public class MockSolrSearchServer {
     }
 
     private static final String[] DEFAULT_FL = {
-            "corrected-query_sstring",
-            "ctr-obj_sstring",
-            "logged-qc-query_sstring",
-            "product-obj_sstring",
-            "product-store-obj_sstring"};
+            LOGGED_QC_QUERY,CORRECTED_QUERY,CTR_OBJ,PRODUCT_OBJECT,PRODUCT_STORE,WILSON_CTR_FL,SOLR_SCORE};
 
     private static final String[] DEFAULT_SORT = {
             "ctr_sfloat desc",

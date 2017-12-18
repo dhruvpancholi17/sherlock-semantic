@@ -13,4 +13,6 @@ import java.util.List;
 public class QueryResponse {
     private final AutoSuggestSolrResponse autoSuggestSolrResponse;
     private final List<QuerySuggestion> querySuggestions;
+    private final boolean isSolrSpellCorrectionUsed;
+    private final String solrSpellCorrectionOutput;
 }

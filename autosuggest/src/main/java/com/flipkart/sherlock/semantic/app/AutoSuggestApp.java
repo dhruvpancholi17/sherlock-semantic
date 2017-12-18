@@ -15,6 +15,7 @@ import com.flipkart.sherlock.semantic.commons.init.ConfigServiceInitProvider;
 import com.flipkart.sherlock.semantic.commons.init.HystrixInitProvider;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.netflix.hystrix.contrib.metrics.eventstream.HystrixMetricsStreamServlet;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
@@ -25,6 +26,7 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
+import service.Publisher;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -88,6 +90,7 @@ public class AutoSuggestApp {
         contextDefault.addEventListener(new SherlockMetricsServletContextListener());
         contextDefault.addServlet(new ServletHolder(new ServletContainer(resourceConfig)), "/*");
         contextDefault.addServlet(com.codahale.metrics.servlets.MetricsServlet.class, "/metrics");
+        contextDefault.addServlet(new ServletHolder(new HystrixMetricsStreamServlet()),"/hystrix.stream");
         contextDefault.setVirtualHosts(new String[]{"@AutoSuggestApplication"});
         contexts.addHandler(contextDefault);
 
@@ -95,10 +98,19 @@ public class AutoSuggestApp {
 
         server.setRequestLog(new Slf4jRequestLog());
 
+        // publisher for data governance
+        try {
+            Publisher.INSTANCE.init();
+            Publisher.INSTANCE.withMetricRegistry(JmxMetricRegistry.INSTANCE.getInstance());
+        } catch (Exception e ) {
+            log.info("Unable to Initiallize DG library", e);
+        }
+
         try {
             server.start();
             server.join();
         } finally {
+            Publisher.INSTANCE.shutdown();
             server.stop();
         }
     }
