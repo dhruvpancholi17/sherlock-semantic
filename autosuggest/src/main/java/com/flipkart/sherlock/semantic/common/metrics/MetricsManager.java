@@ -94,8 +94,8 @@ public class MetricsManager {
         if (!initialised && tracedItems != null) {
 
             // Exposes hystrix metrics using given metric registry.
-            HystrixPlugins.getInstance().registerMetricsPublisher(new HystrixCodaHaleMetricsPublisher(
-                    JmxMetricRegistry.INSTANCE.getInstance()));
+//            HystrixPlugins.getInstance().registerMetricsPublisher(new HystrixCodaHaleMetricsPublisher(
+//                    JmxMetricRegistry.INSTANCE.getInstance()));
 
             for (TracedItem currItem : tracedItems) {
                 Service service = currItem.getService();

@@ -50,5 +50,10 @@ public class HystrixCommandConfig {
      * maximum queue size of the BlockingQueue implementation.
      */
     private int poolMaxQueueSize;
+
+    /**
+     * Set true if you want pool max size to be different from pool core size
+     */
+    private boolean allowMaximumSizeToDivergeFromCoreSize;
 }
 

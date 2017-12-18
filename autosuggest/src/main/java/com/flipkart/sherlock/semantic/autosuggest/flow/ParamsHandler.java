@@ -7,7 +7,7 @@ import com.flipkart.sherlock.semantic.autosuggest.models.Params;
 import com.flipkart.sherlock.semantic.autosuggest.models.Params.ParamsBuilder;
 import com.flipkart.sherlock.semantic.autosuggest.models.SolrConfig;
 import com.flipkart.sherlock.semantic.autosuggest.utils.JsonSeDe;
-import com.flipkart.sherlock.semantic.common.util.FkConfigServiceWrapper;
+import com.flipkart.sherlock.semantic.commons.config.FkConfigServiceWrapper;
 import com.google.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 

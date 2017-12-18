@@ -9,10 +9,9 @@
     <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
     <modules>
-        <module>semantic-tooling</module>
-        <!--<module>common</module>-->
-        <module>autosuggest</module>
         <module>commons</module>
+        <module>semantic-tooling</module>
+        <module>autosuggest</module>
         <module>normalise</module>
     </modules>
 

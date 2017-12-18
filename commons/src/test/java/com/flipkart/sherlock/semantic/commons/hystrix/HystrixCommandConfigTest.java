@@ -1,12 +1,10 @@
-package com.flipkart.sherlock.semantic.common.hystrix;
+package com.flipkart.sherlock.semantic.commons.hystrix;
 
-import com.flipkart.sherlock.semantic.TestUtils;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import junit.framework.Assert;
 import org.junit.Test;
 
 import java.util.concurrent.TimeUnit;
-
-import static org.junit.Assert.*;
 
 /**
  * Created by anurag.laddha on 27/07/17.
@@ -16,11 +14,12 @@ public class HystrixCommandConfigTest {
 
     @Test
     public void testSerde() throws Exception{
+        ObjectMapper objectMapper = new ObjectMapper();
         HystrixCommandConfig config = new HystrixCommandConfig("group", "command", "pool", 10, 20, 30, 40, true);
-        System.out.println(TestUtils.getObjectMapper().writeValueAsString(config));
+        System.out.println(objectMapper.writeValueAsString(config));
 
         String json = "{\"groupKey\":\"group\",\"commandKey\":\"command\",\"threadPoolKey\":\"pool\",\"executionTimeoutMs\":10,\"poolCoreSize\":20,\"poolMaxSize\":30,\"poolMaxQueueSize\":40}";
-        HystrixCommandConfig deserialisedConfig = TestUtils.getObjectMapper().readValue(json, HystrixCommandConfig.class);
+        HystrixCommandConfig deserialisedConfig = objectMapper.readValue(json, HystrixCommandConfig.class);
 
         Assert.assertEquals(config.getGroupKey(), deserialisedConfig.getGroupKey());
         Assert.assertEquals(config.getCommandKey(), deserialisedConfig.getCommandKey());

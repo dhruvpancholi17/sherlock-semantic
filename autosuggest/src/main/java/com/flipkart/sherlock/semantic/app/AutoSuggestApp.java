@@ -1,17 +1,18 @@
 package com.flipkart.sherlock.semantic.app;
 
-
-import com.flipkart.sherlock.semantic.autosuggest.providers.WrapperProvider;
 import com.flipkart.sherlock.semantic.autosuggest.views.AutoSuggestView;
 import com.flipkart.sherlock.semantic.autosuggest.views.HealthCheckView;
 import com.flipkart.sherlock.semantic.common.dao.mysql.entity.MysqlConfig;
 import com.flipkart.sherlock.semantic.common.dao.mysql.entity.MysqlConnectionPoolConfig;
+import com.flipkart.sherlock.semantic.common.init.JsonSerdeInitProvider;
 import com.flipkart.sherlock.semantic.common.init.MysqlDaoProvider;
 import com.flipkart.sherlock.semantic.common.metrics.MetricsManager;
 import com.flipkart.sherlock.semantic.common.metrics.MetricsManager.TracedItem;
-import com.flipkart.sherlock.semantic.common.util.FkConfigServiceWrapper;
 import com.flipkart.sherlock.semantic.common.util.JmxMetricRegistry;
+import com.flipkart.sherlock.semantic.commons.config.FkConfigServiceWrapper;
 import com.flipkart.sherlock.semantic.common.util.SherlockMetricsServletContextListener;
+import com.flipkart.sherlock.semantic.commons.init.ConfigServiceInitProvider;
+import com.flipkart.sherlock.semantic.commons.init.HystrixInitProvider;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.netflix.hystrix.contrib.metrics.eventstream.HystrixMetricsStreamServlet;
@@ -30,6 +31,7 @@ import service.Publisher;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import static com.flipkart.sherlock.semantic.app.AppConstants.AUTOSUGGEST_BUCKET;
 import static com.flipkart.sherlock.semantic.autosuggest.views.AutoSuggestView.COSMOS_AUTO_SUGGEST_COMPONENT;
@@ -47,8 +49,6 @@ public class AutoSuggestApp {
 
         MetricsManager.init(getTracedItems());
 
-        FkConfigServiceWrapper configServiceWrapper = new FkConfigServiceWrapper("sherlock-autosuggest", true);
-
         FkConfigServiceWrapper fkConfigServiceWrapper = new FkConfigServiceWrapper(AUTOSUGGEST_BUCKET, true);
         MysqlConfig mysqlConfig = MysqlConfig.getConfig(fkConfigServiceWrapper);
         log.info("Staring the host with the following MySQL config: {}", mysqlConfig.toString());
@@ -60,12 +60,14 @@ public class AutoSuggestApp {
                 .build();
 
         // By default, jetty task queue is unbounded. Reject requests once queue is full.
-        QueuedThreadPool threadPool = getWebserverThreadPool(configServiceWrapper);
+        QueuedThreadPool threadPool = getWebserverThreadPool(fkConfigServiceWrapper);
         threadPool.setName("JettyContainer");
 
         Injector injector = Guice.createInjector(
-                new MysqlDaoProvider(mysqlConfig, connectionPoolConfig),
-                new WrapperProvider(fkConfigServiceWrapper));
+            new JsonSerdeInitProvider(),
+            new MysqlDaoProvider(mysqlConfig, connectionPoolConfig),
+            new ConfigServiceInitProvider(fkConfigServiceWrapper),
+            new HystrixInitProvider((int)TimeUnit.MINUTES.toSeconds(2), JmxMetricRegistry.INSTANCE.getInstance()));
 
         // Create embedded jetty container
         Server server = new Server(threadPool);

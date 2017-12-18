@@ -1,6 +1,7 @@
 package com.flipkart.sherlock.semantic.common.util;
 
 import com.flipkart.sherlock.semantic.autosuggest.outer.MockFkConfigServiceWrapper;
+import com.flipkart.sherlock.semantic.commons.config.FkConfigServiceWrapper;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
