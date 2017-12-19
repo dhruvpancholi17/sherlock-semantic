@@ -1,4 +1,4 @@
-package com.flipkart.sherlock.semantic.common.util;
+package com.flipkart.sherlock.semantic.commons.util;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -29,7 +29,12 @@ public class SerDeUtils {
      * @param typeReference: type to cast string to
      */
     public static <T> T castToGeneric(String value, TypeReference<T> typeReference) throws IOException {
-        return !StringUtils.isBlank(value) ? objectMapper.readValue(value, typeReference) : null;
+        if (typeReference.getType().equals(String.class)){
+            return (T) value;
+        }
+        else {
+            return !StringUtils.isBlank(value) ? objectMapper.readValue(value, typeReference) : null;
+        }
     }
 
     /**
@@ -46,6 +51,11 @@ public class SerDeUtils {
             return !StringUtils.isBlank(value) ? objectMapper.readValue(value, clazz) : null;
         }
     }
+
+    public static String valueAsString(Object value) throws IOException{
+        return value != null ? objectMapper.writeValueAsString(value) : null;
+    }
+
 
     /**
      * Returns value if it is not null, else returns default

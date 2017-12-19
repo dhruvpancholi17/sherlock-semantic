@@ -13,7 +13,9 @@ import java.util.concurrent.TimeUnit;
 /**
  * Helper to execute hystrix commands
  * Common activities (eg logging, metrics, etc) can be done here
+ * Deprecated. Use HystrixExecutor instead
  */
+//TODO:delete
 
 @Slf4j
 public class HystrixCommandHelper {

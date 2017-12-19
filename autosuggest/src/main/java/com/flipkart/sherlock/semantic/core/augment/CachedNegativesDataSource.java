@@ -3,7 +3,7 @@ package com.flipkart.sherlock.semantic.core.augment;
 import com.flipkart.sherlock.semantic.common.config.Constants;
 import com.flipkart.sherlock.semantic.common.config.SearchConfigProvider;
 import com.flipkart.sherlock.semantic.dao.mysql.AugmentationDao;
-import com.flipkart.sherlock.semantic.common.util.SerDeUtils;
+import com.flipkart.sherlock.semantic.commons.util.SerDeUtils;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;

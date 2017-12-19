@@ -2,7 +2,7 @@ package com.flipkart.sherlock.semantic.core.augment;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.flipkart.sherlock.semantic.common.config.SearchConfigProvider;
-import com.flipkart.sherlock.semantic.common.util.SerDeUtils;
+import com.flipkart.sherlock.semantic.commons.util.SerDeUtils;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
