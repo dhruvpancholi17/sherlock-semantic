@@ -67,6 +67,7 @@ public class FkCouchbaseClient<K,V> implements ICache<K,V> {
         try {
             Object value = this.couchbaseClient.get(keyStr);
             if (value != null) {
+                log.debug("Retrived from couchbase. Key: {}, value: {}", key, value);
                 return SerDeUtils.castToGeneric(value.toString(), this.typeReference);
             }
         }
@@ -89,6 +90,7 @@ public class FkCouchbaseClient<K,V> implements ICache<K,V> {
         int ttl = getTTL(this.defaultTTLSec, timeToLiveSec);
         try {
             String valueStr =  SerDeUtils.valueAsString(value);
+            log.debug("Adding to couchbase. Key: {}, value: {}", key, value);
             this.couchbaseClient.set(keyStr, ttl, valueStr);
         }
         catch (Exception ex){
@@ -126,6 +128,21 @@ public class FkCouchbaseClient<K,V> implements ICache<K,V> {
             }
         }
         return null;
+    }
+
+    @Override
+    public boolean remove(K key) {
+        if (key != null){
+            try {
+                log.debug("Removing key: {} from couchbase", key);
+                this.couchbaseClient.delete(getKeyStr(key));
+                return true;
+            }
+            catch(Exception ex){
+                log.error("Error while removing key: {}", getKeyStr(key), ex);
+            }
+        }
+        return false;
     }
 
     @Override

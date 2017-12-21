@@ -29,13 +29,13 @@ public class HystrixExecutorTestIT {
 
         //Set value for some key in couchbase
         List<String> strList = Lists.newArrayList("str1", "str2");
-        hystrixExecutor.executeSync("searchEngine", "search", () -> {
+        hystrixExecutor.executeSync("searchEngine.search", () -> {
             couchbaseClient.put("abc", strList);
             return null;
         });
 
         //Retrieve that value from couchbase
-        List<String> cbValue = hystrixExecutor.executeSync("searchEngine", "search", () -> couchbaseClient.get("abc"));
+        List<String> cbValue = hystrixExecutor.executeSync("searchEngine.search", () -> couchbaseClient.get("abc"));
         Assert.assertNotNull(cbValue);
         Assert.assertEquals(strList, cbValue);
         System.out.println(cbValue);

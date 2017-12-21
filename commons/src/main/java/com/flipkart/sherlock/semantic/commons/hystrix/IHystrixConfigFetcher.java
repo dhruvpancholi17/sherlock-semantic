@@ -7,5 +7,5 @@ public interface IHystrixConfigFetcher {
     /**
      * Get hystrix configuration for given command group and command name
      */
-    HystrixCommandConfig getConfig(String commandGroup, String command);
+    HystrixCommandConfig getConfig(String commandConfigName);
 }

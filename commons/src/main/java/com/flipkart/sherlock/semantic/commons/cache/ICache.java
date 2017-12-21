@@ -27,5 +27,8 @@ public interface ICache<K,V> {
     Map<K,V> getBulk(Iterable<K> keys);
 
 
+    boolean remove(K key);
+
+
     void shutdown();
 }

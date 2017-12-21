@@ -29,19 +29,19 @@ public class HystrixExecutor {
     /**
      * Execute given supplier synchronously using hystrix
      * Configs will be based on hystrix group and command name
-     * @param group: command group name
-     * @param command: command name
+     * @param hystrixConfigName: name of config for hystrix command
      * @param supplier: piece of code to execute using hystrix
      * @param <T>
      * @return: value provided by supplier
      */
-    public <T> T executeSync(String group, String command, Callable<T> supplier){
-        try {
-            HystrixCommandWrapper<T> commandWrapper = getHystrixCommand(group, command, supplier);
-            return commandWrapper.execute();
-        }
-        catch(Exception ex){
-            log.error("Error in executing hystrix command: {}, from group: {}", command, group);
+    public <T> T executeSync(String hystrixConfigName, Callable<T> supplier){
+        if (hystrixConfigName != null) {
+            try {
+                HystrixCommandWrapper<T> commandWrapper = getHystrixCommand(hystrixConfigName, supplier);
+                return commandWrapper.execute();
+            } catch (Exception ex) {
+                log.error("Error in executing hystrix command with configName: {}", hystrixConfigName, ex);
+            }
         }
         return null;
     }
@@ -51,22 +51,21 @@ public class HystrixExecutor {
      *  Execute given supplier async using hystrix, wait atmost till timeout specified
      *  Configs will be based on hystrix group and command name
      *
-     * @param group: command group name
-     * @param command: command name
+     * @param hystrixConfigName: name of config for hystrix command
      * @param timeoutMs: max time to wait for command execution to complete
      * @param supplier: piece of code to execute using hystrix
      * @param <T>
      * @return
      */
-    public <T> T executeWithTimeout(String group, String command, long timeoutMs, Callable<T> supplier) {
+    public <T> T executeWithTimeout(String hystrixConfigName, long timeoutMs, Callable<T> supplier) {
         T value = null;
-        if (command != null) {
+        if (hystrixConfigName != null) {
             try {
-                HystrixCommandWrapper<T> commandWrapper = getHystrixCommand(group, command, supplier);
+                HystrixCommandWrapper<T> commandWrapper = getHystrixCommand(hystrixConfigName, supplier);
                 Future<T> future = commandWrapper.queue();
                 value = future.get(timeoutMs, TimeUnit.MILLISECONDS);
             } catch (Exception ex) {
-                log.error("Error in executing hystrix command: {} of group: {}, with timeoutMs", command, group, timeoutMs, ex);
+                log.error("Error in executing hystrix command with config name: {} with timeoutMs", hystrixConfigName, timeoutMs, ex);
             }
         }
         return value;
@@ -75,8 +74,9 @@ public class HystrixExecutor {
     /**
      * Fetches hystrix command config based on group and command name. Creates hystrix command to be executed
      */
-    private <T> HystrixCommandWrapper<T> getHystrixCommand(String group, String command, Callable<T> supplier){
-        HystrixCommandConfig commandConfig = this.hystrixConfigFetcher.getConfig(group, command);
+    private <T> HystrixCommandWrapper<T> getHystrixCommand(String hystrixConfigName, Callable<T> supplier) throws Exception {
+        HystrixCommandConfig commandConfig = this.hystrixConfigFetcher.getConfig(hystrixConfigName);
+        if (commandConfig == null) throw new Exception("Hystrix command config not found for key: " + hystrixConfigName);
         return new HystrixCommandWrapper<>(commandConfig, supplier);
     }
 }
