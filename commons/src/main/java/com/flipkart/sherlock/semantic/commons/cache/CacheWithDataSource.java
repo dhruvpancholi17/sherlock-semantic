@@ -10,6 +10,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import javax.annotation.concurrent.ThreadSafe;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -31,6 +33,7 @@ public class CacheWithDataSource<K,V> {
     private Cache<K,V> inMemCache = null;
     private ICache<K,V> remoteCache;
     private IDataSource<K,V> dataSource;
+    private ExecutorService executorService;
     private HystrixExecutor hystrixExecutor;
     private String dataSourceHystrixConfigKey;
     private String remoteCacheHystrixConfigKey;
@@ -44,12 +47,13 @@ public class CacheWithDataSource<K,V> {
      * @param dataSourceHystrixConfigKey: name of config key for hystrix parameters for calling data source
      * @param inMemoryCacheConfigOpt: Optional configuration for in memory cache. If optional value is present, in memory cache will be used
      */
-    public CacheWithDataSource(ICache<K, V> remoteCache, IDataSource<K, V> dataSource,
-                                HystrixExecutor hystrixExecutor, String remoteCacheHystrixConfigKey, String dataSourceHystrixConfigKey,
-                                Optional<InMemoryCacheConfig> inMemoryCacheConfigOpt) {
+    public CacheWithDataSource(ICache<K, V> remoteCache, IDataSource<K, V> dataSource, ExecutorService executorService,
+                               HystrixExecutor hystrixExecutor, String remoteCacheHystrixConfigKey, String dataSourceHystrixConfigKey,
+                               Optional<InMemoryCacheConfig> inMemoryCacheConfigOpt) {
 
         this.remoteCache = remoteCache;
         this.remoteCacheHystrixConfigKey = remoteCacheHystrixConfigKey;
+        this.executorService = executorService;
         this.hystrixExecutor = hystrixExecutor;
         this.dataSource = dataSource;
         this.dataSourceHystrixConfigKey = dataSourceHystrixConfigKey;
@@ -107,7 +111,7 @@ public class CacheWithDataSource<K,V> {
                         this.inMemCache.put(key, value);
                     }
 
-                    this.hystrixExecutor.executeSync(this.remoteCacheHystrixConfigKey, () -> {
+                    this.hystrixExecutor.executeSync(this.remoteCacheHystrixConfigKey, () -> {  //populate this async?
                         this.remoteCache.put(key, copyValue);
                         return null;
                     });
@@ -116,6 +120,32 @@ public class CacheWithDataSource<K,V> {
         }
         return value;
     }
+
+
+    /**
+     * Asynchronously populate local (if available) and remote cache with data from data source
+     * @param key
+     */
+    public void populateFromSourceAsync(K key){
+        if (key != null){   //use hystrix? make this behavior part of get() with some param?
+            CompletableFuture.supplyAsync(() -> {
+                        log.debug("Fetching data from source for key: {}", key);
+                        return this.dataSource.get(key);
+                    }, this.executorService)
+                .thenAccept((data) -> {
+                    log.debug("Populating remote and local cache for key: {}", key);
+                    this.remoteCache.put(key, data);
+                    if (this.inMemCache != null){
+                        this.inMemCache.put(key, data);
+                    }
+                })
+                .exceptionally((ex) -> {
+                    log.error("Error while populating data async for key: {}", key, ex);
+                    return null;
+                });
+        }
+    }
+
 
     /**
      * Shutdown cache

@@ -11,6 +11,8 @@ import org.junit.Test;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Created by anurag.laddha on 21/12/17.
@@ -18,6 +20,13 @@ import java.util.Optional;
 public class CacheWithDataSourceTestIT {
 
     static class StringValueDataSource implements IDataSource<String, String>{
+
+        private boolean delayed;
+
+        public StringValueDataSource(boolean delayed) {
+            this.delayed = delayed;
+        }
+
         @Override
         public void prepare() {
 
@@ -25,6 +34,13 @@ public class CacheWithDataSourceTestIT {
 
         @Override
         public String get(String key) {
+            if (delayed){
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
             return key + "data";
         }
 
@@ -61,13 +77,14 @@ public class CacheWithDataSourceTestIT {
     private void testSimpleValueCache(boolean useInMemoryCache) throws Exception{
 
         //Cache setup
+        ExecutorService executorService = Executors.newFixedThreadPool(2);
         CouchbaseConfig couchbaseConfig = new CouchbaseConfig.CouchbaseConfigBuilder(Sets.newHashSet("http://127.0.0.1:8091/pools"),
             "default", "", 5).build();
         FkCouchbaseClient<String, String> couchbaseClient = new FkCouchbaseClient<>(couchbaseConfig);
         HystrixExecutor hystrixExecutor = CommonITContext.getInstance(HystrixExecutor.class);
-        IDataSource<String, String> dataSource = new StringValueDataSource();
+        IDataSource<String, String> dataSource = new StringValueDataSource(false);
 
-        CacheWithDataSource<String, String> cacheWithDataSource = new CacheWithDataSource<>(couchbaseClient, dataSource, hystrixExecutor,
+        CacheWithDataSource<String, String> cacheWithDataSource = new CacheWithDataSource<>(couchbaseClient, dataSource, executorService, hystrixExecutor,
             "searchEngine.search", "searchEngine.search",
             useInMemoryCache ? Optional.of(new CacheWithDataSource.InMemoryCacheConfig(10,100)) : Optional.empty());
 
@@ -96,13 +113,14 @@ public class CacheWithDataSourceTestIT {
 
     private void testListOfStringValueCache(boolean useInMemoryCache) throws Exception{
         //Cache setup
+        ExecutorService executorService = Executors.newFixedThreadPool(2);
         CouchbaseConfig couchbaseConfig = new CouchbaseConfig.CouchbaseConfigBuilder(Sets.newHashSet("http://127.0.0.1:8091/pools"),
             "default", "", 5).build();
         FkCouchbaseClient<String, List<String>> couchbaseClient = new FkCouchbaseClient<>(couchbaseConfig);
         HystrixExecutor hystrixExecutor = CommonITContext.getInstance(HystrixExecutor.class);
         IDataSource<String, List<String>> dataSource = new ListOfStringDataSource();
 
-        CacheWithDataSource<String, List<String>> cacheWithDataSource = new CacheWithDataSource<>(couchbaseClient, dataSource, hystrixExecutor,
+        CacheWithDataSource<String, List<String>> cacheWithDataSource = new CacheWithDataSource<>(couchbaseClient, dataSource, executorService, hystrixExecutor,
             "searchEngine.search", "searchEngine.search",
             useInMemoryCache ? Optional.of(new CacheWithDataSource.InMemoryCacheConfig(10,100)) : Optional.empty());
 
@@ -117,5 +135,28 @@ public class CacheWithDataSourceTestIT {
         Assert.assertNotNull(cacheWithDataSource.get(key2));
 
         cacheWithDataSource.shutdown();
+    }
+
+
+    @Test
+    public void testAsyncPopulate() throws Exception{
+        //Cache setup
+        ExecutorService executorService = Executors.newFixedThreadPool(2);
+        CouchbaseConfig couchbaseConfig = new CouchbaseConfig.CouchbaseConfigBuilder(Sets.newHashSet("http://127.0.0.1:8091/pools"),
+            "default", "", 5).build();
+        FkCouchbaseClient<String, String> couchbaseClient = new FkCouchbaseClient<>(couchbaseConfig);
+        HystrixExecutor hystrixExecutor = CommonITContext.getInstance(HystrixExecutor.class);
+        IDataSource<String, String> dataSource = new StringValueDataSource(true);
+
+        CacheWithDataSource<String, String> cacheWithDataSource = new CacheWithDataSource<>(couchbaseClient, dataSource, executorService, hystrixExecutor,
+            "searchEngine.search", "searchEngine.search", Optional.empty());
+
+        cacheWithDataSource.populateFromSourceAsync("key1");
+
+        Thread.sleep(3000);
+
+        cacheWithDataSource.get("key1");
+        cacheWithDataSource.shutdown();
+        executorService.shutdown();
     }
 }

@@ -5,10 +5,21 @@ package com.flipkart.sherlock.semantic.commons.cache;
  */
 
 /**
- * Read only ata source
+ * Read only data source
  */
 public interface IDataSource<K,V> {
+    /**
+     * Resource setup
+     */
     void prepare();
+
+    /**
+     * Get value for given key
+     */
     V get(K key);
+
+    /**
+     * Clean up resources
+     */
     void cleanup();
 }
