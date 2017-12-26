@@ -3,6 +3,7 @@ package com.flipkart.sherlock.semantic.common.util;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.flipkart.sherlock.semantic.commons.util.SerDeUtils;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -37,6 +38,12 @@ public class SerDeUtilsTest {
         Assert.assertEquals(10d, SerDeUtils.cast(floatString, Double.class));
         Assert.assertTrue(SerDeUtils.cast(booleanString, Boolean.class));
         Assert.assertEquals("abc", SerDeUtils.cast("abc", String.class));
+    }
+
+    @Test
+    public void testCastStringToString() throws Exception {
+        //Cast string to string, ensure this doesnt fail
+        Assert.assertEquals("abc", SerDeUtils.castToGeneric("abc", new TypeReference<String>() {}));
     }
 
     @Test

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.flipkart.sherlock.semantic.common.config.Constants;
 import com.flipkart.sherlock.semantic.common.dao.mysql.ConfigsDao;
 import com.flipkart.sherlock.semantic.common.dao.mysql.entity.SolrEntities.*;
-import com.flipkart.sherlock.semantic.common.util.SerDeUtils;
+import com.flipkart.sherlock.semantic.commons.util.SerDeUtils;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;

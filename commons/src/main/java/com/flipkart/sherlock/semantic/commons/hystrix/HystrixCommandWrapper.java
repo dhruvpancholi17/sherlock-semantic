@@ -46,7 +46,7 @@ public class HystrixCommandWrapper<R> extends HystrixCommand<R> {
         }catch(Exception ex){
             log.error("Error in executing hystrix command from group: {}, command key: {}", this.commandConfig.getGroupKey(),
                 this.commandConfig.getCommandKey());
+            throw ex;  //required for hystrix to trigger fallback
         }
-        return null;
     }
 }

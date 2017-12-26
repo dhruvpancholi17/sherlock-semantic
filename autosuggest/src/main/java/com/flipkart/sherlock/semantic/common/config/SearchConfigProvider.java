@@ -3,7 +3,7 @@ package com.flipkart.sherlock.semantic.common.config;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.flipkart.sherlock.semantic.common.dao.mysql.ConfigsDao;
 import com.flipkart.sherlock.semantic.common.dao.mysql.entity.SearchConfig;
-import com.flipkart.sherlock.semantic.common.util.SerDeUtils;
+import com.flipkart.sherlock.semantic.commons.util.SerDeUtils;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;

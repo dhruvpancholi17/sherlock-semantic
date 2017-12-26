@@ -45,20 +45,21 @@ public class CachedConfigServiceHystrixConfigFetcher implements IHystrixConfigFe
 
 
     @Override
-    public HystrixCommandConfig getConfig(String commandGroup, String command) {
+    public HystrixCommandConfig getConfig(String commandConfigName) {
         HystrixCommandConfig config = null;
-        String configServiceConfigKey = FkStringUtils.joinerOnDot.join(prefix, commandGroup, command);
-        try {
-            config = this.hystrixCommandToConfig.getIfPresent(configServiceConfigKey);
-            if (config == null){
-                config = getHystrixConfig(configServiceConfigKey);
-                if (config != null){
-                    this.hystrixCommandToConfig.put(configServiceConfigKey, config);
+        if (commandConfigName != null) {
+            try {
+                String configName = getHystrixConfigKeyName(commandConfigName);
+                config = this.hystrixCommandToConfig.getIfPresent(configName);
+                if (config == null) {
+                    config = getHystrixConfig(configName);
+                    if (config != null) {
+                        this.hystrixCommandToConfig.put(commandConfigName, config);
+                    }
                 }
+            } catch (Exception ex) {
+                log.error("Error in fetching hystrix config from cache for key: {}", commandConfigName, ex);
             }
-        }
-        catch(Exception ex){
-            log.error("Error in fetching hystrix config from cache for key: {}", configServiceConfigKey, ex);
         }
         return config;
     }
@@ -79,5 +80,9 @@ public class CachedConfigServiceHystrixConfigFetcher implements IHystrixConfigFe
         }
 
         return config;
+    }
+
+    private String getHystrixConfigKeyName(String commandConfigName){
+        return FkStringUtils.joinerOnDot.join(prefix, commandConfigName);
     }
 }

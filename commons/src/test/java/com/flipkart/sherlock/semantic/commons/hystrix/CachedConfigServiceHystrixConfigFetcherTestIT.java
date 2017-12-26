@@ -16,7 +16,7 @@ public class CachedConfigServiceHystrixConfigFetcherTestIT {
     @Test
     public void testFetchHystrixConfig(){
         IHystrixConfigFetcher hystrixConfigFetcher = CommonITContext.getInstance(IHystrixConfigFetcher.class);
-        HystrixCommandConfig hystrixCommandConfig = hystrixConfigFetcher.getConfig("searchEngine", "search");
+        HystrixCommandConfig hystrixCommandConfig = hystrixConfigFetcher.getConfig("searchEngine.search");
         Assert.assertNotNull(hystrixCommandConfig);
         System.out.println(hystrixCommandConfig);
     }
