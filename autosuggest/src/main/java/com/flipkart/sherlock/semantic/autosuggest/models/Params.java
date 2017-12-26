@@ -9,6 +9,8 @@ import java.util.Collections;
 import java.util.List;
 
 import static com.flipkart.sherlock.semantic.autosuggest.helpers.MarketAnalyzer.DEFAULT_MARKET_PLACE_IDS;
+import static com.flipkart.sherlock.semantic.v4.V4FlashSuggestionType.QUERY;
+import static com.flipkart.sherlock.semantic.v4.V4FlashSuggestionType.QUERY_STORE;
 
 /**
  * Created by dhruv.pancholi on 01/06/17.
@@ -19,6 +21,7 @@ import static com.flipkart.sherlock.semantic.autosuggest.helpers.MarketAnalyzer.
 public class Params {
 
     public static final List<String> DEFAULT_COMPLETION_TYPES = Arrays.asList("query", "product");
+    public static final List<String> DEFAULT_V4_COMPLETION_TYPES = Arrays.asList(QUERY_STORE.name(), QUERY.name());
     public static final List<String> DEFAULT_STORE_NODES = Collections.singletonList("search.flipkart.com");
 
     private boolean debug = false;

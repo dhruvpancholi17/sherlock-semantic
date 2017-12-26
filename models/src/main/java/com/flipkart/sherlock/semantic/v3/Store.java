@@ -1,4 +1,4 @@
-package v3;
+package com.flipkart.sherlock.semantic.v3;
 
 /**
  * Created by dhruv.pancholi on 18/12/17.

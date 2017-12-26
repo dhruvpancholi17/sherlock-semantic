@@ -13,6 +13,12 @@
 
     <dependencies>
 
+        <dependency>
+            <groupId>com.flipkart.sherlock.semantic</groupId>
+            <artifactId>models</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+
         <!-- Jersey/Jetty dependencies -->
         <dependency>
             <groupId>org.eclipse.jetty</groupId>

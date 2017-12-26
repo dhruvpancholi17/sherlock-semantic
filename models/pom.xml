@@ -6,7 +6,7 @@
 
     <groupId>com.flipkart.sherlock.semantic</groupId>
     <artifactId>models</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.0</version>
 
     <properties>
         <jackson.version>2.8.0</jackson.version>

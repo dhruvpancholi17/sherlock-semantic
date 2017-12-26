@@ -4,13 +4,15 @@ import com.flipkart.sherlock.semantic.autosuggest.dao.AutoSuggestColdStartDao;
 import com.flipkart.sherlock.semantic.autosuggest.helpers.MarketAnalyzer;
 import com.flipkart.sherlock.semantic.autosuggest.models.*;
 import com.flipkart.sherlock.semantic.autosuggest.models.v4.*;
+import com.flipkart.sherlock.semantic.autosuggest.models.v4.cards.V4FlashProduct;
+import com.flipkart.sherlock.semantic.autosuggest.models.v4.cards.V4FlashQuery;
+import com.flipkart.sherlock.semantic.autosuggest.models.v4.cards.V4FlashQueryStore;
 import com.flipkart.sherlock.semantic.commons.config.FkConfigServiceWrapper;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 
 
-import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.UriInfo;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,13 +43,11 @@ public class V4RequestHandler {
     private FkConfigServiceWrapper fkConfigServiceWrapper;
 
 
-    public V4AutoSuggestResponse getV4Response(String store, UriInfo uriInfo) {
+    public V4FlashAutoSuggestResponse getV4Response(Params params) {
         String payloadId = UUID.randomUUID().toString();
 
-        Params params = paramsHandler.getParams(store, uriInfo);
-
         if (params.getQuery() == null || params.getQuery().isEmpty()) {
-            return new V4AutoSuggestResponse(payloadId,
+            return new V4FlashAutoSuggestResponse(payloadId,
                     fkConfigServiceWrapper.getInt(AUTOSUGGEST_COLD_START_VERSION),
                     autoSuggestColdStartDao.getColdStartRows(),
                     null, null,
@@ -61,19 +61,19 @@ public class V4RequestHandler {
                 .getProductSuggestions(params.getQuery(),
                         new ProductRequest(params, queryResponse.getAutoSuggestSolrResponse()));
 
-        List<V4Suggestion> v4Suggestions = getV4Suggestion(queryResponse, productResponse);
-        return new V4AutoSuggestResponse(
+        List<V4FlashSuggestion> v4FlashSuggestions = getV4Suggestion(queryResponse, productResponse);
+        return new V4FlashAutoSuggestResponse(
                 payloadId,
                 fkConfigServiceWrapper.getInt(AUTOSUGGEST_COLD_START_VERSION),
-                v4Suggestions,
+                v4FlashSuggestions,
                 params.isDebug() ? params : null,
                 params.isDebug() ? queryResponse.getAutoSuggestSolrResponse().getSolrQuery() : null,
                 params.isDebug() ? productResponse.getAutoSuggestSolrResponse().getSolrQuery() : null,
                 params.isDebug() ? productResponse.getAutoSuggestSolrResponse().getAutoSuggestDocs() : null);
     }
 
-    private List<V4Suggestion> getV4Suggestion(QueryResponse queryResponse, ProductResponse productResponse) {
-        List<V4Suggestion> suggestions = new ArrayList<>();
+    private List<V4FlashSuggestion> getV4Suggestion(QueryResponse queryResponse, ProductResponse productResponse) {
+        List<V4FlashSuggestion> suggestions = new ArrayList<>();
 
         int count = 0;
         List<QuerySuggestion> querySuggestions = queryResponse.getQuerySuggestions();
@@ -99,35 +99,35 @@ public class V4RequestHandler {
         return suggestions;
     }
 
-    private V4Suggestion getV4QuerySuggestion(String query, Store store) {
-        V4Suggestion v4Suggestion = null;
+    private V4FlashSuggestion getV4QuerySuggestion(String query, Store store) {
+        V4FlashSuggestion v4FlashSuggestion = null;
         if (store == null) {
-            V4Query v4Query = new V4Query();
-            v4Query.setType(V4SuggestionType.QUERY);
+            V4FlashQuery v4Query = new V4FlashQuery();
+            v4Query.setType(V4FlashSuggestionType.QUERY);
             v4Query.setClickUrl(getQueryStoreUrl(query, null));
-            v4Query.setContentType(V4ContentType.RECENT);
+            v4Query.setContentType(V4FlashContentType.RECENT);
             v4Query.setQuery(query);
-            v4Suggestion = v4Query;
+            v4FlashSuggestion = v4Query;
         } else {
-            V4QueryStore v4QueryStore = new V4QueryStore();
-            v4QueryStore.setType(V4SuggestionType.QUERY_STORE);
+            V4FlashQueryStore v4QueryStore = new V4FlashQueryStore();
+            v4QueryStore.setType(V4FlashSuggestionType.QUERY_STORE);
             v4QueryStore.setClickUrl(getQueryStoreUrl(query, store));
-            v4QueryStore.setContentType(V4ContentType.RECENT);
+            v4QueryStore.setContentType(V4FlashContentType.RECENT);
             v4QueryStore.setQuery(query);
             v4QueryStore.setStore(store.getTitle());
             v4QueryStore.setMarketPlaceId(MarketAnalyzer.FLIP_MART.equals(store.getMarketPlaceId()) ?
-                    V4MarketPlace.GROCERY :
-                    V4MarketPlace.FLIPKART);
-            v4Suggestion = v4QueryStore;
+                    V4FlashMarketPlace.GROCERY :
+                    V4FlashMarketPlace.FLIPKART);
+            v4FlashSuggestion = v4QueryStore;
         }
-        return v4Suggestion;
+        return v4FlashSuggestion;
     }
 
-    private V4Suggestion getV4ProductSuggestion(String id) {
-        V4Product v4Product = new V4Product();
-        v4Product.setType(V4SuggestionType.PRODUCT);
+    private V4FlashSuggestion getV4ProductSuggestion(String id) {
+        V4FlashProduct v4Product = new V4FlashProduct();
+        v4Product.setType(V4FlashSuggestionType.PRODUCT);
         v4Product.setClickUrl("clickUrl");
-        v4Product.setContentType(V4ContentType.RECENT);
+        v4Product.setContentType(V4FlashContentType.RECENT);
         v4Product.setPid(id);
         v4Product.setTitle("title");
         v4Product.setImageUrl("imageUrl");

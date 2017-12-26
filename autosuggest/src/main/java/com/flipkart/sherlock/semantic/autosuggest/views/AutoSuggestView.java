@@ -3,15 +3,14 @@ package com.flipkart.sherlock.semantic.autosuggest.views;
 import com.flipkart.abservice.models.response.ABVariable;
 import com.flipkart.sherlock.semantic.autosuggest.dao.AutoSuggestCacheRefresher;
 import com.flipkart.sherlock.semantic.autosuggest.dataGovernance.Ingester;
-import com.flipkart.sherlock.semantic.autosuggest.flow.ParamsHandler;
-import com.flipkart.sherlock.semantic.autosuggest.flow.ProductRequestHandler;
-import com.flipkart.sherlock.semantic.autosuggest.flow.QueryRequestHandler;
-import com.flipkart.sherlock.semantic.autosuggest.flow.V4RequestHandler;
+import com.flipkart.sherlock.semantic.autosuggest.flow.*;
 import com.flipkart.sherlock.semantic.autosuggest.models.*;
-import com.flipkart.sherlock.semantic.autosuggest.models.v4.V4AutoSuggestResponse;
+import com.flipkart.sherlock.semantic.autosuggest.models.v4.V4FlashAutoSuggestResponse;
+import com.flipkart.sherlock.semantic.autosuggest.models.v4.request.V4FlashPrivateAutoSuggestRequest;
 import com.flipkart.sherlock.semantic.autosuggest.utils.JsonSeDe;
 import com.flipkart.sherlock.semantic.common.metrics.MetricsManager;
 import com.flipkart.sherlock.semantic.commons.ab.ABServiceHandler;
+import com.flipkart.sherlock.semantic.v4.request.V4FlashAutoSuggestRequest;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
@@ -49,6 +48,9 @@ public class AutoSuggestView {
 
     @Inject
     private ParamsHandler paramsHandler;
+
+    @Inject
+    private V4ParamsHandler v4ParamsHandler;
 
     @Inject
     private V4RequestHandler v4RequestHandler;
@@ -137,10 +139,50 @@ public class AutoSuggestView {
         try {
             Response response = MetricsManager.logTime(service, component, () -> {
 
-                V4AutoSuggestResponse v4Response = v4RequestHandler.getV4Response(store, uriInfo);
+                Params params = paramsHandler.getParams(store, uriInfo);
+
+                V4FlashAutoSuggestResponse v4Response = v4RequestHandler.getV4Response(params);
 
                 if (v4Response.getSuggestions() == null || v4Response.getSuggestions().isEmpty()) {
                     log.info("Empty response for query: {}", jsonSeDe.writeValueAsString(uriInfo.getQueryParameters()));
+                    MetricsManager.logNullResponse(Autosuggest, COSMOS_AUTO_SUGGEST_V4_COMPONENT);
+                }
+
+                return Response.status(Response.Status.OK)
+                        .type(MediaType.APPLICATION_JSON_TYPE)
+                        .entity(jsonSeDe.writeValueAsString(v4Response))
+                        .build();
+            });
+            MetricsManager.logSuccess(service, component);
+            return response;
+        } catch (Exception e) {
+            MetricsManager.logError(service, component, e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Internal Server Error").build();
+        }
+    }
+
+    @POST
+    @Path("/sherlock/v4/autosuggest")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response getV4AutoSuggest(String postBody, @Context HttpHeaders headers) {
+
+        MetricsManager.Service service = Autosuggest;
+        String component = COSMOS_AUTO_SUGGEST_V4_COMPONENT;
+
+        MetricsManager.logRequests(service, component);
+
+        try {
+            Response response = MetricsManager.logTime(service, component, () -> {
+
+                V4FlashPrivateAutoSuggestRequest v4FlashPrivateAutoSuggestRequest = jsonSeDe.readValue(postBody, V4FlashPrivateAutoSuggestRequest.class);
+
+                Params params = v4ParamsHandler.getParams(v4FlashPrivateAutoSuggestRequest);
+
+                V4FlashAutoSuggestResponse v4Response = v4RequestHandler.getV4Response(params);
+
+                if (v4Response.getSuggestions() == null || v4Response.getSuggestions().isEmpty()) {
+                    log.info("Empty response for query: {}", jsonSeDe.writeValueAsString(null));
                     MetricsManager.logNullResponse(Autosuggest, COSMOS_AUTO_SUGGEST_V4_COMPONENT);
                 }
 

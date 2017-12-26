@@ -1,5 +1,6 @@
-package com.flipkart.sherlock.semantic.autosuggest.models.v4;
+package com.flipkart.sherlock.semantic.autosuggest.models.v4.cards;
 
+import com.flipkart.sherlock.semantic.autosuggest.models.v4.V4FlashSuggestion;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,10 +13,6 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class V4Rich extends V4Suggestion {
-    private String clickUrl;
-    private V4ContentType contentType;
+public class V4FlashPartition extends V4FlashSuggestion {
     private String title;
-    private String subTitle;
-    private String imageUrl;
 }

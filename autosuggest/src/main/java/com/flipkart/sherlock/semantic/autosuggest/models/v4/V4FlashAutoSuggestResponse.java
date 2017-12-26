@@ -16,10 +16,10 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class V4AutoSuggestResponse {
+public class V4FlashAutoSuggestResponse {
     private String payloadId;
     private int coldStartVersion;
-    private List<V4Suggestion> suggestions;
+    private List<V4FlashSuggestion> suggestions;
 
     // Debug Fields
     private Params params;

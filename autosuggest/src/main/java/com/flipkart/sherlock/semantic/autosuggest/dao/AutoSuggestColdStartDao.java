@@ -1,6 +1,6 @@
 package com.flipkart.sherlock.semantic.autosuggest.dao;
 
-import com.flipkart.sherlock.semantic.autosuggest.models.v4.V4Suggestion;
+import com.flipkart.sherlock.semantic.autosuggest.models.v4.V4FlashSuggestion;
 import com.flipkart.sherlock.semantic.autosuggest.utils.JsonSeDe;
 import com.flipkart.sherlock.semantic.common.dao.mysql.CompleteTableDao;
 import com.flipkart.sherlock.semantic.common.dao.mysql.CompleteTableDao.AutoSuggestColdStart;
@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
  */
 @Slf4j
 @Singleton
-public class AutoSuggestColdStartDao extends AbstractReloadableMapCache<List<V4Suggestion>> {
+public class AutoSuggestColdStartDao extends AbstractReloadableMapCache<List<V4FlashSuggestion>> {
 
     private static final String DUMMY_VERSION = "dummy_version";
 
@@ -30,16 +30,16 @@ public class AutoSuggestColdStartDao extends AbstractReloadableMapCache<List<V4S
     }
 
     @Override
-    protected Map<String, List<V4Suggestion>> getFromSource() {
-        List<V4Suggestion> v4Suggestions = new ArrayList<>();
+    protected Map<String, List<V4FlashSuggestion>> getFromSource() {
+        List<V4FlashSuggestion> v4FlashSuggestions = new ArrayList<>();
 
         List<AutoSuggestColdStart> autoSuggestColdStarts = completeTableDao.getAutoSuggestColdStarts();
         autoSuggestColdStarts.sort(Comparator.comparingInt(AutoSuggestColdStart::getPosition));
 
         for (AutoSuggestColdStart autoSuggestColdStart : autoSuggestColdStarts) {
             try {
-                V4Suggestion v4Suggestion = jsonSeDe.readValue(autoSuggestColdStart.getContent(), V4Suggestion.class);
-                v4Suggestions.add(v4Suggestion);
+                V4FlashSuggestion v4FlashSuggestion = jsonSeDe.readValue(autoSuggestColdStart.getContent(), V4FlashSuggestion.class);
+                v4FlashSuggestions.add(v4FlashSuggestion);
             } catch (Exception e) {
                 log.error("Unable to process the row: {} {} {}",
                         autoSuggestColdStart.getPosition(),
@@ -47,10 +47,10 @@ public class AutoSuggestColdStartDao extends AbstractReloadableMapCache<List<V4S
                         e);
             }
         }
-        return ImmutableMap.of(DUMMY_VERSION, v4Suggestions);
+        return ImmutableMap.of(DUMMY_VERSION, v4FlashSuggestions);
     }
 
-    public List<V4Suggestion> getColdStartRows() {
+    public List<V4FlashSuggestion> getColdStartRows() {
         return getCached().get(DUMMY_VERSION);
     }
 }

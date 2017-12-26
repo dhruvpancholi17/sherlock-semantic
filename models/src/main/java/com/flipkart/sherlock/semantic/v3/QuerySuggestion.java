@@ -1,4 +1,4 @@
-package v3;
+package com.flipkart.sherlock.semantic.v3;
 
 import java.util.List;
 
