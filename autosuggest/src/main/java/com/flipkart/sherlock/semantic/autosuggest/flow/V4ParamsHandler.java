@@ -9,7 +9,6 @@ import com.flipkart.sherlock.semantic.autosuggest.models.SolrConfig;
 import com.flipkart.sherlock.semantic.autosuggest.models.v4.request.V4FlashPrivateAutoSuggestRequest;
 import com.flipkart.sherlock.semantic.autosuggest.utils.JsonSeDe;
 import com.flipkart.sherlock.semantic.commons.config.FkConfigServiceWrapper;
-import com.flipkart.sherlock.semantic.v4.request.V4FlashAutoSuggestRequest;
 import com.google.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 
@@ -100,10 +99,13 @@ public class V4ParamsHandler {
         return paramsBuilder.build();
     }
 
-    private static void updateMarketPlaceIds(ParamsBuilder paramsBuilder, String store, SolrConfig solrConfig, V4FlashPrivateAutoSuggestRequest v4FlashPrivateAutoSuggestRequest, MarketAnalyzer marketAnalyzer) {
+    private static void updateMarketPlaceIds(ParamsBuilder paramsBuilder, String store, SolrConfig solrConfig,
+                                             V4FlashPrivateAutoSuggestRequest v4FlashPrivateAutoSuggestRequest,
+                                             MarketAnalyzer marketAnalyzer) {
         List<String> marketPlaceIds = marketAnalyzer.getMarketPlaceIds(store,
                 String.valueOf(v4FlashPrivateAutoSuggestRequest.isGroceryContext()),
-                v4FlashPrivateAutoSuggestRequest.getMarketPlaceId().name());
+                v4FlashPrivateAutoSuggestRequest.getMarketPlaceId() != null ?
+                        v4FlashPrivateAutoSuggestRequest.getMarketPlaceId().name() : null);
         paramsBuilder.marketPlaceIds(marketPlaceIds);
     }
 }
