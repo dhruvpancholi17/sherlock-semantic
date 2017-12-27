@@ -1,8 +1,10 @@
 package com.flipkart.sherlock.semantic.autosuggest.models.v4;
 
-import com.flipkart.sherlock.semantic.autosuggest.models.v4.cards.V4FlashQuery;
-import com.flipkart.sherlock.semantic.autosuggest.models.v4.cards.V4FlashQueryStore;
 import com.flipkart.sherlock.semantic.autosuggest.utils.JsonSeDe;
+import com.flipkart.sherlock.semantic.v4.V4FlashContentType;
+import com.flipkart.sherlock.semantic.v4.V4FlashMarketPlace;
+import com.flipkart.sherlock.semantic.v4.cards.V4FlashQuery;
+import com.flipkart.sherlock.semantic.v4.cards.V4FlashQueryStore;
 import com.flipkart.sherlock.semantic.v4.request.V4FlashAutoSuggestRequest;
 import com.flipkart.sherlock.semantic.v4.request.V4SearchBrowseRequest;
 import org.junit.Test;
@@ -11,9 +13,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.flipkart.sherlock.semantic.autosuggest.models.v4.V4FlashSuggestionType.*;
 import static com.flipkart.sherlock.semantic.v4.V4FlashMarketPlace.FLIPKART;
 import static com.flipkart.sherlock.semantic.v4.V4FlashMarketPlace.GROCERY;
+import static com.flipkart.sherlock.semantic.v4.V4FlashSuggestionType.*;
+
 
 /**
  * Created by dhruv.pancholi on 11/12/17.
@@ -55,21 +58,19 @@ public class V4FlashAutoSuggestResponseTest {
         v4FlashAutoSuggestRequest.setContextUri("/search?q=shoes&sid=osp/cil/e1f&as=on&as-show=on&otracker=start&as-pos=1_1_ic_shoes");
         v4FlashAutoSuggestRequest.setContextQuery("shoes");
         v4FlashAutoSuggestRequest.setContextStore("osp/cil/e1f");
-        v4FlashAutoSuggestRequest.setTypes(Arrays.asList(
-                QUERY_STORE.name(),
-                QUERY.name(),
-                PRODUCT.name(),
-                RICH.name(),
-                CLP.name(),
-                PARTITION.name()
-        ));
+        v4FlashAutoSuggestRequest.setTypes(Arrays.asList(QUERY_STORE,
+                QUERY,
+                PRODUCT,
+                RICH,
+                CLP,
+                PARTITION));
 
         List<V4SearchBrowseRequest> v4SearchBrowseRequests = new ArrayList<>();
         V4SearchBrowseRequest v4SearchBrowseRequest = new V4SearchBrowseRequest();
         v4SearchBrowseRequest.setQuery("samsung mobiles");
         v4SearchBrowseRequest.setStore("tyy/4io");
         v4SearchBrowseRequest.setUri("/search?q=samsung%20mobiles&otracker=start&as-show=on&as=off");
-        v4SearchBrowseRequest.setTimestamp(System.currentTimeMillis()-10000);
+        v4SearchBrowseRequest.setTimestamp(System.currentTimeMillis() - 10000);
         v4SearchBrowseRequest.setMarketPlaceId(FLIPKART);
         v4SearchBrowseRequests.add(v4SearchBrowseRequest);
 
@@ -77,7 +78,7 @@ public class V4FlashAutoSuggestResponseTest {
         v4SearchBrowseRequest.setQuery("chana dal");
         v4SearchBrowseRequest.setStore("73z");
         v4SearchBrowseRequest.setUri("/search?q=urad%20dal&otracker=start&as-show=on&as=off");
-        v4SearchBrowseRequest.setTimestamp(System.currentTimeMillis()-32000);
+        v4SearchBrowseRequest.setTimestamp(System.currentTimeMillis() - 32000);
         v4SearchBrowseRequest.setMarketPlaceId(GROCERY);
         v4SearchBrowseRequests.add(v4SearchBrowseRequest);
 
@@ -85,7 +86,7 @@ public class V4FlashAutoSuggestResponseTest {
         v4SearchBrowseRequest.setQuery("water bottle for kids below 12 years");
         v4SearchBrowseRequest.setStore("search.flipkart.com");
         v4SearchBrowseRequest.setUri("/search?q=water%20bottle%20for%20kids%20below%2012%20years&otracker=start&as-show=off&as=off");
-        v4SearchBrowseRequest.setTimestamp(System.currentTimeMillis()-54000);
+        v4SearchBrowseRequest.setTimestamp(System.currentTimeMillis() - 54000);
         v4SearchBrowseRequest.setMarketPlaceId(FLIPKART);
         v4SearchBrowseRequests.add(v4SearchBrowseRequest);
 

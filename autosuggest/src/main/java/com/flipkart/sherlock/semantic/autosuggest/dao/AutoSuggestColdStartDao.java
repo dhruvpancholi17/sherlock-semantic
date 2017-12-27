@@ -1,9 +1,9 @@
 package com.flipkart.sherlock.semantic.autosuggest.dao;
 
-import com.flipkart.sherlock.semantic.autosuggest.models.v4.V4FlashSuggestion;
 import com.flipkart.sherlock.semantic.autosuggest.utils.JsonSeDe;
 import com.flipkart.sherlock.semantic.common.dao.mysql.CompleteTableDao;
 import com.flipkart.sherlock.semantic.common.dao.mysql.CompleteTableDao.AutoSuggestColdStart;
+import com.flipkart.sherlock.semantic.v4.V4FlashSuggestion;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;

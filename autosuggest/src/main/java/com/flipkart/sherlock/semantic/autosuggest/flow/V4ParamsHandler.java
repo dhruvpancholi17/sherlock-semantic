@@ -9,6 +9,7 @@ import com.flipkart.sherlock.semantic.autosuggest.models.SolrConfig;
 import com.flipkart.sherlock.semantic.autosuggest.models.v4.request.V4FlashPrivateAutoSuggestRequest;
 import com.flipkart.sherlock.semantic.autosuggest.utils.JsonSeDe;
 import com.flipkart.sherlock.semantic.commons.config.FkConfigServiceWrapper;
+import com.flipkart.sherlock.semantic.v4.V4FlashSuggestionType;
 import com.google.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 
@@ -34,7 +35,6 @@ public class V4ParamsHandler {
     private JsonSeDe jsonSeDe;
 
     public Params getParams(V4FlashPrivateAutoSuggestRequest v4FlashPrivateAutoSuggestRequest) {
-
 
         String bucket = v4FlashPrivateAutoSuggestRequest.getAsBucket();
         bucket = (bucket == null) ? "default" : bucket;
@@ -62,9 +62,9 @@ public class V4ParamsHandler {
         paramsBuilder.originalQuery(query);
         paramsBuilder.query(AutoSuggestQueryAnalyzer.getCleanQuery(query));
 
-        List<String> completionTypes = v4FlashPrivateAutoSuggestRequest.getTypes();
+        List<V4FlashSuggestionType> completionTypes = v4FlashPrivateAutoSuggestRequest.getTypes();
         completionTypes = completionTypes == null ? Params.DEFAULT_V4_COMPLETION_TYPES : completionTypes;
-        paramsBuilder.completionTypes(completionTypes);
+        paramsBuilder.v4CompletionTypes(completionTypes);
 
         paramsBuilder.queryDisabled(false);
         paramsBuilder.productDisabled(true);

@@ -43,10 +43,4 @@ public class V4FlashAutoSuggestResponse {
     public void setSuggestions(List<V4FlashSuggestion> suggestions) {
         this.suggestions = suggestions;
     }
-
-    // Debug Fields
-//    private Params params;
-//    private String querySolrQuery;
-//    private String productSolrQuery;
-//    private List<AutoSuggestDoc> autoSuggestDocs;
 }

@@ -3,22 +3,25 @@ package com.flipkart.sherlock.semantic.autosuggest.flow;
 import com.flipkart.sherlock.semantic.autosuggest.dao.AutoSuggestColdStartDao;
 import com.flipkart.sherlock.semantic.autosuggest.helpers.MarketAnalyzer;
 import com.flipkart.sherlock.semantic.autosuggest.models.*;
-import com.flipkart.sherlock.semantic.autosuggest.models.v4.*;
-import com.flipkart.sherlock.semantic.autosuggest.models.v4.cards.V4FlashProduct;
-import com.flipkart.sherlock.semantic.autosuggest.models.v4.cards.V4FlashQuery;
-import com.flipkart.sherlock.semantic.autosuggest.models.v4.cards.V4FlashQueryStore;
+import com.flipkart.sherlock.semantic.autosuggest.models.v4.V4FlashAutoSuggestResponse;
 import com.flipkart.sherlock.semantic.commons.config.FkConfigServiceWrapper;
+import com.flipkart.sherlock.semantic.v4.V4FlashContentType;
+import com.flipkart.sherlock.semantic.v4.V4FlashSuggestion;
+import com.flipkart.sherlock.semantic.v4.V4FlashSuggestionType;
+import com.flipkart.sherlock.semantic.v4.cards.V4FlashProduct;
+import com.flipkart.sherlock.semantic.v4.cards.V4FlashQuery;
+import com.flipkart.sherlock.semantic.v4.cards.V4FlashQueryStore;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 
-
-import javax.ws.rs.core.UriInfo;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 import static com.flipkart.sherlock.semantic.app.AppConstants.AUTOSUGGEST_COLD_START_VERSION;
+import static com.flipkart.sherlock.semantic.v4.V4FlashMarketPlace.FLIPKART;
+import static com.flipkart.sherlock.semantic.v4.V4FlashMarketPlace.GROCERY;
 
 /**
  * Created by dhruv.pancholi on 01/06/17.
@@ -116,8 +119,8 @@ public class V4RequestHandler {
             v4QueryStore.setQuery(query);
             v4QueryStore.setStore(store.getTitle());
             v4QueryStore.setMarketPlaceId(MarketAnalyzer.FLIP_MART.equals(store.getMarketPlaceId()) ?
-                    V4FlashMarketPlace.GROCERY :
-                    V4FlashMarketPlace.FLIPKART);
+                    GROCERY :
+                    FLIPKART);
             v4FlashSuggestion = v4QueryStore;
         }
         return v4FlashSuggestion;

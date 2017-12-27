@@ -1,6 +1,5 @@
 package com.flipkart.sherlock.semantic.autosuggest.views;
 
-import com.flipkart.abservice.models.response.ABVariable;
 import com.flipkart.sherlock.semantic.autosuggest.dao.AutoSuggestCacheRefresher;
 import com.flipkart.sherlock.semantic.autosuggest.dataGovernance.Ingester;
 import com.flipkart.sherlock.semantic.autosuggest.flow.*;
@@ -10,7 +9,6 @@ import com.flipkart.sherlock.semantic.autosuggest.models.v4.request.V4FlashPriva
 import com.flipkart.sherlock.semantic.autosuggest.utils.JsonSeDe;
 import com.flipkart.sherlock.semantic.common.metrics.MetricsManager;
 import com.flipkart.sherlock.semantic.commons.ab.ABServiceHandler;
-import com.flipkart.sherlock.semantic.v4.request.V4FlashAutoSuggestRequest;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
@@ -80,7 +78,6 @@ public class AutoSuggestView {
         try {
             Response response = MetricsManager.logTime(service, component, () -> {
 
-                Map<String, ABVariable> abParams = abServiceHandler.getABParams("40c8a487cacd28a8ba9a023a1249c286", "ACIX00AOSH86NTDBL2TQF4R0J1NHBNE8");
                 final String payloadId = UUID.randomUUID().toString();
 
                 Params params = paramsHandler.getParams(store, uriInfo);

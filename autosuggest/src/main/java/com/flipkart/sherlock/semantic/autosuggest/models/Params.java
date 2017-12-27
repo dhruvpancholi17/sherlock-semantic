@@ -1,5 +1,6 @@
 package com.flipkart.sherlock.semantic.autosuggest.models;
 
+import com.flipkart.sherlock.semantic.v4.V4FlashSuggestionType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -21,7 +22,7 @@ import static com.flipkart.sherlock.semantic.v4.V4FlashSuggestionType.QUERY_STOR
 public class Params {
 
     public static final List<String> DEFAULT_COMPLETION_TYPES = Arrays.asList("query", "product");
-    public static final List<String> DEFAULT_V4_COMPLETION_TYPES = Arrays.asList(QUERY_STORE.name(), QUERY.name());
+    public static final List<V4FlashSuggestionType> DEFAULT_V4_COMPLETION_TYPES = Arrays.asList(QUERY_STORE, QUERY);
     public static final List<String> DEFAULT_STORE_NODES = Collections.singletonList("search.flipkart.com");
 
     private boolean debug = false;
@@ -59,6 +60,7 @@ public class Params {
     private String pristinePrefixField = "prefix_edgytext";
 
     private List<String> completionTypes = DEFAULT_COMPLETION_TYPES;
+    private List<V4FlashSuggestionType> v4CompletionTypes = DEFAULT_V4_COMPLETION_TYPES;
     private List<String> storeNodes = DEFAULT_STORE_NODES;
     private List<String> marketPlaceIds = DEFAULT_MARKET_PLACE_IDS;
     private List<String> sortFunctions = Arrays.asList("score desc", "ranking-score_sfloat desc", "p-hits_sfloat desc", "ctr_sfloat desc");

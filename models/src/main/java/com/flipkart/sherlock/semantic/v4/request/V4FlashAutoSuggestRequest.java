@@ -1,9 +1,14 @@
 package com.flipkart.sherlock.semantic.v4.request;
 
 import com.flipkart.sherlock.semantic.v4.V4FlashMarketPlace;
+import com.flipkart.sherlock.semantic.v4.V4FlashSuggestionType;
 
 import java.util.Arrays;
 import java.util.List;
+
+import static com.flipkart.sherlock.semantic.v4.V4FlashSuggestionType.QUERY;
+import static com.flipkart.sherlock.semantic.v4.V4FlashSuggestionType.QUERY_STORE;
+
 
 /**
  * Created by dhruv.pancholi on 20/12/17.
@@ -13,7 +18,7 @@ public class V4FlashAutoSuggestRequest {
     private String query;
     private V4FlashMarketPlace marketPlaceId;
     private boolean groceryContext;
-    private List<String> types = Arrays.asList("QUERY_STORE", "QUERY");
+    private List<V4FlashSuggestionType> types = Arrays.asList(QUERY_STORE, QUERY);
     private int rows = 28;
     private long userTimeStamp;
     private String contextUri;
@@ -26,6 +31,14 @@ public class V4FlashAutoSuggestRequest {
 
     public V4FlashMarketPlace getMarketPlaceId() {
         return marketPlaceId;
+    }
+
+    public List<V4FlashSuggestionType> getTypes() {
+        return types;
+    }
+
+    public void setTypes(List<V4FlashSuggestionType> types) {
+        this.types = types;
     }
 
     public void setMarketPlaceId(V4FlashMarketPlace marketPlaceId) {
@@ -54,14 +67,6 @@ public class V4FlashAutoSuggestRequest {
 
     public void setGroceryContext(boolean groceryContext) {
         this.groceryContext = groceryContext;
-    }
-
-    public List<String> getTypes() {
-        return types;
-    }
-
-    public void setTypes(List<String> types) {
-        this.types = types;
     }
 
     public int getRows() {
